@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,15 +28,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.viewmodel.DetailViewModel
-import com.example.myapplication.viewmodel.TrashListViewModel
+import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun TrashListScreen(navController: NavController, trashListViewModel: TrashListViewModel = viewModel ()) {
+fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListViewModel = viewModel ()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
 
-    val allItems = listOf("Trash A", "Trash B", "Trash C", "Trash D", "Trash E") // ✅ 검색할 데이터 목록
+    val allItems = listOf("Waste A", "Waste B", "Waste C", "Waste D", "Waste E") // ✅ 검색할 데이터 목록
 
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedItem by remember { mutableStateOf<String?>(null) }

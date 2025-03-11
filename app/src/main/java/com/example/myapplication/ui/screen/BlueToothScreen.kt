@@ -11,34 +11,47 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.BluetoothViewModel
 import com.example.myapplication.viewmodel.MockBluetoothDevice
+import com.example.myapplication.viewmodel.SharedViewModel
 
 
 @Composable
 fun BluetoothDialog(
+    targetViewModel: SharedViewModel,
     viewModel: BluetoothViewModel = viewModel(),
-    onDismiss: () -> Unit // 다이얼로그 닫기 이벤트
+    onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = onDismiss ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+
         ) {
-            BluetoothScreen(viewModel)
+            BluetoothScreen(targetViewModel, viewModel, onDismiss)
+        }
+        Button(
+            onClick = { onDismiss() }, // ✅ 버튼 클릭 시 모달 닫기
+        ) {
+            Text("닫기")
         }
     }
 }
 
 @Composable
-fun BluetoothScreen(viewModel: BluetoothViewModel = viewModel()) {
+fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewModel = viewModel(), onDismiss: () -> Unit) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
@@ -51,7 +64,9 @@ fun BluetoothScreen(viewModel: BluetoothViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
 
         // ✅ 블루투스 스캔 버튼
@@ -66,8 +81,9 @@ fun BluetoothScreen(viewModel: BluetoothViewModel = viewModel()) {
         LazyColumn {
             items(devices) { device ->
                 DeviceItem(device) { selected ->
+                    targetViewModel.selectDevice(selected.name + " " + selected.address)
                     selectedDevice = selected
-                    showDialog = true
+                    onDismiss()
                 }
             }
         }
@@ -79,38 +95,38 @@ fun BluetoothScreen(viewModel: BluetoothViewModel = viewModel()) {
         }
     }
 
-    // ✅ 장치를 클릭하면 팝업 표시
-    if (showDialog && selectedDevice != null) {
-        val context = LocalContext.current
-        val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                selectedDevice?.name ?: "Unknown"
-            } else {
-                "Permission Required"
-            }
-        } else {
-            selectedDevice?.name ?: "Unknown"
-        }
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Device: $deviceName") },
-            text = {
-                Column {
-                    Text("Address: ${selectedDevice?.address}")
-                    TextField(
-                        value = inputText,
-                        onValueChange = { inputText = it },
-                        label = { Text("Enter additional info") }
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("OK")
-                }
-            }
-        )
-    }
+//    // ✅ 장치를 클릭하면 팝업 표시
+//    if (showDialog && selectedDevice != null) {
+//        val context = LocalContext.current
+//        val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+//                selectedDevice?.name ?: "Unknown"
+//            } else {
+//                "Permission Required"
+//            }
+//        } else {
+//            selectedDevice?.name ?: "Unknown"
+//        }
+//        AlertDialog(
+//            onDismissRequest = { showDialog = false },
+//            title = { Text("Device: $deviceName") },
+//            text = {
+//                Column {
+//                    Text("Address: ${selectedDevice?.address}")
+//                    TextField(
+//                        value = inputText,
+//                        onValueChange = { inputText = it },
+//                        label = { Text("Enter additional info") }
+//                    )
+//                }
+//            },
+//            confirmButton = {
+//                Button(onClick = { showDialog = false }) {
+//                    Text("OK")
+//                }
+//            }
+//        )
+//    }
 }
 // 실제 폰
 //@Composable

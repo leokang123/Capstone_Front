@@ -36,10 +36,10 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
         Spacer(modifier = Modifier.height(16.dp))
 
         NavigationItem("홈화면", navController, drawerState, "home")
-        NavigationItem("폐기물 목록", navController, drawerState, "trash_list")
-        NavigationItem("폐기물 등록", navController, drawerState, "trash_register")
-        NavigationItem("주변 페기물 처리", navController, drawerState, "trash_move")
-        NavigationItem("폐기물 배출", navController, drawerState, "trash_remove")
+        NavigationItem("폐기물 목록", navController, drawerState, "waste_list")
+        NavigationItem("폐기물 등록", navController, drawerState, "waste_register")
+        NavigationItem("주변 페기물 처리", navController, drawerState, "waste_move")
+        NavigationItem("폐기물 배출", navController, drawerState, "waste_remove")
     }
 }
 

@@ -15,25 +15,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.viewmodel.DetailViewModel
-import com.example.myapplication.viewmodel.TrashMoveViewModel
+import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
 @Composable
-fun TrashMoveScreen(navController: NavController, trashMoveViewModel: TrashMoveViewModel = viewModel()) {
+fun WasteRemoveScreen(navController: NavController, wasteRemoveViewModel: WasteRemoveViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("폐기물 처리", style = MaterialTheme.typography.headlineMedium)
+        Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
         Button(
             onClick = { navController.popBackStack() },
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Back to Home")
         }
-        Text("Number ${trashMoveViewModel.number.value}")
+        Text("Number ${wasteRemoveViewModel.number.value}")
         Button(
             onClick = {
-                trashMoveViewModel.updateNumber()
+                wasteRemoveViewModel.updateNumber()
             },
             modifier = Modifier.padding(top = 16.dp)
         ) {

@@ -37,29 +37,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.component.DrawerContent
-import com.example.myapplication.ui.screen.BluetoothDialog
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.screen.HomeScreen
 import com.example.myapplication.ui.screen.DetailScreen
 import com.example.myapplication.ui.screen.PopUpScreen
 import com.example.myapplication.ui.screen.LoginScreen
 import com.example.myapplication.ui.screen.RegisterScreen
-import com.example.myapplication.ui.screen.SettingsScreen
 import com.example.myapplication.viewmodel.DetailViewModel
 import com.example.myapplication.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.screen.NotificationDialog
-import com.example.myapplication.ui.screen.NotificationScreen
 import com.example.myapplication.ui.screen.SettingsDialog
-import com.example.myapplication.ui.screen.TrashListScreen
-import com.example.myapplication.ui.screen.TrashMoveScreen
-import com.example.myapplication.ui.screen.TrashRegisterScreen
-import com.example.myapplication.ui.screen.TrashRemoveScreen
-import com.example.myapplication.viewmodel.TrashListViewModel
-import com.example.myapplication.viewmodel.TrashMoveViewModel
-import com.example.myapplication.viewmodel.TrashRegisterViewModel
-import com.example.myapplication.viewmodel.TrashRemoveViewModel
+import com.example.myapplication.ui.screen.WasteListScreen
+import com.example.myapplication.ui.screen.WasteMoveScreen
+import com.example.myapplication.ui.screen.WasteRegisterScreen
+import com.example.myapplication.ui.screen.WasteRemoveScreen
+import com.example.myapplication.viewmodel.SharedViewModel
+import com.example.myapplication.viewmodel.WasteListViewModel
+import com.example.myapplication.viewmodel.WasteMoveViewModel
+import com.example.myapplication.viewmodel.WasteRegisterViewModel
+import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -110,10 +108,11 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope() // ✅ Drawer 열고 닫기 위한 CoroutineScope
     val detailViewModel: DetailViewModel = viewModel()
     val homeViewModel: HomeViewModel = viewModel()
-    val trashListViewModel: TrashListViewModel = viewModel()
-    val trashRegisterViewModel: TrashRegisterViewModel = viewModel()
-    val trashMoveViewModel: TrashMoveViewModel = viewModel()
-    val trashRemoveViewModel: TrashRemoveViewModel = viewModel()
+    val wasteListViewModel: WasteListViewModel = viewModel()
+    val wasteRegisterViewModel: WasteRegisterViewModel = viewModel()
+    val wasteMoveViewModel: WasteMoveViewModel = viewModel()
+    val wasteRemoveViewModel: WasteRemoveViewModel = viewModel()
+    val sharedViewModel: SharedViewModel = viewModel()
     val context = LocalContext.current
 
     ModalNavigationDrawer(
@@ -161,11 +160,11 @@ fun AppNavigation() {
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController, homeViewModel) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }
-                composable("trash_list") { TrashListScreen(navController, trashListViewModel) }
-                composable("trash_register") { TrashRegisterScreen(navController, trashRegisterViewModel) }
-                composable("trash_move") { TrashMoveScreen(navController, trashMoveViewModel) }
-                composable("trash_remove") { TrashRemoveScreen(navController, trashRemoveViewModel) }
-                dialog("bluetooth_scan") { BluetoothDialog {navController.popBackStack()} }
+                composable("waste_list") { WasteListScreen(navController, wasteListViewModel) }
+                composable("waste_register") { WasteRegisterScreen(navController, wasteRegisterViewModel) }
+                composable("waste_move") { WasteMoveScreen(navController, wasteMoveViewModel) }
+                composable("waste_remove") { WasteRemoveScreen(navController, wasteRemoveViewModel) }
+//                dialog("bluetooth_scan") { BluetoothDialog(navController, sharedViewModel) }
                 dialog("popup") { PopUpScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
                 dialog("notification") { NotificationDialog(navController) }
