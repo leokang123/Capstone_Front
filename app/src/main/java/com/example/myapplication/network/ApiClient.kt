@@ -12,8 +12,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  * 그럼 ApiService용 처리 객체가 된거라 그 안의 함수를 호출해 api요청 하면됨
  */
 object ApiClient {
-    private const val BASE_URL = "http://me-di-cap.kro.kr/"
-//    private const val BASE_URL = "http://10.0.2.2:8080/"
+//    private const val BASE_URL = "http://me-di-cap.kro.kr/"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
     private var retrofit: Retrofit? = null
 
