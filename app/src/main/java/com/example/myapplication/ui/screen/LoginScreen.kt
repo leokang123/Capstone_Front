@@ -35,6 +35,11 @@ import androidx.core.content.edit
 import com.example.myapplication.network.LoginRequest
 import com.example.myapplication.repository.LoginRepository
 
+/**
+ * 로그인 화면
+ * 백엔드랑 통신까지 완료
+ * 디자인이나 토큰 관리하는거 바꾸는거 아니면 건들일 없을듯
+ */
 
 @Composable
 fun LoginScreen(navController: NavController) {

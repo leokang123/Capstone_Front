@@ -20,6 +20,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.BluetoothViewModel
 
+/**
+ * 설정창
+ * 3/11 (강정훈)
+ * 일단 화면이 심심해서 넣어놨는데 젤 나중에 구현해도 될거같음 넣을 항목이없어서 로그아웃기능넣어둠
+ */
 @Composable
 fun SettingsDialog(navController: NavController) {
     Dialog(onDismissRequest = {navController.popBackStack()}) {
@@ -42,8 +47,8 @@ fun SettingsScreen(navController: NavController) {
 
         Button(
             onClick = {
-                logout(context)  // ✅ 토큰 삭제 후 로그아웃
-                navController.navigate("login") { // ✅ 로그인 화면으로 이동
+                logout(context)  //  토큰 삭제 후 로그아웃
+                navController.navigate("login") { //  로그인 화면으로 이동
                     popUpTo("home") { inclusive = true } // 뒤로 가기 방지
                 }
             },
@@ -52,7 +57,7 @@ fun SettingsScreen(navController: NavController) {
             Text("Logout")
         }
         Button(
-            onClick = { navController.popBackStack() }, // ✅ 이전 화면으로 돌아가기
+            onClick = { navController.popBackStack() }, //  이전 화면으로 돌아가기
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Back")
@@ -63,6 +68,6 @@ fun SettingsScreen(navController: NavController) {
 fun logout(context: Context) {
     val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit() { remove("auth_token") }  // ✅ 저장된 토큰 삭제
+    sharedPreferences.edit() { remove("auth_token") }  // 저장된 토큰 삭제
 
 }

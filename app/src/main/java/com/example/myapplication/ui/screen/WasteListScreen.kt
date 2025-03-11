@@ -31,22 +31,34 @@ import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 
+/**
+ * 폐기물 목록 조회 창
+ * 3/11일 기준 (강정훈)
+ * 아직 api를 통해 폐기물 조회 및 리스트업하는건 미구현
+ * 검색 기능만 구현
+ * 고급 검색기능도 아직 미구현
+ * 상세 조회 창 띄우는것도 아직 미구현
+ */
 @Composable
 fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListViewModel = viewModel ()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
 
-    val allItems = listOf("Waste A", "Waste B", "Waste C", "Waste D", "Waste E") // ✅ 검색할 데이터 목록
+    val allItems = listOf("Waste A", "Waste B", "Waste C", "Waste D", "Waste E") // ✅ 데이터 목록(예시)
 
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedItem by remember { mutableStateOf<String?>(null) }
     var filteredItems by remember { mutableStateOf(listOf<String>()) }
     var showDropdown by remember { mutableStateOf(false) }
 
-    // ✅ 사용자가 입력을 멈춘 후 0.5초 뒤에 자동완성 바 표시
+    /**
+     *  api 최적화
+     *  사용자 입력을 특정시간동안 기다리고 쿼리를 보내는 로직
+     *  아직 미구현
+    * */
     LaunchedEffect(searchText.text) {
         if (searchText.text.length == 1 || searchText.text.isBlank()) filteredItems = emptyList()
-        showDropdown = false  // ✅ 새로운 입력이 발생하면 하단바 숨기기
-        delay(500)  // ✅ 0.5초 대기 (사용자가 입력을 멈춘 후 실행)
+        showDropdown = false  // 새로운 입력이 발생하면 하단바 숨기기
+        delay(500)  // 0.5초 대기 (사용자가 입력을 멈춘 후 실행)
         filteredItems = allItems.filter { it.contains(searchText.text, ignoreCase = true) }
         showDropdown = filteredItems.isNotEmpty()  // ✅ 검색 결과가 있을 때만 표시
     }

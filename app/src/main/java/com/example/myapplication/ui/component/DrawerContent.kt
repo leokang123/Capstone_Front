@@ -22,13 +22,17 @@ import androidx.navigation.NavController
 import com.example.myapplication.R
 import kotlinx.coroutines.launch
 
+/**
+ * 왼쪽 네비바 꾸미는 컴포넌트
+ */
+
 @Composable
 fun DrawerContent(navController: NavController, drawerState: DrawerState) {
-    val scope = rememberCoroutineScope() // ✅ Drawer 닫기 위한 CoroutineScope
+    val scope = rememberCoroutineScope() // Drawer 닫기 위한 CoroutineScope
 
     Column(
         modifier = Modifier
-            .width(250.dp) // ✅ Drawer 크기 조절 (전체 화면을 덮지 않도록)
+            .width(250.dp) // Drawer 크기 조절 (전체 화면을 덮지 않도록)
             .fillMaxHeight()
             .background(colorResource(id = R.color.black).copy(alpha = 0.7f))
             .padding(16.dp)) {
@@ -49,8 +53,8 @@ fun NavigationItem(title: String, navController: NavController, drawerState: Dra
 
     Button(
         onClick = {
-            scope.launch { drawerState.close() } // ✅ Drawer 닫기
-            navController.navigate(route) // ✅ 네비게이션 이동
+            scope.launch { drawerState.close() } // Drawer 닫기
+            navController.navigate(route) // 네비게이션 이동
         },
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {

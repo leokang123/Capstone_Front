@@ -17,6 +17,11 @@ import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * BlueToothScreen 전용 viewModel
+ * 사용할 수도 있고 안할 수도 있음 (그냥 어지간하면 다 viewmodel 만들었음)
+ * Screen에서는 데이터를 보여주고, 데이터의 저장 및 변화나 갱신에 대한 연산은 거의 전부 viewModel에서 하는 느낌
+ */
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val scanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner

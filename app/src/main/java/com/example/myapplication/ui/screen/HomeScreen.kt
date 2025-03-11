@@ -38,6 +38,10 @@ import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.HomeViewModel
 import androidx.core.content.edit
 
+/**
+ * 홈화면
+ */
+
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
     val context = LocalContext.current  // ✅ 현재 Context 가져오기

@@ -29,6 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.navigation.NavController
+
+/**
+ * 알림 화면
+ * 3/11 (강정훈)
+ * 알림화면, 블루투스화면, 설정화면 모두 비슷한 방식으로 화면 구성을 함
+ * 더미데이터로 방향성은 구현해놨는데, 공지를 api로 받아오는거, 새 공지가 왔을때 업데이트하는거 등 미구현된부분들이 아직 많음
+ */
+
 @Composable
 fun NotificationDialog(navController: NavController) {
     Dialog(onDismissRequest = {navController.popBackStack()}) {

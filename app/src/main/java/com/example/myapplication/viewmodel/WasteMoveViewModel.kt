@@ -3,7 +3,9 @@ package com.example.myapplication.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
-
+/**
+ * 예시 viewmodel
+ */
 class WasteMoveViewModel : ViewModel() {
     private val initNumber = 0
     private val _number = mutableIntStateOf(initNumber)

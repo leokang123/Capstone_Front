@@ -5,6 +5,11 @@ import android.content.SharedPreferences
 import okhttp3.Interceptor
 import okhttp3.Response
 
+/**
+ * 더이상 건들일 없을 코드 같긴한데
+ * 그냥 ApiClient에서 Retrofit 객체 만들고 그러는 과정에 BearerToken 넣어주는 역할
+ */
+
 class AuthInterceptor(context: Context) : Interceptor {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)

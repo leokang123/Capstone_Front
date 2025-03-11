@@ -17,9 +17,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
+/**
+ * 폐기물 배출 창
+ * 3/11(강정훈)
+ * 아직 미구현 (디폴트창(DetailScreen) 넣어놓은게 고작)
+ */
+
 @Composable
 fun WasteRemoveScreen(navController: NavController, wasteRemoveViewModel: WasteRemoveViewModel = viewModel()) {
-    var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
+    var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
@@ -39,7 +45,7 @@ fun WasteRemoveScreen(navController: NavController, wasteRemoveViewModel: WasteR
             Text("Increase")
         }
         Button(
-            onClick = { showDialog = true },  // ✅ 버튼 클릭 시 다이얼로그 표시
+            onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Show Popup")

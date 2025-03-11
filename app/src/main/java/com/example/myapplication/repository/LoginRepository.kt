@@ -8,6 +8,9 @@ import com.example.myapplication.network.LoginRequest
 import com.example.myapplication.network.LoginResponse
 import com.example.myapplication.ui.screen.saveToken
 
+/**
+ * 로그인 관련 처리 클래스
+ */
 class LoginRepository(context: Context) {
     private val apiService = ApiClient.getInstance(context).create(ApiService::class.java)
 

@@ -3,7 +3,10 @@ package com.example.myapplication.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
-
+/**
+ * 초안을 홈화면에 뭔가 넣지 말자고 해서 따로 쓸일이 없을거같긴 하지만
+ * 일단 만들어만 놨음
+ */
 class HomeViewModel : ViewModel() {
     private val initNumber = 0;
     private val _number = mutableIntStateOf(initNumber)

@@ -17,6 +17,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.WasteMoveViewModel
 
+/**
+ * 폐기물 처리 창
+ * 3/11(강정훈)
+ * 아직 미구현 (디폴트창(DetailScreen) 넣어놓은게 고작)
+ */
 @Composable
 fun WasteMoveScreen(navController: NavController, wasteMoveViewModel: WasteMoveViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리

@@ -6,6 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 
+/**
+ * 팝업창 예시 (지워도 됌)
+ */
 @Composable
 fun PopUpScreen(navController: NavController) {
     AlertDialog(

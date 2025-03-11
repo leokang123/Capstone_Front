@@ -61,9 +61,12 @@ import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
 
 class MainActivity : ComponentActivity() {
+    // 앱 처음 생성될때 실행
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
         requestBluetoothPermissions()
         setContent {
             MyApplicationTheme {
@@ -71,9 +74,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    // 폰에서 앱에 다시 돌아올떄 실행됨 (비교적 자주실행)
     override fun onResume() {
         super.onResume()
-
         // finish app if the BLE is not supported
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, "BLE 미지원",Toast.LENGTH_SHORT).show()
@@ -81,9 +84,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ✅ 블루투스 권한 요청 함수
+    // 블루투스 권한 요청 함수 (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
     private fun requestBluetoothPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // ✅ Android 12(API 31) 이상에서만 필요
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12(API 31) 이상에서만 필요
             val permissions = arrayOf(
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.BLUETOOTH_CONNECT
@@ -100,24 +103,30 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * 3/11일 (강정훈)
+ * 여기서 viewModel 한번에 많이 정의해둔 이유는 다른 페이지갔다가 돌아왔을때
+ * 데이터가 남아있길 바라는 마음? 근데 어차피 매 페이지마다 api로 데이털르 받아올텐데
+ * 추후에 필요없는거같으면 전부 지워도 됨
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // ✅ Drawer 상태 관리
-    val scope = rememberCoroutineScope() // ✅ Drawer 열고 닫기 위한 CoroutineScope
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer 상태 관리
+    val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
     val detailViewModel: DetailViewModel = viewModel()
     val homeViewModel: HomeViewModel = viewModel()
     val wasteListViewModel: WasteListViewModel = viewModel()
     val wasteRegisterViewModel: WasteRegisterViewModel = viewModel()
     val wasteMoveViewModel: WasteMoveViewModel = viewModel()
     val wasteRemoveViewModel: WasteRemoveViewModel = viewModel()
-    val sharedViewModel: SharedViewModel = viewModel()
     val context = LocalContext.current
 
+    // 왼쪽 네비바 구현
     ModalNavigationDrawer(
         drawerContent = {
-            DrawerContent(navController, drawerState) // ✅ Drawer 내부 UI
+            DrawerContent(navController, drawerState) // Drawer 내부 UI
         },
         drawerState = drawerState
     ) {
@@ -126,14 +135,14 @@ fun AppNavigation() {
                 TopAppBar(
                     title = { Text("애버커스") },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) { // ✅ 햄버거 메뉴 클릭 시 Drawer 열기
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
                             Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
                         }
                     },
-                    actions = { // ✅ 우측 상단 버튼 추가
-                        // ✅ 알림 버튼 추가
+                    actions = { // 우측 상단 버튼 추가
+                        // 알림 버튼 추가
                         IconButton(onClick = {
-                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
                             navController.navigate("notification")
                         }) {
                             Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications")
@@ -154,9 +163,12 @@ fun AppNavigation() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable("login") {
+                    // 로그인으로 돌아갔을때 기존 남아있는 데이터 리셋 로직
                     homeViewModel.reset()
                     detailViewModel.reset()
-                    LoginScreen(navController) }
+
+                    LoginScreen(navController)
+                }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController, homeViewModel) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }
@@ -164,7 +176,6 @@ fun AppNavigation() {
                 composable("waste_register") { WasteRegisterScreen(navController, wasteRegisterViewModel) }
                 composable("waste_move") { WasteMoveScreen(navController, wasteMoveViewModel) }
                 composable("waste_remove") { WasteRemoveScreen(navController, wasteRemoveViewModel) }
-//                dialog("bluetooth_scan") { BluetoothDialog(navController, sharedViewModel) }
                 dialog("popup") { PopUpScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
                 dialog("notification") { NotificationDialog(navController) }

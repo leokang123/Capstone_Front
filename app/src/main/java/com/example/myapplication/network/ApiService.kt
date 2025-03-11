@@ -4,6 +4,10 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
+/**
+ * 엔드포인트랑 사용할 api 정의하는부분
+ * 아마 사용하는 api가 많아지면 리팩토링 해야할듯
+ */
 
 interface ApiService {
     @POST("auth/signin")

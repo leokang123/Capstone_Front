@@ -23,6 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
+/**
+ * 회원 가입창
+ * 3/11 (강정훈)
+ * 아직 분석 설계 했을때 항목들은 안넣은 미구현상태, api 연결도 해봐야함
+ */
 
 @Composable
 fun RegisterScreen(navController: NavController) {

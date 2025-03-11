@@ -17,6 +17,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.DetailViewModel
 
+/**
+ * 예시 화면 (없애도됨)
+ */
+
 @Composable
 fun DetailScreen(navController: NavController, detailViewModel: DetailViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
