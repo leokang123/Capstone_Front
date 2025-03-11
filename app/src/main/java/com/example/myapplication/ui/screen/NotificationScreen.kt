@@ -1,19 +1,34 @@
 package com.example.myapplication.ui.screen
 
-import android.content.Context
-import android.content.SharedPreferences
+
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.navigation.NavController
-
+@Composable
+fun NotificationDialog(navController: NavController) {
+    Dialog(onDismissRequest = {navController.popBackStack()}) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+            NotificationScreen(navController)
+        }
+    }
+}
 @Composable
 fun NotificationScreen(navController: NavController) {
     val context = LocalContext.current
@@ -21,6 +36,8 @@ fun NotificationScreen(navController: NavController) {
     Column(modifier = Modifier.padding(16.dp)) {
 
         Text("Notification", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.padding(16.dp))
+
         Text("Example1", style = MaterialTheme.typography.headlineSmall)
         Text("Example2", style = MaterialTheme.typography.headlineSmall)
         Text("Example3", style = MaterialTheme.typography.headlineSmall)

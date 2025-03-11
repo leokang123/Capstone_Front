@@ -49,7 +49,9 @@ import com.example.myapplication.viewmodel.DetailViewModel
 import com.example.myapplication.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.ui.screen.NotificationDialog
 import com.example.myapplication.ui.screen.NotificationScreen
+import com.example.myapplication.ui.screen.SettingsDialog
 import com.example.myapplication.ui.screen.TrashListScreen
 import com.example.myapplication.ui.screen.TrashMoveScreen
 import com.example.myapplication.ui.screen.TrashRegisterScreen
@@ -165,8 +167,8 @@ fun AppNavigation() {
                 composable("trash_remove") { TrashRemoveScreen(navController, trashRemoveViewModel) }
                 dialog("bluetooth_scan") { BluetoothDialog {navController.popBackStack()} }
                 dialog("popup") { PopUpScreen(navController) }
-                dialog("settings") { SettingsScreen(navController) }
-                dialog("notification") { NotificationScreen(navController) }
+                dialog("settings") { SettingsDialog(navController) }
+                dialog("notification") { NotificationDialog(navController) }
             }
         }
     }

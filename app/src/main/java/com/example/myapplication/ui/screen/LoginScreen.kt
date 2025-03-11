@@ -32,6 +32,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import androidx.core.content.edit
+import com.example.myapplication.network.LoginRequest
+import com.example.myapplication.repository.LoginRepository
 
 
 @Composable
@@ -40,7 +42,7 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val loginService = remember { createLoginService() }
+    val loginRepository = LoginRepository(context)
     val scope = rememberCoroutineScope()
 
     val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
@@ -76,7 +78,7 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 scope.launch {
-                    val token = loginUser(email, password, loginService, context)
+                    val token = loginRepository.loginUser(email, password, context)
                     if (token != null) {
                         navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
                     } else {
@@ -102,20 +104,6 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
-/**
- * 로그인 API 호출 (POST 요청)
- */
-suspend fun loginUser(email: String, password: String, service: LoginService, context: Context): String? {
-    return try {
-        val response = service.login(LoginRequest(email, password))
-        saveToken(context, response.token)
-        response.token
-
-    } catch (e: Exception) {
-        Log.e("LOGIN_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-        null
-    }
-}
 
 /**
  * SharedPreferences에 토큰 저장
@@ -126,34 +114,7 @@ fun saveToken(context: Context, token: String) {
     sharedPreferences.edit() { putString("auth_token", token) }
 }
 
-/**
- * Retrofit 서비스 생성
- */
-fun createLoginService(): LoginService {
-    return Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:8080/") // ✅ API Base URL 설정
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(LoginService::class.java)
-}
 
-/**
- * 로그인 API 인터페이스
- */
-interface LoginService {
-    @POST("api/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
-}
-
-/**
- * 로그인 요청 모델
- */
-data class LoginRequest(val email: String, val password: String)
-
-/**
- * 로그인 응답 모델
- */
-data class LoginResponse(val token: String)
 
 @Preview(showBackground = true)
 @Composable
