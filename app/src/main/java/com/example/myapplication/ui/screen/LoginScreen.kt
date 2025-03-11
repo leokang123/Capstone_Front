@@ -38,7 +38,7 @@ import com.example.myapplication.repository.LoginRepository
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -60,8 +60,8 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = username,
+            onValueChange = { username = it },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -78,11 +78,11 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 scope.launch {
-                    val token = loginRepository.loginUser(email, password, context)
+                    val token = loginRepository.loginUser(username, password, context)
                     if (token != null) {
                         navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
                     } else {
-                        errorMessage = "Invalid email or password"
+                        errorMessage = "Invalid username or password"
                     }
                 }
             },

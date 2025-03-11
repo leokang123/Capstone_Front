@@ -6,7 +6,7 @@ import retrofit2.http.POST
 
 
 interface ApiService {
-    @POST("api/login")
+    @POST("auth/signin")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
     // 폐기물 리스트 조회 (창 라우팅시, 검색중일시) (검색 결과에 따라 반환
@@ -19,7 +19,7 @@ interface ApiService {
 /**
  * 로그인 요청 모델
  */
-data class LoginRequest(val email: String, val password: String)
+data class LoginRequest(val username: String, val password: String)
 
 data class LoginResponse(val token: String)
 

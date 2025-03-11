@@ -14,9 +14,9 @@ class LoginRepository(context: Context) {
     /**
      * 로그인 API 호출 (POST 요청)
      */
-    suspend fun loginUser(email: String, password: String, context: Context): String? {
+    suspend fun loginUser(username: String, password: String, context: Context): String? {
         return try {
-            val response: LoginResponse = apiService.login(LoginRequest(email, password))
+            val response: LoginResponse = apiService.login(LoginRequest(username,password))
             saveToken(context, response.token)
             response.token
 

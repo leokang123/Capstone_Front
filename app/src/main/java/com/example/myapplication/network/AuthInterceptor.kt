@@ -19,7 +19,7 @@ class AuthInterceptor(context: Context) : Interceptor {
         } else {
             chain.request()
         }
-
+        println(request.toString())
         return chain.proceed(request)
     }
 }

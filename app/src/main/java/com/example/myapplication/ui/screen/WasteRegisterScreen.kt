@@ -55,17 +55,17 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
         }
     }
     if (showDialog) {
-        RegisterCard(sharedViewModel, {showDialog = false})
+        WasteRegisterCard(sharedViewModel, {showDialog = false})
         wasteRegisterViewModel.fetchData()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
+fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     var registrantName by remember { mutableStateOf("") } // ✅ 등록자 이름
     var wasteType by remember { mutableStateOf("") } // ✅ 폐기물 종류
-    var wasteDetails by remember { mutableStateOf("")}
+    var wasteDetails by remember { mutableStateOf("없음")}
     var location by remember { mutableStateOf("") } // ✅ 발생장소
     var selectedDate by remember { mutableStateOf("날짜 선택") } // ✅ 발생일
     val selectedDevice = sharedViewModel.selectedBluetoothDevice // ✅ 선택된 블루투스 기기
@@ -165,13 +165,13 @@ fun RegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
             // ✅ 등록 버튼
             Button(
                 onClick = {
-                    Log.d("RegisterCard", "등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
+                    Log.d("WasteRegisterCard", "등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
                     // 여기서 서버로 데이터 보내고 처리완료 응답받으면 onDismiss
                     onDismiss()
                     // ✅ 서버로 데이터 전송 가능
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = registrantName.isNotBlank() && wasteDetails.isNotBlank()  && wasteType.isNotBlank() && selectedDevice != null
+                enabled = registrantName.isNotBlank() && wasteType.isNotBlank() && selectedDevice != null
             ) {
                 Text("등록")
             }
