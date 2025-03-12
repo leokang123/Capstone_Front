@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
@@ -24,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.SharedViewModel
+import com.example.myapplication.viewmodel.WasteItem
 import com.example.myapplication.viewmodel.WasteRegisterViewModel
 
 /**
@@ -49,24 +53,58 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
     CheckAuth(navController)
 
+    // ✅ 화면이 열릴 때 서버에서 데이터 가져오기
+    LaunchedEffect(Unit) {
+        wasteRegisterViewModel.fetchWasteList()
+        println(wasteRegisterViewModel.wasteList)
+    }
+
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Back to Home")
+        // ✅ 새로고침 버튼
+        Button(onClick = { wasteRegisterViewModel.fetchWasteList() }, modifier = Modifier.padding(top = 8.dp)) {
+            Text("새로고침")
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ✅ 등록된 폐기물 리스트 표시
+        Text("등록된 폐기물 목록", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Show Popup")
         }
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+            items(wasteRegisterViewModel.wasteList.size) { index ->
+                val waste = wasteRegisterViewModel.wasteList[index]
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("등록자: ${waste.registrantName}", style = MaterialTheme.typography.bodyLarge)
+                        Text("종류: ${waste.wasteType}")
+                        Text("부가 정보: ${waste.wasteDetails}")
+                        Text("날짜: ${waste.selectedDate}")
+                        Text("장소: ${waste.location}")
+                        Text("기기: ${waste.selectedDevice ?: "없음"}")
+                    }
+                }
+            }
+        }
+
     }
     if (showDialog) {
         WasteRegisterCard(sharedViewModel, {showDialog = false})
-        wasteRegisterViewModel.fetchData()
+        wasteRegisterViewModel.fetchWasteList()
     }
 }
 
