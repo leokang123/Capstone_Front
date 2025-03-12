@@ -111,7 +111,7 @@ fun LoginScreen(navController: NavController) {
 
                 // 서버 돌아갈시
 //                scope.launch {
-//                    val loginRequest = LoginRequest(username.trim(), password.trim())
+//                    val loginRequest = LoginRequest(username.trim(), password)
 //                    val token = loginRepository.loginUser(loginRequest, context)
 //                    if (token != null) {
 //                        saveToken(context, token)
