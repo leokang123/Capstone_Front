@@ -1,6 +1,9 @@
 package com.example.myapplication.ui.screen
 
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,15 +33,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.WasteItemRequest
+import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.SharedViewModel
-import com.example.myapplication.viewmodel.WasteItem
 import com.example.myapplication.viewmodel.WasteRegisterViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * 폐기물 등록창
@@ -46,6 +60,7 @@ import com.example.myapplication.viewmodel.WasteRegisterViewModel
  * 팝업창 버튼 누를시 등록 화면뜨고 내용기입후 등록 버튼 누를시 로그가 뜨는것 까지 구현
  * 로그 내용 그대로 정제해서 서버로 보내고 fetchData를 통해 폐기물 등록창을 다시 로드하여 폐기물관리 상태를 볼수있게하면될듯
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: WasteRegisterViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
@@ -67,21 +82,23 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("등록")
+        }
 
         // ✅ 등록된 폐기물 리스트 표시
         Text("등록된 폐기물 목록", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Show Popup")
-        }
+
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
-            items(wasteRegisterViewModel.wasteList.size) { index ->
-                val waste = wasteRegisterViewModel.wasteList[index]
+            items(wasteRegisterViewModel.wasteList?.size ?: 0) { index ->
+                val waste: WasteItemResponse? = wasteRegisterViewModel.wasteList?.getOrNull(index)
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -90,12 +107,14 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("등록자: ${waste.registrantName}", style = MaterialTheme.typography.bodyLarge)
-                        Text("종류: ${waste.wasteType}")
-                        Text("부가 정보: ${waste.wasteDetails}")
-                        Text("날짜: ${waste.selectedDate}")
-                        Text("장소: ${waste.location}")
-                        Text("기기: ${waste.selectedDevice ?: "없음"}")
+                        Text("등록자: ${waste?.registrantName}", style = MaterialTheme.typography.bodyLarge)
+                        Text("종류: ${waste?.wasteType}")
+                        Text("부가 정보: ${waste?.wasteDetails}")
+                        Text("날짜: ${waste?.selectedDate}")
+                        Text("장소: ${waste?.location}")
+                        Text("기기: ${waste?.selectedDevice ?: "없음"}")
+                        Text("상태: ${waste?.status ?: "없음"}")
+
                     }
                 }
             }
@@ -108,6 +127,7 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
@@ -121,7 +141,9 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
     val wasteTypes = listOf("일반 폐기물", "의료 폐기물", "전자 폐기물", "건설 폐기물") // 폐기물 종류 리스트
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
-
+    val wasteRepository = WasteRepository(LocalContext.current)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,8 +237,29 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
                 onClick = {
                     Log.d("WasteRegisterCard", "등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
                     // 여기서 서버로 데이터 보내고 처리완료 응답받으면 onDismiss
-                    onDismiss()
-                    sharedViewModel.reset() // 뷰모델 데이터 초기화
+
+                    scope.launch {
+                        try {
+                            val wasteItem = WasteItemRequest(
+                                registrantName = registrantName,
+                                wasteType = wasteType,
+                                selectedDate = selectedDate,
+                                wasteDetails = wasteDetails,
+                                location = location,
+                                selectedDevice = selectedDevice ?: "없음",
+                            )
+                            val response = wasteRepository.registerWaste(wasteItem)
+                            Toast.makeText(context, response, Toast.LENGTH_SHORT).show()
+
+
+                        } catch (e: Exception) {
+                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                        } finally {
+                            sharedViewModel.reset() // 뷰모델 데이터 초기화
+                            onDismiss()
+                        }
+                    }
+
                     // 서버로 데이터 전송 가능
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -248,7 +291,7 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
             val dateState = rememberDatePickerState()
             DatePicker(state = dateState)
             selectedDate = dateState.selectedDateMillis?.let { millis ->
-                java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(millis)
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(millis)
             } ?: "날짜 선택"
         }
     }

@@ -106,20 +106,20 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 // 혼자 테스트서버 없이 테스트 할시
-                saveToken(context, "test")
-                navController.navigate("home")
+//                saveToken(context, "test")
+//                navController.navigate("home")
 
                 // 서버 돌아갈시
-//                scope.launch {
-//                    val loginRequest = LoginRequest(username.trim(), password)
-//                    val token = loginRepository.loginUser(loginRequest, context)
-//                    if (token != null) {
-//                        saveToken(context, token)
-//                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
-//                    } else {
-//                        errorMessage = "Invalid username or password"
-//                    }
-//                }
+                scope.launch {
+                    val loginRequest = LoginRequest(username.trim(), password)
+                    val token = loginRepository.loginUser(loginRequest, context)
+                    if (token != null) {
+                        saveToken(context, token)
+                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
+                    } else {
+                        errorMessage = "Invalid username or password"
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {

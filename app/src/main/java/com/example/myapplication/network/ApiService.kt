@@ -4,8 +4,9 @@ import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.LoginResponse
 import com.example.myapplication.data.RegisterRequest
 import com.example.myapplication.data.RegisterResponse
-import com.example.myapplication.data.TrashListRequest
-import com.example.myapplication.data.TrashListResponse
+import com.example.myapplication.data.WasteItemRequest
+import com.example.myapplication.data.WasteItemResponse
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -22,9 +23,13 @@ interface ApiService {
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest): RegisterResponse
 
-    // 폐기물 리스트 조회 (창 라우팅시, 검색중일시) (검색 결과에 따라 반환
-    @POST("api/trash_list")
-    suspend fun getTrashList(@Body request: TrashListRequest) : List<TrashListResponse>
+    // 폐기물 리스트 조회 / 일단 선택 조회는 나중에 구현
+    @GET("waste/get_list")
+    suspend fun getWasteItemList() : List<WasteItemResponse>
+
+    @POST("waste/register")
+    suspend fun registerWasteItem(@Body request: WasteItemRequest) : RegisterResponse
+
 
 
 }

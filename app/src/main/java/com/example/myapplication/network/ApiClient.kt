@@ -1,6 +1,7 @@
 package com.example.myapplication.network
 
 import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,7 +15,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ApiClient {
 //    private const val BASE_URL = "http://me-di-cap.kro.kr/"
     private const val BASE_URL = "http://10.0.2.2:8080/"
-
     private var retrofit: Retrofit? = null
 
     fun getInstance(context: Context): Retrofit {

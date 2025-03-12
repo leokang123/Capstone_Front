@@ -1,5 +1,7 @@
 package com.example.myapplication.data
 
+import java.time.LocalDate
+
 /**
  * 로그인 요청 모델
  */
@@ -12,19 +14,24 @@ data class RegisterRequest(val username: String, val password: String, val email
 data class RegisterResponse(val message: String)
 
 // 더 생길 수 있음 (고급 검색 기능)
-data class TrashListRequest(
-    val registrantName: String,  // 등록자 이름
-    val wasteType: String,        // 폐기물 종류
-    val occurrenceDate: String,   // 발생일자
-    val bluetoothAddress: String, // 블루투스 주소
-    val location: String          // 발생장소
+// ✅ 폐기물 등록 요청 DTO (서버에 ID, status를 보낼 필요 없음)
+data class WasteItemRequest(
+    val registrantName: String,
+    val wasteType: String,
+    val wasteDetails: String?,
+    val location: String,
+    val selectedDate: String,
+    val selectedDevice: String?
 )
 
-data class TrashListResponse(
-    val trashId: Int,  // 폐기물 ID
-    val registrantName: String,  // 등록자 이름
-    val wasteType: String,        // 폐기물 종류
-    val occurrenceDate: String,   // 발생일자
-    val bluetoothAddress: String, // 블루투스 주소
-    val location: String          // 발생장소
+// ✅ 폐기물 응답 DTO (서버에서 ID, status도 함께 반환)
+data class WasteItemResponse(
+    val id: Long,  // 서버에서 생성된 ID
+    val registrantName: String,
+    val wasteType: String,
+    val wasteDetails: String?,
+    val location: String,
+    val selectedDate: String,
+    val selectedDevice: String?,
+    val status: String // "수집", "이동", "저장", "배출"
 )
