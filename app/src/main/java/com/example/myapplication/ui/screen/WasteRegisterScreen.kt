@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.repository.WasteRepository
@@ -122,7 +123,7 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
     }
     if (showDialog) {
-        WasteRegisterCard(sharedViewModel, {showDialog = false})
+        WasteRegisterCard(wasteRegisterViewModel, sharedViewModel, {showDialog = false})
         wasteRegisterViewModel.fetchWasteList()
     }
 }
@@ -130,7 +131,7 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
+fun WasteRegisterCard(wasteRegisterViewModel: WasteRegisterViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     var registrantName by remember { mutableStateOf("") } // 등록자 이름
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
@@ -141,9 +142,9 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
     val wasteTypes = listOf("일반 폐기물", "의료 폐기물", "전자 폐기물", "건설 폐기물") // 폐기물 종류 리스트
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
-    val wasteRepository = WasteRepository(LocalContext.current)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val wasteRepository = WasteRepository(context)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,7 +249,7 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
                                 location = location,
                                 selectedDevice = selectedDevice ?: "없음",
                             )
-                            val response = wasteRepository.registerWaste(wasteItem)
+                            val response: String? = wasteRepository.registerWaste(wasteItem)
                             Toast.makeText(context, response, Toast.LENGTH_SHORT).show()
 
 
@@ -256,6 +257,7 @@ fun WasteRegisterCard(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
                             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                         } finally {
                             sharedViewModel.reset() // 뷰모델 데이터 초기화
+                            wasteRegisterViewModel.fetchWasteList()
                             onDismiss()
                         }
                     }

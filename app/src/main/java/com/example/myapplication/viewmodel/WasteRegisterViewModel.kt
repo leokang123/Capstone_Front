@@ -36,7 +36,6 @@ class WasteRegisterViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             try {
                 val response = wasteRepository.getWasteItems()
-                Log.d("123", response.toString())
                 // ✅ response가 null이 아닐 경우에만 addAll 실행
 
                 response?.let {
