@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
+import com.example.myapplication.ui.component.isEmulator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -44,6 +45,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
             scanRealDevices()
         }
     }
+
 
     @SuppressLint("MissingPermission")
     fun scanRealDevices() {
@@ -84,19 +86,6 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         scanner?.stopScan(object : ScanCallback() {})
     }
 
-    private fun isEmulator(): Boolean {
-        return (Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.lowercase().contains("vbox")
-                || Build.FINGERPRINT.lowercase().contains("test-keys")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for")
-                || Build.MANUFACTURER.contains("Genymotion")
-                || Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")
-                || "google_sdk" == Build.PRODUCT
-                || Build.HARDWARE.contains("ranchu")
-                || Build.HARDWARE.contains("goldfish")
-                || Build.HARDWARE.contains("vbox86"))
-    }
 
 
     private fun mockBluetoothDevices() {
