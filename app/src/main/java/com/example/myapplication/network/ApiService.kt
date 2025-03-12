@@ -1,5 +1,11 @@
 package com.example.myapplication.network
 
+import com.example.myapplication.data.LoginRequest
+import com.example.myapplication.data.LoginResponse
+import com.example.myapplication.data.RegisterRequest
+import com.example.myapplication.data.RegisterResponse
+import com.example.myapplication.data.TrashListRequest
+import com.example.myapplication.data.TrashListResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -13,6 +19,9 @@ interface ApiService {
     @POST("auth/signin")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
+    @POST("auth/register")
+    suspend fun register(@Body request: RegisterRequest): RegisterResponse
+
     // 폐기물 리스트 조회 (창 라우팅시, 검색중일시) (검색 결과에 따라 반환
     @POST("api/trash_list")
     suspend fun getTrashList(@Body request: TrashListRequest) : List<TrashListResponse>
@@ -20,27 +29,3 @@ interface ApiService {
 
 }
 
-/**
- * 로그인 요청 모델
- */
-data class LoginRequest(val username: String, val password: String)
-
-data class LoginResponse(val token: String)
-
-// 더 생길 수 있음 (고급 검색 기능)
-data class TrashListRequest(
-    val registrantName: String,  // 등록자 이름
-    val wasteType: String,        // 폐기물 종류
-    val occurrenceDate: String,   // 발생일자
-    val bluetoothAddress: String, // 블루투스 주소
-    val location: String          // 발생장소
-)
-
-data class TrashListResponse(
-    val trashId: Int,  // 폐기물 ID
-    val registrantName: String,  // 등록자 이름
-    val wasteType: String,        // 폐기물 종류
-    val occurrenceDate: String,   // 발생일자
-    val bluetoothAddress: String, // 블루투스 주소
-    val location: String          // 발생장소
-)

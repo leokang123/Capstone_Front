@@ -41,7 +41,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import androidx.core.content.edit
-import com.example.myapplication.network.LoginRequest
+import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.ui.component.saveToken
 
@@ -109,8 +109,10 @@ fun LoginScreen(navController: NavController) {
                 saveToken(context, "test")
                 navController.navigate("home")
 //                scope.launch {
-//                    val token = loginRepository.loginUser(username, password, context)
+//                    val loginRequest = LoginRequest(username, password)
+//                    val token = loginRepository.loginUser(loginRequest, context)
 //                    if (token != null) {
+//                        saveToken(context, token)
 //                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
 //                    } else {
 //                        errorMessage = "Invalid username or password"

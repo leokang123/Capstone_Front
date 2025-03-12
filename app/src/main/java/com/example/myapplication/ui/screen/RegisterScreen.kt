@@ -1,7 +1,9 @@
 package com.example.myapplication.ui.screen
 
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -19,6 +22,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.data.RegisterRequest
+import com.example.myapplication.repository.LoginRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -30,6 +36,9 @@ fun RegisterScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var profession by remember { mutableStateOf("") }
     var selectedHospital by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    val context: Context = LocalContext.current;
+    val loginRepository = LoginRepository(context)
 
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
@@ -194,6 +203,27 @@ fun RegisterScreen(navController: NavController) {
                 Log.d(TAG, "이름: $name")
                 Log.d(TAG, "직업: $profession")
                 Log.d(TAG, "선택한 병원: $selectedHospital")
+                val registerRequest = RegisterRequest(
+                    username = username,
+                    password = password,
+                    email = email,
+                    phoneNumber = phoneNumber,
+                    name = name,
+                    profession = profession,
+                    selectedHospital = selectedHospital
+                )
+                scope.launch {
+                    try {
+                        val response = loginRepository.registerUser(registerRequest)
+                        Toast.makeText(context, response, Toast.LENGTH_SHORT).show()
+
+                    } catch (e: Exception) {
+                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                    } finally {
+                        navController.popBackStack()
+                    }
+                }
+
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isFormValid && isPasswordValid && isPasswordMatch
