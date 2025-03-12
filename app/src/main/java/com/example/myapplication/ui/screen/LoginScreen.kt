@@ -108,8 +108,10 @@ fun LoginScreen(navController: NavController) {
                 // 혼자 테스트서버 없이 테스트 할시
                 saveToken(context, "test")
                 navController.navigate("home")
+
+                // 서버 돌아갈시
 //                scope.launch {
-//                    val loginRequest = LoginRequest(username, password)
+//                    val loginRequest = LoginRequest(username.trim(), password.trim())
 //                    val token = loginRepository.loginUser(loginRequest, context)
 //                    if (token != null) {
 //                        saveToken(context, token)

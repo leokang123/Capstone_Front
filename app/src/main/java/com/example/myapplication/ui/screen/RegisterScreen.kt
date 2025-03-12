@@ -204,12 +204,12 @@ fun RegisterScreen(navController: NavController) {
                 Log.d(TAG, "직업: $profession")
                 Log.d(TAG, "선택한 병원: $selectedHospital")
                 val registerRequest = RegisterRequest(
-                    username = username,
-                    password = password,
-                    email = email,
-                    phoneNumber = phoneNumber,
-                    name = name,
-                    profession = profession,
+                    username = username.trim(),
+                    password = password.trim(),
+                    email = email.trim(),
+                    phoneNumber = phoneNumber.trim(),
+                    name = name.trim(),
+                    profession = profession.trim(),
                     selectedHospital = selectedHospital
                 )
                 scope.launch {
