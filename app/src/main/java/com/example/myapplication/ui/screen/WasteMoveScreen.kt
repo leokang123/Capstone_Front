@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.WasteMoveViewModel
 
 /**
@@ -25,6 +26,8 @@ import com.example.myapplication.viewmodel.WasteMoveViewModel
 @Composable
 fun WasteMoveScreen(navController: NavController, wasteMoveViewModel: WasteMoveViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
+
+    CheckAuth(navController)
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 처리", style = MaterialTheme.typography.headlineMedium)

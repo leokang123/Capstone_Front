@@ -43,6 +43,7 @@ import retrofit2.http.POST
 import androidx.core.content.edit
 import com.example.myapplication.network.LoginRequest
 import com.example.myapplication.repository.LoginRepository
+import com.example.myapplication.ui.component.saveToken
 
 /**
  * 로그인 화면
@@ -105,6 +106,7 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 // 혼자 테스트서버 없이 테스트 할시
+                saveToken(context, "test")
                 navController.navigate("home")
 //                scope.launch {
 //                    val token = loginRepository.loginUser(username, password, context)
@@ -134,14 +136,6 @@ fun LoginScreen(navController: NavController) {
 }
 
 
-/**
- * SharedPreferences에 토큰 저장
- */
-fun saveToken(context: Context, token: String) {
-    val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit() { putString("auth_token", token) }
-}
 
 
 

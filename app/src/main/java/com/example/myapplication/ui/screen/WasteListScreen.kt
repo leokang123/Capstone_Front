@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 
@@ -50,6 +51,7 @@ fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListV
     var filteredItems by remember { mutableStateOf(listOf<String>()) }
     var showDropdown by remember { mutableStateOf(false) }
 
+    CheckAuth(navController)
     /**
      *  api 최적화
      *  사용자 입력을 특정시간동안 기다리고 쿼리를 보내는 로직

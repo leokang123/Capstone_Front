@@ -6,7 +6,7 @@ import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.network.LoginRequest
 import com.example.myapplication.network.LoginResponse
-import com.example.myapplication.ui.screen.saveToken
+import com.example.myapplication.ui.component.saveToken
 
 /**
  * 로그인 관련 처리 클래스

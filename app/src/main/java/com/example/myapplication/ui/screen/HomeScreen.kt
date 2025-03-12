@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.HomeViewModel
 import androidx.core.content.edit
+import com.example.myapplication.ui.component.CheckAuth
 
 /**
  * 홈화면
@@ -44,7 +45,9 @@ import androidx.core.content.edit
 
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
-    val context = LocalContext.current  // ✅ 현재 Context 가져오기
+    val context = LocalContext.current  // 현재 Context 가져오기
+    // 토큰 확인
+    CheckAuth(navController)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +57,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ 2x2 버튼 레이아웃
+        // 2x2 버튼 레이아웃
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -70,7 +73,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
     }
 }
 
-// ✅ 공통 버튼 Composable
+// 공통 버튼 Composable
 @Composable
 fun HomeButton(text: String, icon: ImageVector, onClick: () -> Unit) {
     Box(

@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteRegisterViewModel
 
@@ -45,6 +46,9 @@ import com.example.myapplication.viewmodel.WasteRegisterViewModel
 fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: WasteRegisterViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
     val sharedViewModel: SharedViewModel = viewModel()
+
+    CheckAuth(navController)
+
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
         Button(
