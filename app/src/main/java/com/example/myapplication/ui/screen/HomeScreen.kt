@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,38 +32,44 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.HomeViewModel
 import androidx.core.content.edit
+import com.example.myapplication.data.User
 import com.example.myapplication.ui.component.CheckAuth
+import com.example.myapplication.ui.component.UserDataStore
 
 /**
  * 홈화면
  */
-
 @Composable
-fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
-    val context = LocalContext.current  // 현재 Context 가져오기
-    // 토큰 확인
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
+    val context = LocalContext.current
+    val userDataStore = UserDataStore(context)
+    val user: User? = userDataStore.getUser()
+
+    // 토큰 검증
     CheckAuth(navController)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text("안녕하세요! ${user?.name} 님👋", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 2x2 버튼 레이아웃
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                HomeButton("폐기물 목록", Icons.Default.List) { navController.navigate("waste_list") }
+                HomeButton("폐기물 목록", Icons.AutoMirrored.Filled.List) { navController.navigate("waste_list") }
                 HomeButton("폐기물 등록", Icons.Default.Add) { navController.navigate("waste_register") }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

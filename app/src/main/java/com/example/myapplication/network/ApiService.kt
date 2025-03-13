@@ -7,6 +7,7 @@ import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -21,7 +22,7 @@ interface ApiService {
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
     @POST("auth/register")
-    suspend fun register(@Body request: RegisterRequest): RegisterResponse
+    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
 
     // 폐기물 리스트 조회 / 일단 선택 조회는 나중에 구현
     @GET("waste/get_list")
