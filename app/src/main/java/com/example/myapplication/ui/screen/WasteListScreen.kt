@@ -168,32 +168,52 @@ fun WasteListScreen(
     }
 }
 
-// ✅ 선택한 항목의 상세 정보를 스크롤 가능한 리스트로 출력
 @Composable
 fun ResultList(selectedItem: WasteItemResponse?) {
-    val details = listOf(
-        "등록자: ${selectedItem?.registrantName}",
-        "종류: ${selectedItem?.wasteType}",
-        "상세 정보: ${selectedItem?.wasteDetails ?: "없음"}",
-        "위치: ${selectedItem?.location}",
-        "수거일: ${selectedItem?.selectedDate}",
-        "기기: ${selectedItem?.selectedDevice ?: "없음"}",
-        "상태: ${selectedItem?.status}"
-    ) // ✅ 선택된 항목 정보 정리
-
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(details.size) { index ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.LightGray)
-            ) {
+    selectedItem?.let {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // ✅ 폐기물 기본 정보
                 Text(
-                    text = details[index],
-                    modifier = Modifier.padding(16.dp)
+                    text = "🗑 ${selectedItem.wasteType}",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    color = Color.Black
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
+                InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
+                InfoRow("📅 수거일", selectedItem.selectedDate, Color.Red)
+                InfoRow("🔍 상세 정보", selectedItem.wasteDetails ?: "없음", Color.Gray)
+                InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
+                InfoRow("📌 상태", selectedItem.status, Color.Magenta)
             }
         }
+    }
+}
+
+// ✅ 개별 정보 항목을 정리하는 Composable
+@Composable
+fun InfoRow(label: String, value: String, color: Color) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
+                    append("$label: ")
+                }
+                append(value)
+            },
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Divider(color = Color.LightGray, thickness = 0.5.dp)
     }
 }
