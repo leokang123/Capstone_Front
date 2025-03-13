@@ -37,6 +37,14 @@ data class WasteItemResponse(
     val status: String // "수집", "이동", "저장", "배출"
 )
 
+data class SearchRequest(
+    val wasteType: String? = "",
+    val registrantName: String? = "",
+    val selectedDate: String? = "",
+    val selectedDevice: String? = ""
+)
+
+
 data class User(
     val id: Long? = null,
     val userName: String,

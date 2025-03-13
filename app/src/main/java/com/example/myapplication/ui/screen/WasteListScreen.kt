@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,22 +13,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
@@ -41,29 +49,33 @@ import kotlinx.coroutines.delay
  * 상세 조회 창 띄우는것도 아직 미구현
  */
 @Composable
-fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListViewModel = viewModel ()) {
-    var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
-
-    val allItems = listOf("Waste A", "Waste B", "Waste C", "Waste D", "Waste E") // ✅ 데이터 목록(예시)
-
+fun WasteListScreen(
+    navController: NavController,
+    wasteListViewModel: WasteListViewModel = viewModel()
+) {
+    var showDialog by remember { mutableStateOf(false) } // ✅ 팝업 상태 관리
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedItem by remember { mutableStateOf<String?>(null) }
-    var filteredItems by remember { mutableStateOf(listOf<String>()) }
+    var selectedItem by remember { mutableStateOf<WasteItemResponse?>(null) }
     var showDropdown by remember { mutableStateOf(false) }
 
-    CheckAuth(navController)
+    val filteredItems by wasteListViewModel.filteredItems.collectAsState() // ✅ ViewModel에서 데이터 가져오기
+
+    CheckAuth(navController) // ✅ 인증 체크
+
     /**
-     *  api 최적화
-     *  사용자 입력을 특정시간동안 기다리고 쿼리를 보내는 로직
-     *  아직 미구현
-    * */
+     *  사용자 입력을 특정시간동안 기다렸다가 검색 실행 (API 최적화)
+     */
     LaunchedEffect(searchText.text) {
-        if (searchText.text.length == 1 || searchText.text.isBlank()) filteredItems = emptyList()
-        showDropdown = false  // 새로운 입력이 발생하면 하단바 숨기기
-        delay(500)  // 0.5초 대기 (사용자가 입력을 멈춘 후 실행)
-        filteredItems = allItems.filter { it.contains(searchText.text, ignoreCase = true) }
-        showDropdown = filteredItems.isNotEmpty()  // ✅ 검색 결과가 있을 때만 표시
+        if (searchText.text.isBlank()) {
+            showDropdown = false
+            return@LaunchedEffect
+        }
+
+        delay(500) // ✅ 0.5초 대기 후 검색 실행
+        wasteListViewModel.searchWasteByName(searchText.text)
+        showDropdown = filteredItems.isNotEmpty()
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,17 +99,56 @@ fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListV
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column {
-                    filteredItems.forEach { item ->
-                        Text(
-                            text = item,
+                    filteredItems.forEachIndexed { index, item ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    selectedItem = item // ✅ 선택된 아이템 저장
-                                    searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
-                                }
-                                .padding(12.dp)
-                        )
+                                .padding(8.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)), // 연한 초록색 배경
+                            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
+                        ) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                                        append("🗑 폐기물 유형: ")
+                                    }
+                                    append(item.wasteType + "\n")
+
+                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
+                                        append("👤 등록자: ")
+                                    }
+                                    append(item.registrantName + "\n")
+
+                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
+                                        append("📍 위치: ")
+                                    }
+                                    append(item.location + "\n")
+
+                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
+                                        append("📅 날짜: ")
+                                    }
+                                    append(item.selectedDate)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedItem = item
+                                        searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
+                                        showDropdown = false
+                                    }
+                                    .padding(16.dp)
+                            )
+                        }
+
+                        // ✅ 각 리스트 항목 아래 구분선(Delimiter) 추가 (마지막 항목 제외)
+                        if (index != filteredItems.lastIndex) {
+                            Divider(
+                                color = Color.Gray,
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -105,10 +156,10 @@ fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListV
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ 결과 목록을 스크롤 가능한 형식으로 표시
-        selectedItem?.let {
+        // ✅ 선택된 폐기물 상세 정보 표시
+        selectedItem.let {
             Text(
-                text = "조회된 정보: $it",
+                text = "조회된 정보: ${it?.wasteType}",
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -119,8 +170,16 @@ fun WasteListScreen(navController: NavController, wasteListViewModel: WasteListV
 
 // ✅ 선택한 항목의 상세 정보를 스크롤 가능한 리스트로 출력
 @Composable
-fun ResultList(selectedItem: String) {
-    val details = List(20) { "$selectedItem - 상세 정보 $it" } // ✅ 샘플 데이터 (20개)
+fun ResultList(selectedItem: WasteItemResponse?) {
+    val details = listOf(
+        "등록자: ${selectedItem?.registrantName}",
+        "종류: ${selectedItem?.wasteType}",
+        "상세 정보: ${selectedItem?.wasteDetails ?: "없음"}",
+        "위치: ${selectedItem?.location}",
+        "수거일: ${selectedItem?.selectedDate}",
+        "기기: ${selectedItem?.selectedDevice ?: "없음"}",
+        "상태: ${selectedItem?.status}"
+    ) // ✅ 선택된 항목 정보 정리
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(details.size) { index ->

@@ -4,9 +4,9 @@ import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.LoginResponse
 import com.example.myapplication.data.RegisterRequest
 import com.example.myapplication.data.RegisterResponse
+import com.example.myapplication.data.SearchRequest
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
-import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -30,7 +30,8 @@ interface ApiService {
     @POST("waste/register")
     suspend fun registerWasteItem(@Body request: WasteItemRequest) : RegisterResponse
 
-
+    @POST("waste/get_list_by_name")
+    suspend fun getWasteItemListByName(@Body wasteType: SearchRequest): List<WasteItemResponse>
 
 }
 
