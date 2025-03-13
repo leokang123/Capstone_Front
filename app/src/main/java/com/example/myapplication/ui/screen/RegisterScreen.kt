@@ -215,11 +215,10 @@ fun RegisterScreen(navController: NavController) {
                 scope.launch {
                     try {
                         val response = loginRepository.registerUser(registerRequest)
-                        Log.d("ERROR", response.toString())
-//                        Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,response,Toast.LENGTH_SHORT).show()
 
                     } catch (e: Exception) {
-                        Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                     } finally {
                         navController.popBackStack()
                     }

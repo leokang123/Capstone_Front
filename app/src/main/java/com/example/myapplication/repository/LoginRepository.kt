@@ -40,7 +40,6 @@ class LoginRepository(val context: Context) {
 
             if (response.isSuccessful) {
                 val successResponse = response.body()?.message ?: "회원가입 성공" // 성공 메시지 반환
-                Toast.makeText(context, successResponse,Toast.LENGTH_SHORT).show()
                 successResponse
 
             } else {
@@ -52,13 +51,14 @@ class LoginRepository(val context: Context) {
                         "알 수 없는 오류 발생" // 파싱 실패 시 기본 메시지
                     }
                 }
-                Toast.makeText(context, errorMessage,Toast.LENGTH_SHORT).show()
-                errorMessage // 서버가 보낸 에러 메시지 반환
+                throw Exception(errorMessage)
             }
 
         } catch (e: Exception) {
             Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // 네트워크 에러 로그
             "네트워크 오류 발생: ${e.message}" // 기본 에러 메시지 반환
+            throw Exception(e.message)
+
         }
     }
 }
