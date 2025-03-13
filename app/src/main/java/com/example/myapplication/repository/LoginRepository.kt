@@ -8,22 +8,22 @@ import com.example.myapplication.data.RegisterRequest
 import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
-import com.example.myapplication.ui.component.saveToken
+import com.example.myapplication.ui.component.UserDataStore
 
 /**
  * 로그인 관련 처리 클래스
  */
 class LoginRepository(context: Context) {
     private val apiService = ApiClient.getInstance(context).create(ApiService::class.java)
-
+    private val userDataStore = UserDataStore(context)
     /**
      * 로그인 API 호출 (POST 요청)
      */
-    suspend fun loginUser(loginRequest: LoginRequest, context: Context): String? {
+    suspend fun loginUser(loginRequest: LoginRequest): LoginResponse? {
         return try {
             val response: LoginResponse = apiService.login(loginRequest)
-            saveToken(context, response.token)
-            response.token
+            userDataStore.saveUser(response.user, response.token)
+            response
 
         } catch (e: Exception) {
             Log.e("LOGIN_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가

@@ -40,19 +40,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteRegisterViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
@@ -97,8 +92,8 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
-            items(wasteRegisterViewModel.wasteList?.size ?: 0) { index ->
-                val waste: WasteItemResponse? = wasteRegisterViewModel.wasteList?.getOrNull(index)
+            items(wasteRegisterViewModel.wasteList.size) { index ->
+                val waste: WasteItemResponse? = wasteRegisterViewModel.wasteList.getOrNull(index)
 
                 Card(
                     modifier = Modifier
@@ -123,7 +118,7 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
     }
     if (showDialog) {
-        WasteRegisterCard(wasteRegisterViewModel, sharedViewModel, {showDialog = false})
+        WasteRegisterCard(wasteRegisterViewModel, sharedViewModel) { showDialog = false }
         wasteRegisterViewModel.fetchWasteList()
     }
 }

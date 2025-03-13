@@ -4,15 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.content.edit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-/**
- * SharedPreferences에 토큰 저장
- */
-fun saveToken(context: Context, token: String) {
-    val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit() { putString("auth_token", token) }
-}
 
 /**
  * 에뮬레이터 판다함수
@@ -30,3 +25,14 @@ fun isEmulator(): Boolean {
             || Build.HARDWARE.contains("goldfish")
             || Build.HARDWARE.contains("vbox86"))
 }
+
+/**
+ * 로그아웃
+ */
+fun logout(context: Context) {
+    val userDataStore = UserDataStore(context)
+    CoroutineScope(Dispatchers.IO).launch {  // ✅ 비동기 처리 (IO 작업에 적합)
+        userDataStore.clearUserData()
+    }
+}
+

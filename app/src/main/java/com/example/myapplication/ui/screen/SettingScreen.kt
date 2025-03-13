@@ -18,6 +18,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.ui.component.logout
 import com.example.myapplication.viewmodel.BluetoothViewModel
 
 /**
@@ -65,9 +66,3 @@ fun SettingsScreen(navController: NavController) {
     }
 }
 
-fun logout(context: Context) {
-    val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit() { remove("auth_token") }  // 저장된 토큰 삭제
-
-}

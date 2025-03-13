@@ -6,20 +6,11 @@ package com.example.myapplication.viewmodel
  * 아마 다른 창들도 다 필요할거 같은 함수
  */
 import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.network.ApiClient
-import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.WasteRepository
 import kotlinx.coroutines.launch
 

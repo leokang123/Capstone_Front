@@ -1,20 +1,18 @@
 package com.example.myapplication.ui.component
 
 import android.content.Context
+import android.service.autofill.UserData
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 
-fun getToken(context: Context): String? {
-    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getString("auth_token", null)
-}
 
 @Composable
 fun CheckAuth(navController: NavController) {
     val context = LocalContext.current
-    val token by remember { mutableStateOf(getToken(context)) }
+    val userDataStore = UserDataStore(context)
+    val token by remember { mutableStateOf(userDataStore.getToken()) }
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {

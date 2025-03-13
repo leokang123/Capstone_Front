@@ -2,6 +2,7 @@ package com.example.myapplication.network
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.myapplication.ui.component.UserDataStore
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -11,11 +12,10 @@ import okhttp3.Response
  */
 
 class AuthInterceptor(context: Context) : Interceptor {
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    private val userDataStore = UserDataStore(context)
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = sharedPreferences.getString("auth_token", null)
+        val token = userDataStore.getToken()
 
         val request = if (token != null) {
             chain.request().newBuilder()
@@ -24,6 +24,7 @@ class AuthInterceptor(context: Context) : Interceptor {
         } else {
             chain.request()
         }
+        println(token)
         println(request.toString())
         return chain.proceed(request)
     }

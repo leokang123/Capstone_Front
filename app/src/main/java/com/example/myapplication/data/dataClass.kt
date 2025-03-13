@@ -1,5 +1,6 @@
 package com.example.myapplication.data
 
+import java.io.Serializable
 import java.time.LocalDate
 
 /**
@@ -7,7 +8,7 @@ import java.time.LocalDate
  */
 data class LoginRequest(val username: String, val password: String)
 
-data class LoginResponse(val token: String)
+data class LoginResponse(val user: User, val token: String)
 
 data class RegisterRequest(val username: String, val password: String, val email: String, val name: String, val phoneNumber: String, val profession: String, val selectedHospital: String)
 
@@ -35,3 +36,14 @@ data class WasteItemResponse(
     val selectedDevice: String?,
     val status: String // "수집", "이동", "저장", "배출"
 )
+
+data class User(
+    val id: Long? = null,
+    val userName: String,
+    val password: String,
+    val email: String? = null,
+    val name: String? = null,
+    val phoneNumber: String? = null,
+    val profession: String? = null,
+    val selectedHospital: String? = null
+): Serializable

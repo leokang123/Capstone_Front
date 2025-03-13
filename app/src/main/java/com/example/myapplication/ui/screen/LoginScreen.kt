@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screen
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,8 +43,9 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import androidx.core.content.edit
 import com.example.myapplication.data.LoginRequest
+import com.example.myapplication.data.LoginResponse
 import com.example.myapplication.repository.LoginRepository
-import com.example.myapplication.ui.component.saveToken
+import com.example.myapplication.ui.component.UserDataStore
 
 /**
  * 로그인 화면
@@ -62,10 +64,9 @@ fun LoginScreen(navController: NavController) {
     val loginRepository = LoginRepository(context)
     val scope = rememberCoroutineScope()
 
-    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    val savedToken = sharedPreferences.getString("auth_token", null)
+    val userDataStore = UserDataStore(context)
 
-    if (savedToken != null) {
+    if (userDataStore.getToken() != null) {
         navController.navigate("home") { popUpTo("login") { inclusive = true } }  // ✅ 자동 로그인 방지
     }
     Column(
@@ -112,10 +113,10 @@ fun LoginScreen(navController: NavController) {
                 // 서버 돌아갈시
                 scope.launch {
                     val loginRequest = LoginRequest(username.trim(), password)
-                    val token = loginRepository.loginUser(loginRequest, context)
-                    if (token != null) {
-                        saveToken(context, token)
+                    val response: LoginResponse? = loginRepository.loginUser(loginRequest)
+                    if (response != null) {
                         navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
+                        Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
                     } else {
                         errorMessage = "Invalid username or password"
                     }
