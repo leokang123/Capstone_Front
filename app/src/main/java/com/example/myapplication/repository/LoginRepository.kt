@@ -58,7 +58,6 @@ class LoginRepository(val context: Context) {
             Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // 네트워크 에러 로그
             "네트워크 오류 발생: ${e.message}" // 기본 에러 메시지 반환
             throw Exception(e.message)
-
         }
     }
 }

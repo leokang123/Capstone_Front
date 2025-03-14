@@ -43,8 +43,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
+import com.example.myapplication.ui.component.UserDataStore
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
@@ -95,6 +97,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 
             items(wasteList.size) { index ->
                 val waste: WasteItemResponse? = wasteList.getOrNull(index)
+                Log.d("wasteItem", waste.toString())
 
                 Card(
                     modifier = Modifier
@@ -140,6 +143,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val wasteRepository = WasteRepository(context)
+    val userDataStore = UserDataStore(context)
+    val user = userDataStore.getUser()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -231,13 +236,13 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
             // 등록 버튼
             Button(
                 onClick = {
-                    Log.d("WasteRegisterCard", "등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
+                    Log.d("WasteRegisterCard", "등록자ID: ${user?.id} 등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
                     // 여기서 서버로 데이터 보내고 처리완료 응답받으면 onDismiss
 
                     scope.launch {
                         try {
                             val wasteItem = WasteItemRequest(
-                                registrantName = registrantName,
+                                userId = user?.id ?: 0,
                                 wasteType = wasteType,
                                 selectedDate = selectedDate,
                                 wasteDetails = wasteDetails,
