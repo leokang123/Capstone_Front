@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +46,7 @@ import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.SharedViewModel
-import com.example.myapplication.viewmodel.WasteRegisterViewModel
+import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -56,24 +57,24 @@ import java.util.Locale
  * 팝업창 버튼 누를시 등록 화면뜨고 내용기입후 등록 버튼 누를시 로그가 뜨는것 까지 구현
  * 로그 내용 그대로 정제해서 서버로 보내고 fetchData를 통해 폐기물 등록창을 다시 로드하여 폐기물관리 상태를 볼수있게하면될듯
  */
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: WasteRegisterViewModel = viewModel()) {
+fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteListViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
     val sharedViewModel: SharedViewModel = viewModel()
+    val wasteList by wasteListViewModel.wasteList.collectAsState()
 
     CheckAuth(navController)
 
     // ✅ 화면이 열릴 때 서버에서 데이터 가져오기
     LaunchedEffect(Unit) {
-        wasteRegisterViewModel.fetchWasteList()
-        println(wasteRegisterViewModel.wasteList)
+        wasteListViewModel.fetchWasteList()
+        println(wasteListViewModel.wasteList)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
         // ✅ 새로고침 버튼
-        Button(onClick = { wasteRegisterViewModel.fetchWasteList() }, modifier = Modifier.padding(top = 8.dp)) {
+        Button(onClick = { wasteListViewModel.fetchWasteList() }, modifier = Modifier.padding(top = 8.dp)) {
             Text("새로고침")
         }
 
@@ -92,8 +93,8 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
-            items(wasteRegisterViewModel.wasteList.size) { index ->
-                val waste: WasteItemResponse? = wasteRegisterViewModel.wasteList.getOrNull(index)
+            items(wasteList.size) { index ->
+                val waste: WasteItemResponse? = wasteList.getOrNull(index)
 
                 Card(
                     modifier = Modifier
@@ -118,15 +119,14 @@ fun WasteRegisterScreen(navController: NavController, wasteRegisterViewModel: Wa
 
     }
     if (showDialog) {
-        WasteRegisterCard(wasteRegisterViewModel, sharedViewModel) { showDialog = false }
-        wasteRegisterViewModel.fetchWasteList()
+        WasteRegisterCard(wasteListViewModel, sharedViewModel) { showDialog = false }
+        wasteListViewModel.fetchWasteList()
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WasteRegisterCard(wasteRegisterViewModel: WasteRegisterViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
+fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     var registrantName by remember { mutableStateOf("") } // 등록자 이름
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
@@ -252,7 +252,7 @@ fun WasteRegisterCard(wasteRegisterViewModel: WasteRegisterViewModel, sharedView
                             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                         } finally {
                             sharedViewModel.reset() // 뷰모델 데이터 초기화
-                            wasteRegisterViewModel.fetchWasteList()
+                            wasteListViewModel.fetchWasteList()
                             onDismiss()
                         }
                     }
