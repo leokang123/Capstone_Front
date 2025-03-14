@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -121,9 +122,14 @@ fun WasteListScreen(
                                     append(item.registrantName + "\n")
 
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
-                                        append("📍 위치: ")
+                                        append("📍 발생위치: ")
                                     }
                                     append(item.location + "\n")
+
+                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
+                                        append("📦 저장위치: ")
+                                    }
+                                    append(item.storageName + "\n")
 
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
                                         append("📅 날짜: ")
@@ -191,7 +197,8 @@ fun ResultList(selectedItem: WasteItemResponse?) {
 
                 InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
                 InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
-                InfoRow("📅 수거일", selectedItem.selectedDate, Color.Red)
+                InfoRow("📦 저장위치", selectedItem.storageName, Color(0xFFD2B48C))
+                InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
                 InfoRow("🔍 상세 정보", selectedItem.wasteDetails ?: "없음", Color.Gray)
                 InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
                 InfoRow("📌 상태", selectedItem.status, Color.Magenta)
@@ -214,6 +221,6 @@ fun InfoRow(label: String, value: String, color: Color) {
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(vertical = 4.dp)
         )
-        Divider(color = Color.LightGray, thickness = 0.5.dp)
+        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
     }
 }

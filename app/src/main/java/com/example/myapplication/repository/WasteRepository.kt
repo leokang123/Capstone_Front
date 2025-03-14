@@ -6,6 +6,7 @@ import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.WasteStorage
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 
@@ -40,6 +41,17 @@ class WasteRepository(context: Context) {
 
         } catch (e: Exception) {
             Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            null
+        }
+    }
+
+    suspend fun getWasteStorage() : List<WasteStorage>? {
+        return try {
+            val response = apiService.getStorageList()
+            response
+
+        } catch (e: Exception) {
+            Log.e("GET_WASTE_STORAGE", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
             null
         }
     }
