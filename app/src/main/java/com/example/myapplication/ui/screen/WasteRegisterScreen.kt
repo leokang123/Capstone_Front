@@ -143,7 +143,15 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     val selectedDevice = sharedViewModel.selectedBluetoothDevice // 선택된 블루투스 기기
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색창
     var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
-    val wasteTypes = listOf("일반 폐기물", "의료 폐기물", "전자 폐기물", "건설 폐기물") // 폐기물 종류 리스트
+
+    val wasteTypes = listOf("격리 의료 폐기물",
+        "위해 의료 폐기물 / 조직물류 폐기물",
+        "위해 의료 폐기물 / 병리계 폐기물",
+        "위해 의료 폐기물 / 손상성 폐기물",
+        "위해 의료 폐기물 / 생물·화학 폐기물",
+        "위해 의료 폐기물 / 혈액오염 폐기물",
+        "일반 의료 폐기물") // 폐기물 종류 리스트
+
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
     // 창고 리스트를 저장할 상태
