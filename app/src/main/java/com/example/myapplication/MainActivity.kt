@@ -57,7 +57,6 @@ import com.example.myapplication.ui.screen.WasteRemoveScreen
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import com.example.myapplication.viewmodel.WasteMoveViewModel
-import com.example.myapplication.viewmodel.WasteRegisterViewModel
 import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
 
@@ -119,10 +118,9 @@ fun AppNavigation() {
     val detailViewModel: DetailViewModel = viewModel()
     val homeViewModel: HomeViewModel = viewModel()
     val wasteListViewModel: WasteListViewModel = viewModel()
-    val wasteRegisterViewModel: WasteRegisterViewModel = viewModel()
     val wasteMoveViewModel: WasteMoveViewModel = viewModel()
     val wasteRemoveViewModel: WasteRemoveViewModel = viewModel()
-    val context = LocalContext.current
+//    val context = LocalContext.current
 
     // 왼쪽 네비바 구현
     ModalNavigationDrawer(
@@ -174,7 +172,7 @@ fun AppNavigation() {
                 composable("home") { HomeScreen(navController, homeViewModel) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }
                 composable("waste_list") { WasteListScreen(navController, wasteListViewModel) }
-                composable("waste_register") { WasteRegisterScreen(navController, wasteRegisterViewModel) }
+                composable("waste_register") { WasteRegisterScreen(navController, wasteListViewModel) }
                 composable("waste_move") { WasteMoveScreen(navController, wasteMoveViewModel) }
                 composable("waste_remove") { WasteRemoveScreen(navController, wasteRemoveViewModel) }
                 dialog("popup") { PopUpScreen(navController) }
