@@ -58,7 +58,7 @@ fun WasteListScreen(
     var selectedItem by remember { mutableStateOf<WasteItemResponse?>(null) }
     var showDropdown by remember { mutableStateOf(false) }
 
-    val filteredItems by wasteListViewModel.filteredItems.collectAsState() // ✅ ViewModel에서 데이터 가져오기
+    val filteredItems by wasteListViewModel.wasteList.collectAsState()
 
     CheckAuth(navController) // ✅ 인증 체크
 

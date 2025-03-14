@@ -111,23 +111,23 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 // 혼자 테스트서버 없이 테스트 할시
-                val user = User(userName = "test", password = "test", name = "test")
-                CoroutineScope(Dispatchers.IO).launch {
-                    userDataStore.saveUser(user = user, token = "token123")
-                }
-                navController.navigate("home")
+//                val user = User(userName = "test", password = "test", name = "test")
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    userDataStore.saveUser(user = user, token = "token123")
+//                }
+//                navController.navigate("home")
 
                 // 서버 돌아갈시
-//                scope.launch {
-//                    val loginRequest = LoginRequest(username.trim(), password)
-//                    val response: LoginResponse? = loginRepository.loginUser(loginRequest)
-//                    if (response != null) {
-//                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
-//                        Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
-//                    } else {
-//                        errorMessage = "Invalid username or password"
-//                    }
-//                }
+                scope.launch {
+                    val loginRequest = LoginRequest(username.trim(), password)
+                    val response: LoginResponse? = loginRepository.loginUser(loginRequest)
+                    if (response != null) {
+                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
+                        Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
+                    } else {
+                        errorMessage = "Invalid username or password"
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
