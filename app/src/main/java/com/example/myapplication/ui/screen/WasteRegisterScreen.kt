@@ -132,7 +132,10 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
-    var registrantName by remember { mutableStateOf("") } // 등록자 이름
+    val context = LocalContext.current
+    val userDataStore = UserDataStore(context)
+    val user = userDataStore.getUser()
+    var registrantName by remember { mutableStateOf(user?.name ?: "") } // 등록자 이름
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
     var location by remember { mutableStateOf("") } // 발생장소
@@ -151,10 +154,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     var expandedStorage by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val wasteRepository = WasteRepository(context)
-    val userDataStore = UserDataStore(context)
-    val user = userDataStore.getUser()
 
     LaunchedEffect(Unit) {
         try {
