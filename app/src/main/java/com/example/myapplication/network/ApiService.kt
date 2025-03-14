@@ -7,6 +7,7 @@ import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.WasteStorage
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -25,14 +26,17 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
 
     // 폐기물 리스트 조회 / 일단 선택 조회는 나중에 구현
-    @GET("waste/get_list")
+    @GET("waste/get_wastelist")
     suspend fun getWasteItemList() : List<WasteItemResponse>
 
     @POST("waste/register")
     suspend fun registerWasteItem(@Body request: WasteItemRequest) : RegisterResponse
 
-    @POST("waste/get_list_by_name")
+    @POST("waste/get_wastelist_by_name")
     suspend fun getWasteItemListByName(@Body wasteType: SearchRequest): List<WasteItemResponse>
+
+    @GET("waste/get_storage_list")
+    suspend fun getStorageList(): List<WasteStorage>
 
 }
 
