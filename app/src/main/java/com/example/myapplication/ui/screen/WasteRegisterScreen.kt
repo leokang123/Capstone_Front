@@ -43,6 +43,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.WasteStorage
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
@@ -112,6 +113,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
                         Text("부가 정보: ${waste?.wasteDetails}")
                         Text("날짜: ${waste?.selectedDate}")
                         Text("장소: ${waste?.location}")
+                        Text("저장장소: ${waste?.storageName}")
                         Text("기기: ${waste?.selectedDevice ?: "없음"}")
                         Text("상태: ${waste?.status ?: "없음"}")
 
@@ -140,11 +142,33 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
     val wasteTypes = listOf("일반 폐기물", "의료 폐기물", "전자 폐기물", "건설 폐기물") // 폐기물 종류 리스트
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
+
+    // 창고 리스트를 저장할 상태
+    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
+    // 선택한 창고
+    var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
+    // DropdownMenu 상태
+    var expandedStorage by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val wasteRepository = WasteRepository(context)
     val userDataStore = UserDataStore(context)
     val user = userDataStore.getUser()
+
+    LaunchedEffect(Unit) {
+        try {
+            val mockList = listOf(
+                WasteStorage(id = 1, storageName = "기본 창고 A"),
+                WasteStorage(id = 2, storageName = "기본 창고 B")
+            )
+            val storageList = wasteRepository.getWasteStorage()
+            wasteStorageList = storageList ?: mockList
+        } catch (e: Exception) {
+            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,6 +221,34 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+// 창고 선택 Dropdown
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = selectedStorage?.storageName ?: "창고 선택",
+                    onValueChange = {},
+                    label = { Text("저장할 창고") },
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = { expandedStorage = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+                    wasteStorageList.forEach { storage ->
+                        DropdownMenuItem(
+                            text = { Text(storage.storageName.toString()) },
+                            onClick = {
+                                selectedStorage = storage
+                                expandedStorage = false
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 폐기물 부가이력 등록
             OutlinedTextField(
@@ -248,6 +300,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                                 wasteDetails = wasteDetails,
                                 location = location,
                                 selectedDevice = selectedDevice ?: "없음",
+                                storageId = selectedStorage?.id ?: 0 // ✅ 선택한 창고의 ID 포함
+
                             )
                             val response: String? = wasteRepository.registerWaste(wasteItem)
                             Toast.makeText(context, response, Toast.LENGTH_SHORT).show()
