@@ -69,5 +69,6 @@ data class WasteStorage(
 data class MoveRequest(
     val itemId: Long,
     val userId: Long,
-    val wasteDetails: String
+    val wasteDetails: String,
+    val date: String
 )
