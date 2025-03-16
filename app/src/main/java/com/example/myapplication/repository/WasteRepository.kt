@@ -1,7 +1,9 @@
 package com.example.myapplication.repository
 
 import android.content.Context
+import android.net.http.HttpException
 import android.util.Log
+import com.example.myapplication.data.MoveRequest
 import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
 import com.example.myapplication.data.WasteItemRequest
@@ -53,6 +55,15 @@ class WasteRepository(context: Context) {
         } catch (e: Exception) {
             Log.e("GET_WASTE_STORAGE", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
             null
+        }
+    }
+
+
+    suspend fun moveWasteItems(moveRequests: List<MoveRequest>) {
+        try {
+            apiService.moveWasteItems(moveRequests)
+        } catch (e: HttpException) {
+            throw e
         }
     }
 

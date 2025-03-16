@@ -152,6 +152,11 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
         "위해 의료 폐기물 / 혈액오염 폐기물",
         "일반 의료 폐기물") // 폐기물 종류 리스트
 
+    val mockList = listOf(
+        WasteStorage(id = 1, storageName = "기본 창고 A"),
+        WasteStorage(id = 2, storageName = "기본 창고 B")
+    )
+
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
     // 창고 리스트를 저장할 상태
@@ -166,12 +171,12 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
 
     LaunchedEffect(Unit) {
         try {
-            val mockList = listOf(
-                WasteStorage(id = 1, storageName = "기본 창고 A"),
-                WasteStorage(id = 2, storageName = "기본 창고 B")
-            )
             val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList ?: mockList
+
+            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
+
+
+
         } catch (e: Exception) {
             Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
         }

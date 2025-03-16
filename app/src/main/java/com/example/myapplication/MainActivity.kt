@@ -173,7 +173,7 @@ fun AppNavigation() {
                 composable("detail") { DetailScreen(navController, detailViewModel) }
                 composable("waste_list") { WasteListScreen(navController, wasteListViewModel) }
                 composable("waste_register") { WasteRegisterScreen(navController, wasteListViewModel) }
-                composable("waste_move") { WasteMoveScreen(navController, wasteMoveViewModel) }
+                composable("waste_move") { WasteMoveScreen(navController, wasteListViewModel) }
                 composable("waste_remove") { WasteRemoveScreen(navController, wasteRemoveViewModel) }
                 dialog("popup") { PopUpScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
