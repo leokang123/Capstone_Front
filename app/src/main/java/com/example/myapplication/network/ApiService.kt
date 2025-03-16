@@ -2,6 +2,7 @@ package com.example.myapplication.network
 
 import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.LoginResponse
+import com.example.myapplication.data.MoveRequest
 import com.example.myapplication.data.RegisterRequest
 import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
@@ -37,6 +38,9 @@ interface ApiService {
 
     @GET("waste/get_storage_list")
     suspend fun getStorageList(): List<WasteStorage>
+
+    @POST("waste/waste_items_next_step")
+    suspend fun moveWasteItems(@Body moveRequests: List<MoveRequest>)
 
 }
 
