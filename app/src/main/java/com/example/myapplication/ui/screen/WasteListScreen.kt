@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -25,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,10 +38,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.WasteDetailResponse
+import com.example.myapplication.data.WasteItemDetailResponse
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * 폐기물 목록 조회 창
@@ -49,23 +54,20 @@ import kotlinx.coroutines.delay
  * 고급 검색기능도 아직 미구현
  * 상세 조회 창 띄우는것도 아직 미구현
  */
+
 @Composable
 fun WasteListScreen(
     navController: NavController,
     wasteListViewModel: WasteListViewModel = viewModel()
 ) {
-    var showDialog by remember { mutableStateOf(false) } // ✅ 팝업 상태 관리
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedItem by remember { mutableStateOf<WasteItemResponse?>(null) }
+    val selectedItem by wasteListViewModel.selectedItem.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
-
     val filteredItems by wasteListViewModel.wasteList.collectAsState()
+    val scope = rememberCoroutineScope()
 
     CheckAuth(navController) // ✅ 인증 체크
 
-    /**
-     *  사용자 입력을 특정시간동안 기다렸다가 검색 실행 (API 최적화)
-     */
     LaunchedEffect(searchText.text) {
         if (searchText.text.isBlank()) {
             showDropdown = false
@@ -104,10 +106,17 @@ fun WasteListScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(8.dp)
+                                .clickable {
+                                    scope.launch {
+                                        wasteListViewModel.getWasteItemDetails(item.id)
+                                    }
+                                    searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
+                                    showDropdown = false
+                                },
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)), // 연한 초록색 배경
-                            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                            border = BorderStroke(1.dp, Color.Gray)
                         ) {
                             Text(
                                 text = buildAnnotatedString {
@@ -138,21 +147,7 @@ fun WasteListScreen(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
-                                        selectedItem = item
-                                        searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
-                                        showDropdown = false
-                                    }
                                     .padding(16.dp)
-                            )
-                        }
-
-                        // ✅ 각 리스트 항목 아래 구분선(Delimiter) 추가 (마지막 항목 제외)
-                        if (index != filteredItems.lastIndex) {
-                            Divider(
-                                color = Color.Gray,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
@@ -163,45 +158,55 @@ fun WasteListScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // ✅ 선택된 폐기물 상세 정보 표시
-        selectedItem.let {
-            Text(
-                text = "조회된 정보: ${it?.wasteType}",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        selectedItem?.let {
             ResultList(it)
         }
     }
 }
 
 @Composable
-fun ResultList(selectedItem: WasteItemResponse?) {
-    selectedItem?.let {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // ✅ 폐기물 기본 정보
-                Text(
-                    text = "🗑 ${selectedItem.wasteType}",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black
-                )
+fun ResultList(selectedItem: WasteItemDetailResponse) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color.Gray)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // ✅ 폐기물 기본 정보
+            Text(
+                text = "🗑 ${selectedItem.wasteType}",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
-                InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
-                InfoRow("📦 저장위치", selectedItem.storageName, Color(0xFFD2B48C))
-                InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
-                InfoRow("🔍 상세 정보", selectedItem.wasteDetails ?: "없음", Color.Gray)
-                InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
-                InfoRow("📌 상태", selectedItem.status, Color.Magenta)
+            InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
+            InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
+//            InfoRow("📦 저장위치", selectedItem.wasteStorage.storageName.toString(), Color(0xFFD2B48C))
+            InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
+            InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ✅ 상세 내역 목록 표시
+            Text(
+                text = "📜 상세 내역",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn {
+                val detailsList = selectedItem.wasteDetails?.sortedByDescending { it.date ?: "" } ?: emptyList()
+
+                itemsIndexed(detailsList) { index, detail ->
+                    WasteDetailCard(detail, detail.status == selectedItem.status)
+                }
             }
         }
     }
@@ -222,5 +227,54 @@ fun InfoRow(label: String, value: String, color: Color) {
             modifier = Modifier.padding(vertical = 4.dp)
         )
         HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+    }
+}
+
+@Composable
+fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isLatest) Color(0xFFFFF3E0) else Color.White // ✅ 최신 상태 강조
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, if (isLatest) Color.Red else Color.Gray) // ✅ 최신 상태 강조
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // ✅ 등록한 사용자 정보 추가
+            Text(
+                text = "👤 처리자: ${detail.user.name}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.Blue
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ✅ 상태 정보
+            Text(
+                text = "📌 상태: ${detail.status}",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = if (isLatest) Color.Red else Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ✅ 상세 내용
+            Text(
+                text = "📝 내용: ${detail.wasteDetails}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ✅ 기록 시간
+            Text(
+                text = "📅 기록 시간: ${detail.date ?: "기록 없음"}",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.DarkGray
+            )
+        }
     }
 }

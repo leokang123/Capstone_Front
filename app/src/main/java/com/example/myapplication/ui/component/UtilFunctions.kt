@@ -7,6 +7,9 @@ import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 /**
@@ -36,3 +39,10 @@ fun logout(context: Context) {
     }
 }
 
+/**
+ * 현재 시각 가져오는 함수
+ */
+fun getCurrentTime(): String {
+    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    return sdf.format(Date()) // 현재 시간 반환
+}

@@ -1,11 +1,14 @@
 package com.example.myapplication.ui.screen
 
+import android.app.TimePickerDialog
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -52,6 +56,7 @@ import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 /**
@@ -68,7 +73,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 
     CheckAuth(navController)
 
-    // ✅ 화면이 열릴 때 서버에서 데이터 가져오기
+    // 화면이 열릴 때 서버에서 데이터 가져오기
     LaunchedEffect(Unit) {
         wasteListViewModel.fetchWasteList()
         println(wasteListViewModel.wasteList)
@@ -76,7 +81,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
-        // ✅ 새로고침 버튼
+        // 새로고침 버튼
         Button(onClick = { wasteListViewModel.fetchWasteList() }, modifier = Modifier.padding(top = 8.dp)) {
             Text("새로고침")
         }
@@ -89,7 +94,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
             Text("등록")
         }
 
-        // ✅ 등록된 폐기물 리스트 표시
+        // 등록된 폐기물 리스트 표시
         Text("등록된 폐기물 목록", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -133,16 +138,27 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 @Composable
 fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
     val context = LocalContext.current
+    val heightPadding = 12.dp
     val userDataStore = UserDataStore(context)
     val user = userDataStore.getUser()
     var registrantName by remember { mutableStateOf(user?.name ?: "") } // 등록자 이름
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
     var location by remember { mutableStateOf("") } // 발생장소
-    var selectedDate by remember { mutableStateOf("날짜 선택") } // 발생일
     val selectedDevice = sharedViewModel.selectedBluetoothDevice // 선택된 블루투스 기기
+
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색창
     var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
+
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val calendar = Calendar.getInstance()
+    val defaultDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+    val defaultTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+
+    var selectedDate by remember { mutableStateOf(defaultDate) }
+    var selectedTime by remember { mutableStateOf(defaultTime) }
+
 
     val wasteTypes = listOf("격리 의료 폐기물",
         "위해 의료 폐기물 / 조직물류 폐기물",
@@ -185,13 +201,13 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(heightPadding),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(heightPadding)) {
             Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 등록자 이름 입력
             OutlinedTextField(
@@ -201,7 +217,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 폐기물 종류 선택 (DropdownMenu)
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -223,7 +239,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 발생장소 입력
             OutlinedTextField(
@@ -233,8 +249,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-// 창고 선택 Dropdown
+            Spacer(modifier = Modifier.height(heightPadding))
+            // 창고 선택 Dropdown
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = selectedStorage?.storageName ?: "창고 선택",
@@ -261,7 +277,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 폐기물 부가이력 등록
             OutlinedTextField(
@@ -271,14 +287,73 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
-            // 발생일 선택 버튼
-            Button(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(selectedDate)
+            // 날짜 & 시간 선택 버튼을 정렬
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("등록날짜")
+                        Text(selectedDate)
+                    }
+                }
+
+                Button(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("등록시간")
+                        Text(selectedTime)
+                    }
+
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+
+            // 날짜 선택 다이얼로그
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        Button(onClick = { showDatePicker = false }) {
+                            Text("확인")
+                        }
+                    }
+                ) {
+                    val dateState = rememberDatePickerState()
+                    DatePicker(state = dateState)
+                    selectedDate = dateState.selectedDateMillis?.let { millis ->
+                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(millis)
+                    } ?: defaultDate
+                }
+            }
+
+            // 시간 선택 다이얼로그
+            if (showTimePicker) {
+                val context = LocalContext.current
+                TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
+                        showTimePicker = false
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true // 24시간 형식
+                ).show()
+            }
+
+
+            Spacer(modifier = Modifier.height(heightPadding))
+
 
             // 블루투스 검색 버튼
             Button(
@@ -288,7 +363,14 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 Text("블루투스 검색")
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // 블루투스 검색 다이얼로그
+            if (showDialog) {
+                BluetoothDialog(sharedViewModel, onDismiss = {
+                    showDialog = false
+                })
+            }
+
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 선택한 블루투스 기기 표시
             Text(
@@ -296,7 +378,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(heightPadding))
 
             // 등록 버튼
             Button(
@@ -309,11 +391,11 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                             val wasteItem = WasteItemRequest(
                                 userId = user?.id ?: 0,
                                 wasteType = wasteType,
-                                selectedDate = selectedDate,
+                                selectedDate = "$selectedDate $selectedTime",
                                 wasteDetails = wasteDetails,
                                 location = location,
                                 selectedDevice = selectedDevice ?: "없음",
-                                storageId = selectedStorage?.id ?: 0 // ✅ 선택한 창고의 ID 포함
+                                storageId = selectedStorage?.id ?: 0 // 선택한 창고의 ID 포함
 
                             )
                             val response: String? = wasteRepository.registerWaste(wasteItem)
@@ -332,36 +414,18 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                     // 서버로 데이터 전송 가능
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = registrantName.isNotBlank() && wasteType.isNotBlank() && selectedDevice != null
+                enabled = registrantName.isNotBlank()
+                        && wasteType.isNotBlank()
+                        &&  location.isNotBlank()
+                        && selectedStorage != null
+                        && selectedDevice != null
+                        && selectedTime.isNotBlank()
+                        && selectedDate.isNotBlank()
+                        && selectedDevice.isNotBlank()
             ) {
                 Text("등록")
             }
 
-        }
-    }
-
-    // 블루투스 검색 다이얼로그
-    if (showDialog) {
-        BluetoothDialog(sharedViewModel, onDismiss = {
-            showDialog = false
-        })
-    }
-
-    // 날짜 선택 다이얼로그
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                Button(onClick = { showDatePicker = false }) {
-                    Text("확인")
-                }
-            }
-        ) {
-            val dateState = rememberDatePickerState()
-            DatePicker(state = dateState)
-            selectedDate = dateState.selectedDateMillis?.let { millis ->
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(millis)
-            } ?: "날짜 선택"
         }
     }
 }
