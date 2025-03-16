@@ -24,6 +24,7 @@ import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.viewmodel.WasteListViewModel
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.UserDataStore
+import com.example.myapplication.ui.component.getCurrentTime
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,6 +43,9 @@ fun WasteMoveScreen(navController: NavController,
     var currentUserId by remember { mutableStateOf(user?.id.toString()) }
     var currentDetails by remember { mutableStateOf("") }
     var currentStatus by remember { mutableStateOf("") }
+    var wasteItemDetails by remember { mutableStateOf("") }
+
+
 
 
     val wasteRepository = WasteRepository(context)
@@ -81,6 +85,7 @@ fun WasteMoveScreen(navController: NavController,
                                 if (isChecked) {
                                     currentItemId = wasteItem.id
                                     currentStatus = wasteItem.status // ✅ 현재 상태 저장
+                                    wasteItemDetails = wasteItem.wasteDetails.toString()
                                     showDialog = true // 팝업창 띄우기
                                 } else {
                                     selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
@@ -154,6 +159,11 @@ fun WasteMoveScreen(navController: NavController,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    Text(
+                        text = "이전 상세내역: $wasteItemDetails",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
@@ -177,10 +187,12 @@ fun WasteMoveScreen(navController: NavController,
                         selectedItems[currentItemId!!] = MoveRequest(
                             itemId = currentItemId!!,
                             userId = currentUserId.toLong(),
-                            wasteDetails = currentDetails
+                            wasteDetails = currentDetails,
+                            date = getCurrentTime() // ✅ 현재 시간 갱신
                         )
                         currentStatus = ""
                         currentDetails = ""
+                        wasteItemDetails = ""
                         showDialog = false
                     }
                 }) {
@@ -192,6 +204,7 @@ fun WasteMoveScreen(navController: NavController,
                     showDialog = false
                     currentStatus = ""
                     currentDetails = ""
+                    wasteItemDetails = ""
                 }) {
                     Text("취소")
                 }

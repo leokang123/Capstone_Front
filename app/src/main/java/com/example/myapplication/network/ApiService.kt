@@ -6,6 +6,7 @@ import com.example.myapplication.data.MoveRequest
 import com.example.myapplication.data.RegisterRequest
 import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
+import com.example.myapplication.data.WasteItemDetailResponse
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.data.WasteStorage
@@ -41,6 +42,10 @@ interface ApiService {
 
     @POST("waste/waste_items_next_step")
     suspend fun moveWasteItems(@Body moveRequests: List<MoveRequest>)
+
+    @POST("waste/get_detail_waste_item")
+    suspend fun getDetailWasteItem(@Body searchRequest: SearchRequest): WasteItemDetailResponse
+
 
 }
 

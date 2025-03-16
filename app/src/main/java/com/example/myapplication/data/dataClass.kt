@@ -39,10 +39,21 @@ data class WasteItemResponse(
     val status: String, // "수집", "이동", "저장", "배출"
     val storageId: Long,
     val storageName: String
-
+)
+data class WasteItemDetailResponse(
+    val id: Long,
+    val wasteType: String,
+    val location: String,
+    val registrantName: String,
+    val selectedDate: String,
+    val selectedDevice: String?,
+    val status: String,
+    val wasteStorage: WasteStorage,
+    val wasteDetails: List<WasteDetailResponse> // ✅ 상세 정보 리스트 포함
 )
 
 data class SearchRequest(
+    val itemId: Long = 0,
     val wasteType: String? = "",
     val registrantName: String? = "",
     val selectedDate: String? = "",
@@ -61,6 +72,15 @@ data class User(
     val selectedHospital: String? = null
 ): Serializable
 
+data class SafeUser(
+    val id: Long = 0,
+    val email: String? = null,
+    val name: String = "",
+    val phoneNumber: String? = null,
+    val profession: String? = null,
+    val selectedHospital: String? = null
+)
+
 data class WasteStorage(
     val id: Long? = null,
     val storageName: String? = null
@@ -69,5 +89,13 @@ data class WasteStorage(
 data class MoveRequest(
     val itemId: Long,
     val userId: Long,
-    val wasteDetails: String
+    val wasteDetails: String,
+    val date: String
+)
+
+data class WasteDetailResponse(
+    val wasteDetails: String,
+    val date: String,
+    val status: String,
+    val user:  User
 )
