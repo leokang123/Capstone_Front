@@ -6,6 +6,7 @@ import android.util.Log
 import com.example.myapplication.data.MoveRequest
 import com.example.myapplication.data.RegisterResponse
 import com.example.myapplication.data.SearchRequest
+import com.example.myapplication.data.WasteItemDetailResponse
 import com.example.myapplication.data.WasteItemRequest
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.data.WasteStorage
@@ -62,7 +63,15 @@ class WasteRepository(context: Context) {
     suspend fun moveWasteItems(moveRequests: List<MoveRequest>) {
         try {
             apiService.moveWasteItems(moveRequests)
-        } catch (e: HttpException) {
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun getDetailWasteItem(searchRequest: SearchRequest): WasteItemDetailResponse {
+        return try {
+            apiService.getDetailWasteItem(searchRequest)
+        } catch (e: Exception) {
             throw e
         }
     }

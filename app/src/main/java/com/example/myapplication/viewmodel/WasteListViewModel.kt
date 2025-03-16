@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.SearchRequest
+import com.example.myapplication.data.WasteItemDetailResponse
 import com.example.myapplication.data.WasteItemResponse
 import com.example.myapplication.repository.WasteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,11 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
     // ✅ 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
     private val _wasteItems = MutableStateFlow<List<WasteItemResponse>>(emptyList())
     val wasteList: StateFlow<List<WasteItemResponse>> = _wasteItems
+
+    // ✅ 선택된 폐기물 상세 정보
+    private val _selectedItem = MutableStateFlow<WasteItemDetailResponse?>(null)
+    val selectedItem: StateFlow<WasteItemDetailResponse?> = _selectedItem
+
     // ✅ 전체 리스트 가져오기
     fun fetchWasteList() {
         viewModelScope.launch {
@@ -45,6 +52,19 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 빈 리스트 반환
                 Log.e("WasteListViewModel", "검색 API 요청 실패", e)
+            }
+        }
+    }
+
+    fun getWasteItemDetails(itemId: Long) {
+        val searchRequest = SearchRequest(itemId = itemId)
+        viewModelScope.launch {
+            try {
+                val result = wasteRepository.getDetailWasteItem(searchRequest)
+                _selectedItem.value = result // ✅ 선택된 아이템 업데이트
+            } catch (e: Exception) {
+                Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+                _selectedItem.value = null // 오류 발생 시 초기화
             }
         }
     }
