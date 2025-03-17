@@ -1,17 +1,15 @@
 package com.example.myapplication.repository
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import com.example.myapplication.data.LoginRequest
-import com.example.myapplication.data.LoginResponse
-import com.example.myapplication.data.RegisterRequest
-import com.example.myapplication.data.RegisterResponse
+import com.example.myapplication.data.auth.LoginRequest
+import com.example.myapplication.data.auth.LoginResponse
+import com.example.myapplication.data.auth.RegisterRequest
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.ui.component.UserDataStore
 import org.json.JSONObject
-import retrofit2.Response
 
 /**
  * 로그인 관련 처리 클래스
@@ -48,6 +46,7 @@ class LoginRepository(val context: Context) {
                     try {
                         JSONObject(it).getString("message") // JSON에서 "message" 값 추출
                     } catch (e: Exception) {
+                        Log.e(TAG, e.message.toString())
                         "알 수 없는 오류 발생" // 파싱 실패 시 기본 메시지
                     }
                 }

@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +37,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.WasteDetailResponse
-import com.example.myapplication.data.WasteItemDetailResponse
-import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.waste.WasteDetailResponse
+import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
@@ -126,7 +124,7 @@ fun WasteListScreen(
                                     append(item.wasteType + "\n")
 
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                                        append("👤 등록자: ")
+                                        append("👤 처리자: ")
                                     }
                                     append(item.registrantName + "\n")
 
@@ -202,7 +200,7 @@ fun ResultList(selectedItem: WasteItemDetailResponse) {
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
-                val detailsList = selectedItem.wasteDetails?.sortedByDescending { it.date ?: "" } ?: emptyList()
+                val detailsList = selectedItem.wasteDetails.sortedByDescending { it.date }
 
                 itemsIndexed(detailsList) { index, detail ->
                     WasteDetailCard(detail, detail.status == selectedItem.status)
@@ -271,7 +269,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             // ✅ 기록 시간
             Text(
-                text = "📅 기록 시간: ${detail.date ?: "기록 없음"}",
+                text = "📅 기록 시간: ${detail.date}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )

@@ -1,7 +1,5 @@
 package com.example.myapplication.ui.component
 
-import android.content.Context
-import android.service.autofill.UserData
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
@@ -9,17 +7,29 @@ import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
-fun CheckAuth(navController: NavController) {
+fun CheckAuth(navController: NavController, roleId: Long = 1) {
     val context = LocalContext.current
-    val userDataStore = UserDataStore(context)
-    val token by remember { mutableStateOf(userDataStore.getToken()) }
+    val userDataStore = remember { UserDataStore(context) }
 
-    LaunchedEffect(token) {
+    // ✅ 단순한 값 반환이라면 remember만 사용 (불필요한 상태 관리 제거)
+    val token = remember { userDataStore.getToken() }
+    val user = remember { userDataStore.getUser() }
+
+    val userRoleId = user?.role?.id ?: 1
+    val userRoleName = user?.role?.roleName ?: "권한정보 없음"
+
+    // ✅ 사용자 정보가 로드된 후 권한 체크
+    LaunchedEffect(Unit) {
         if (token.isNullOrEmpty()) {
-            Toast.makeText(context, "로그인이 필요한 기능입니다", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "로그인이 필요한 기능", Toast.LENGTH_SHORT).show()
             navController.navigate("login") {
-                popUpTo(0) // 뒤로 가기 방지 (완전히 새로운 네비게이션 스택)
+                popUpTo(0) // 네비게이션 스택 초기화 (뒤로 가기 방지)
             }
+        }
+
+        if (user != null && userRoleId < roleId) {
+            Toast.makeText(context, "$userRoleName (이)가 사용할 수 없는 기능", Toast.LENGTH_SHORT).show()
+            navController.navigateUp() // popBackStack() 대신 navigateUp() 사용
         }
     }
 }

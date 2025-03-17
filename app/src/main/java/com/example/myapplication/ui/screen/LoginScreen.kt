@@ -1,8 +1,5 @@
 package com.example.myapplication.ui.screen
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,20 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.data.auth.LoginRequest
+import com.example.myapplication.data.auth.LoginResponse
+import com.example.myapplication.data.user.User
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import androidx.core.content.edit
-import com.example.myapplication.data.LoginRequest
-import com.example.myapplication.data.LoginResponse
-import com.example.myapplication.data.User
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.ui.component.UserDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import okhttp3.internal.userAgent
 
 /**
  * 로그인 화면

@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -45,19 +44,14 @@ import com.example.myapplication.ui.screen.PopUpScreen
 import com.example.myapplication.ui.screen.LoginScreen
 import com.example.myapplication.ui.screen.RegisterScreen
 import com.example.myapplication.viewmodel.DetailViewModel
-import com.example.myapplication.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.screen.NotificationDialog
 import com.example.myapplication.ui.screen.SettingsDialog
 import com.example.myapplication.ui.screen.WasteListScreen
 import com.example.myapplication.ui.screen.WasteMoveScreen
 import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
-import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
-import com.example.myapplication.viewmodel.WasteMoveViewModel
-import com.example.myapplication.viewmodel.WasteRemoveViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -116,10 +110,7 @@ fun AppNavigation() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer 상태 관리
     val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
     val detailViewModel: DetailViewModel = viewModel()
-    val homeViewModel: HomeViewModel = viewModel()
     val wasteListViewModel: WasteListViewModel = viewModel()
-    val wasteMoveViewModel: WasteMoveViewModel = viewModel()
-    val wasteRemoveViewModel: WasteRemoveViewModel = viewModel()
 //    val context = LocalContext.current
 
     // 왼쪽 네비바 구현
@@ -163,18 +154,17 @@ fun AppNavigation() {
             ) {
                 composable("login") {
                     // 로그인으로 돌아갔을때 기존 남아있는 데이터 리셋 로직
-                    homeViewModel.reset()
                     detailViewModel.reset()
 
                     LoginScreen(navController)
                 }
                 composable("register") { RegisterScreen(navController) }
-                composable("home") { HomeScreen(navController, homeViewModel) }
+                composable("home") { HomeScreen(navController) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }
                 composable("waste_list") { WasteListScreen(navController, wasteListViewModel) }
                 composable("waste_register") { WasteRegisterScreen(navController, wasteListViewModel) }
                 composable("waste_move") { WasteMoveScreen(navController, wasteListViewModel) }
-                composable("waste_remove") { WasteRemoveScreen(navController, wasteRemoveViewModel) }
+                composable("waste_remove") { WasteRemoveScreen(navController, wasteListViewModel) }
                 dialog("popup") { PopUpScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
                 dialog("notification") { NotificationDialog(navController) }
