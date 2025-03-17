@@ -77,7 +77,7 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center // 중앙 정렬
 
     ) {
-        Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Text("애버커스", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
