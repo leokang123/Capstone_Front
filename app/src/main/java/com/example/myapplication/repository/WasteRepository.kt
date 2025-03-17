@@ -1,15 +1,14 @@
 package com.example.myapplication.repository
 
 import android.content.Context
-import android.net.http.HttpException
 import android.util.Log
-import com.example.myapplication.data.MoveRequest
-import com.example.myapplication.data.RegisterResponse
-import com.example.myapplication.data.SearchRequest
-import com.example.myapplication.data.WasteItemDetailResponse
-import com.example.myapplication.data.WasteItemRequest
-import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.data.WasteStorage
+import com.example.myapplication.data.auth.RegisterResponse
+import com.example.myapplication.data.waste.MoveRequests
+import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemRequest
+import com.example.myapplication.data.waste.WasteItemResponse
+import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 
@@ -60,7 +59,7 @@ class WasteRepository(context: Context) {
     }
 
 
-    suspend fun moveWasteItems(moveRequests: List<MoveRequest>) {
+    suspend fun moveWasteItems(moveRequests: MoveRequests) {
         try {
             apiService.moveWasteItems(moveRequests)
         } catch (e: Exception) {

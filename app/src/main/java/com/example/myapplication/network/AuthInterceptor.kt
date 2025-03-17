@@ -1,7 +1,7 @@
 package com.example.myapplication.network
 
 import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import com.example.myapplication.ui.component.UserDataStore
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -24,8 +24,7 @@ class AuthInterceptor(context: Context) : Interceptor {
         } else {
             chain.request()
         }
-        println(token)
-        println(request.toString())
+        Log.d("REQUEST", request.toString())
         return chain.proceed(request)
     }
 }
