@@ -19,10 +19,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.MoveRequest
-import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.waste.MoveRequest
+import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.viewmodel.WasteListViewModel
 import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.ui.component.UserDataStore
 import com.example.myapplication.ui.component.getCurrentTime
 import kotlinx.coroutines.launch
@@ -31,8 +32,8 @@ import kotlinx.coroutines.launch
 fun WasteMoveScreen(navController: NavController,
     wasteListViewModel: WasteListViewModel = viewModel()
 ) {
-    val context = LocalContext.current;
-    val userDataStore = UserDataStore(context);
+    val context = LocalContext.current
+    val userDataStore = UserDataStore(context)
     val user = userDataStore.getUser()
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
     val selectedItems = remember { mutableStateMapOf<Long, MoveRequest>() } // 선택된 아이템 (id -> MoveRequest)
@@ -49,10 +50,11 @@ fun WasteMoveScreen(navController: NavController,
 
 
     val wasteRepository = WasteRepository(context)
+    CheckAuth(navController)
 
     // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(Unit) {
-        wasteListViewModel.fetchWasteList()
+        wasteListViewModel.fetchWasteList(mode = 2)
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -129,16 +131,20 @@ fun WasteMoveScreen(navController: NavController,
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests = selectedItems.values.toList()
+                    val moveRequests = MoveRequests(stepId = 1, wasteMoveRequests = selectedItems.values.toList())
+                    var responseMessage = ""
                     try {
                         wasteRepository.moveWasteItems(moveRequests)
+                        responseMessage = "폐기물 다음단계 처리 완료"
                         Log.d("WasteMoveScreen", "이동 성공")
-                        selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                     } catch (e: Exception) {
-                        Log.e("WasteMoveScreen", "이동 실패", e)
+                        responseMessage = "처리 실패"
+                        Log.e("WasteMoveScreen", responseMessage, e)
+                    } finally {
+                        selectedItems.clear() // 요청 성공 시 체크리스트 초기화
+                        Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
+                        wasteListViewModel.fetchWasteList(mode = 2)
                     }
-                    Toast.makeText(context, "폐기물 다음단계 처리 완료!", Toast.LENGTH_SHORT).show()
-                    wasteListViewModel.fetchWasteList()
                 }
             },
             modifier = Modifier.fillMaxWidth()

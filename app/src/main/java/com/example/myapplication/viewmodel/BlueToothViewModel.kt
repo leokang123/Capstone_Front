@@ -5,13 +5,14 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import com.example.myapplication.ui.component.isEmulator
@@ -24,66 +25,73 @@ import kotlinx.coroutines.flow.StateFlow
  * Screen에서는 데이터를 보여주고, 데이터의 저장 및 변화나 갱신에 대한 연산은 거의 전부 viewModel에서 하는 느낌
  */
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    private val scanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
+
+    private val bluetoothManager: BluetoothManager by lazy {
+        application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    }
+    private val bluetoothAdapter: BluetoothAdapter? by lazy { bluetoothManager.adapter }
+    private val scanner: BluetoothLeScanner? by lazy { bluetoothAdapter?.bluetoothLeScanner }
 
     private val _devices = MutableStateFlow<List<BluetoothDevice>>(emptyList())
     val devices: StateFlow<List<BluetoothDevice>> = _devices
 
-    // ✅ 더미 블루투스 장치 목록 (에뮬레이터에서만 사용)
+    private var scanCallback: ScanCallback? = null
+
     private val _mockDevices = MutableStateFlow<List<MockBluetoothDevice>>(emptyList())
     val mockDevices: StateFlow<List<MockBluetoothDevice>> = _mockDevices
 
+    /** 🚀 블루투스 검색 시작 */
     fun startScan() {
         if (isEmulator()) {
-            // ✅ 에뮬레이터 감지 시 더미 데이터 추가
-            Log.d("BluetoothViewModel", "Running on Emulator - Using Mock Data")
+            Log.d(TAG, "Running on Emulator - Using Mock Data")
             mockBluetoothDevices()
         } else {
-            // ✅ 실제 스마트폰에서 블루투스 검색
-            Log.d("BluetoothViewModel", "Starting Bluetooth scan...")
+            Log.d(TAG, "Starting Bluetooth scan...")
             scanRealDevices()
         }
     }
 
-
     @SuppressLint("MissingPermission")
-    fun scanRealDevices() {
-        if (scanner != null && bluetoothAdapter?.isEnabled == true) {
-            if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                Log.w("BluetoothViewModel", "BLUETOOTH_SCAN permission not granted.")
-                return
-            }
-            Log.d("BluetoothViewModel", "Starting Bluetooth scan...")
+    private fun scanRealDevices() {
+        if (scanner == null || bluetoothAdapter?.isEnabled != true) {
+            Log.w(TAG, "Bluetooth is disabled or scanner is null.")
+            return
+        }
 
+        if (!hasScanPermission()) return
 
-            scanner.startScan(object : ScanCallback() {
+        if (scanCallback == null) {
+            scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
                     result?.device?.let { device ->
                         val currentDevices = _devices.value.toMutableList()
                         if (!currentDevices.contains(device)) {
                             currentDevices.add(device)
                             _devices.value = currentDevices
-
-                            // ✅ 블루투스 장치 정보 로그 출력
-                            Log.d(
-                                "BluetoothViewModel",
-                                "Device Found: Name = ${device.name ?: "Unknown"}, Address = ${device.address}"
-                            )
+                            Log.d(TAG, "Device Found: ${device.name ?: "Unknown"} - ${device.address}")
                         }
                     }
                 }
+
                 override fun onScanFailed(errorCode: Int) {
-                    Log.e("BluetoothViewModel", "Scan failed with error code: $errorCode")
+                    Log.e(TAG, "Scan failed with error code: $errorCode")
                 }
-            })
+            }
         }
+
+        scanner?.startScan(scanCallback)
     }
 
+    /** 🚀 블루투스 검색 중지 */
     @SuppressLint("MissingPermission")
     fun stopScan() {
-        Log.d("BluetoothViewModel", "Stopping Bluetooth scan...")
-        scanner?.stopScan(object : ScanCallback() {})
+        if (scanner != null && scanCallback != null) {
+            Log.d(TAG, "Stopping Bluetooth scan...")
+            scanner?.stopScan(scanCallback)
+            scanCallback = null
+        } else {
+            Log.w(TAG, "Scanner or callback is null, cannot stop scan.")
+        }
     }
 
 
@@ -96,6 +104,16 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         )
 
         _mockDevices.value = mockDevicesList
+    }
+
+    private fun hasScanPermission(): Boolean {
+        val context = getApplication<Application>().applicationContext
+        return if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
+            true
+        } else {
+            Log.w(TAG, "BLUETOOTH_SCAN permission not granted.")
+            false
+        }
     }
 }
 

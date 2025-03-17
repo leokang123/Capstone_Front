@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,7 +27,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DrawerContent(navController: NavController, drawerState: DrawerState) {
-    val scope = rememberCoroutineScope() // Drawer 닫기 위한 CoroutineScope
 
     Column(
         modifier = Modifier

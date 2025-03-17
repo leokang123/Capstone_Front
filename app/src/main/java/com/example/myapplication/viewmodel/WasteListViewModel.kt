@@ -2,15 +2,11 @@ package com.example.myapplication.viewmodel
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.SearchRequest
-import com.example.myapplication.data.WasteItemDetailResponse
-import com.example.myapplication.data.WasteItemResponse
+import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.repository.WasteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,11 +27,17 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
     val selectedItem: StateFlow<WasteItemDetailResponse?> = _selectedItem
 
     // ✅ 전체 리스트 가져오기
-    fun fetchWasteList() {
+    fun fetchWasteList(mode: Int = 1) {
         viewModelScope.launch {
             try {
                 val response = wasteRepository.getWasteItems()
-                _wasteItems.value = response ?: emptyList() // ✅ API 결과 저장
+                if (mode == 1) {
+                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // ✅ API 결과 저장
+                } else if (mode == 2) {
+                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // ✅ API 결과 저장
+                } else if (mode == 3) {
+                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // ✅ API 결과 저장
+                }
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)

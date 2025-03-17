@@ -1,9 +1,7 @@
 package com.example.myapplication.ui.component
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Build
-import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

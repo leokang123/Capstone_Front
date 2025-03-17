@@ -1,15 +1,15 @@
 package com.example.myapplication.network
 
-import com.example.myapplication.data.LoginRequest
-import com.example.myapplication.data.LoginResponse
-import com.example.myapplication.data.MoveRequest
-import com.example.myapplication.data.RegisterRequest
-import com.example.myapplication.data.RegisterResponse
-import com.example.myapplication.data.SearchRequest
-import com.example.myapplication.data.WasteItemDetailResponse
-import com.example.myapplication.data.WasteItemRequest
-import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.data.WasteStorage
+import com.example.myapplication.data.auth.LoginRequest
+import com.example.myapplication.data.auth.LoginResponse
+import com.example.myapplication.data.auth.RegisterRequest
+import com.example.myapplication.data.auth.RegisterResponse
+import com.example.myapplication.data.waste.MoveRequests
+import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemRequest
+import com.example.myapplication.data.waste.WasteItemResponse
+import com.example.myapplication.data.waste.WasteStorage
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -41,7 +41,7 @@ interface ApiService {
     suspend fun getStorageList(): List<WasteStorage>
 
     @POST("waste/waste_items_next_step")
-    suspend fun moveWasteItems(@Body moveRequests: List<MoveRequest>)
+    suspend fun moveWasteItems(@Body moveRequests: MoveRequests)
 
     @POST("waste/get_detail_waste_item")
     suspend fun getDetailWasteItem(@Body searchRequest: SearchRequest): WasteItemDetailResponse

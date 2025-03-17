@@ -1,10 +1,8 @@
 package com.example.myapplication.ui.screen
 
 import android.app.TimePickerDialog
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,10 +43,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.WasteItemRequest
-import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.data.WasteStorage
-import com.example.myapplication.repository.LoginRepository
+import com.example.myapplication.data.waste.WasteItemRequest
+import com.example.myapplication.data.waste.WasteItemResponse
+import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.component.CheckAuth
 import com.example.myapplication.ui.component.UserDataStore
@@ -75,14 +72,14 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
 
     // 화면이 열릴 때 서버에서 데이터 가져오기
     LaunchedEffect(Unit) {
-        wasteListViewModel.fetchWasteList()
+        wasteListViewModel.fetchWasteList(mode = 1)
         println(wasteListViewModel.wasteList)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
         // 새로고침 버튼
-        Button(onClick = { wasteListViewModel.fetchWasteList() }, modifier = Modifier.padding(top = 8.dp)) {
+        Button(onClick = { wasteListViewModel.fetchWasteList(mode = 1) }, modifier = Modifier.padding(top = 8.dp)) {
             Text("새로고침")
         }
 
@@ -130,7 +127,7 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
     }
     if (showDialog) {
         WasteRegisterCard(wasteListViewModel, sharedViewModel) { showDialog = false }
-        wasteListViewModel.fetchWasteList()
+        wasteListViewModel.fetchWasteList(mode = 1)
     }
 }
 
@@ -188,12 +185,10 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     LaunchedEffect(Unit) {
         try {
             val storageList = wasteRepository.getWasteStorage()
-
             wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
 
-
-
         } catch (e: Exception) {
+            Log.e("WasteRegisterScreen", e.message.toString())
             Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -406,7 +401,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                         } finally {
                             sharedViewModel.reset() // 뷰모델 데이터 초기화
-                            wasteListViewModel.fetchWasteList()
+                            wasteListViewModel.fetchWasteList(mode = 1)
                             onDismiss()
                         }
                     }
