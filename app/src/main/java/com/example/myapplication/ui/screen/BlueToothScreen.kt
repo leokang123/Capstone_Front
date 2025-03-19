@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.screen
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.clickable
@@ -72,6 +73,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
     val devices by viewModel.mockDevices.collectAsState()
     var selectedDevice by remember { mutableStateOf<MockBluetoothDevice?>(null) }
 
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
@@ -79,7 +81,10 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
 
         // ✅ 블루투스 스캔 버튼
         Button(
-            onClick = { viewModel.startScan() },
+            onClick = {
+
+                viewModel.startScan()
+                      },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
             Text("Scan Devices")
