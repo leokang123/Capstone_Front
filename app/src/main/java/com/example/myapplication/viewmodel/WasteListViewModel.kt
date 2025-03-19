@@ -1,6 +1,7 @@
 package com.example.myapplication.viewmodel
 
 import android.app.Application
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -84,12 +85,21 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
                 throw e
             }
         }
+    suspend fun updateItem(updatedItem: WasteItemDetailResponse) {
+        return try {
+            Log.d(TAG,updatedItem.toString())
+            wasteRepository.updateItem(updatedItem)
+        } catch (e: Exception) {
+            Log.e("WasteListViewModel", "아이템 정정 실패", e)
+            throw e
+        }
+    }
 
     suspend fun deleteItem(itemId: Long): Boolean {
         return try {
             wasteRepository.deleteItem(itemId)
         } catch (e: Exception) {
-            Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+            Log.e("WasteListViewModel", "아이템 삭제 실패", e)
             throw e
         }
     }

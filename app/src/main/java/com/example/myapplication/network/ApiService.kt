@@ -1,5 +1,6 @@
 package com.example.myapplication.network
 
+import androidx.room.Update
 import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.auth.RegisterRequest
@@ -15,6 +16,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 /**
@@ -53,5 +55,9 @@ interface ApiService {
 
     @DELETE("waste/delete_item")
     suspend fun deleteItem(@Query("itemId") itemId: Long): Boolean
+
+    @PUT("waste/update_item")
+    suspend fun updateItem(@Body wasteItem: WasteItemDetailResponse)
+
 }
 

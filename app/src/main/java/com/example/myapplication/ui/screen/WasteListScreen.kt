@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -78,7 +79,7 @@ fun WasteListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    CheckAuth(navController) // ✅ 인증 체크
+    CheckAuth(navController) // 인증 체크
 
     LaunchedEffect(searchText.text) {
         if (searchText.text.isBlank()) {
@@ -86,7 +87,7 @@ fun WasteListScreen(
             return@LaunchedEffect
         }
 
-        delay(500) // ✅ 0.5초 대기 후 검색 실행
+        delay(500) // 0.5초 대기 후 검색 실행
         wasteListViewModel.searchWasteByName(searchText.text)
         showDropdown = filteredItems.isNotEmpty()
     }
@@ -96,7 +97,7 @@ fun WasteListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // ✅ 검색 입력창
+        // 검색 입력창
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
@@ -107,7 +108,7 @@ fun WasteListScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ✅ 검색어가 입력될 때 자동완성 하단 바 표시
+        // 검색어가 입력될 때 자동완성 하단 바 표시
         if (searchText.text.isNotEmpty() && filteredItems.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -125,7 +126,7 @@ fun WasteListScreen(
                                     }
                                     keyboardController?.hide()  // 키보드 내리기
                                     focusManager.clearFocus()  // 입력 포커스 해제
-                                    searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
+                                    searchText = TextFieldValue("") // 선택하면 입력창 초기화
                                     showDropdown = false
                                 },
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -171,7 +172,7 @@ fun WasteListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ 선택된 폐기물 상세 정보 표시
+        // 선택된 폐기물 상세 정보 표시
         selectedItem?.let {
             ResultList(it, wasteListViewModel)
         }
@@ -194,7 +195,7 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
         border = BorderStroke(1.dp, Color.Gray)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // ✅ 폐기물 기본 정보
+            // 폐기물 기본 정보
             Text(
                 text = "🗑 ${selectedItem.wasteType}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -205,13 +206,13 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
 
             InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
             InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
-//            InfoRow("📦 저장위치", selectedItem.wasteStorage.storageName.toString(), Color(0xFFD2B48C))
+            InfoRow("📦 저장위치", selectedItem.wasteStorage?.storageName.toString(), Color(0xFFD2B48C))
             InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
             InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ✅ 상세 내역 목록 표시
+            // 상세 내역 목록 표시
             Text(
                 text = "📜 상세 내역",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -236,10 +237,8 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
                 Button(
                     onClick = {
                         scope.launch {
-                            showModDialog =  wasteListViewModel.checkItemStatus(selectedItem.id)
-                            if (!showModDialog) {
-                                Toast.makeText(context, "COLLECTING 상태에서만 수정 및 삭제가 가능합니다", Toast.LENGTH_SHORT).show()
-                            }
+                            showModDialog =  true
+
                         }
                     }
                 ) {
@@ -261,26 +260,15 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
         }
     }
 
-    // ✅ 정정 다이얼로그 (예제 코드, 원하는 Composable로 변경 가능)
+    // 정정 다이얼로그 (예제 코드, 원하는 Composable로 변경 가능)
     if (showModDialog) {
-        AlertDialog(
-            onDismissRequest = { showModDialog = false },
-            title = { Text("정정 요청") },
-            text = { Text("이 항목을 정정하시겠습니까?") },
-            confirmButton = {
-                Button(onClick = { showModDialog = false }) {
-                    Text("확인")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showModDialog = false }) {
-                    Text("취소")
-                }
-            }
-        )
+        WasteEditDialog(wasteListViewModel, selectedItem = selectedItem) {
+            wasteListViewModel.getWasteItemDetails(selectedItem.id)
+            showModDialog = false
+        }
     }
 
-    // ✅ 삭제 확인 다이얼로그
+    // 삭제 확인 다이얼로그
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -291,14 +279,15 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
                     onClick = {
                         scope.launch {
                             try {
-                                wasteListViewModel.deleteItem(selectedItem.id) // ✅ 삭제 처리
+                                wasteListViewModel.deleteItem(selectedItem.id) // 삭제 처리
                                 Toast.makeText(context, "삭제 성공", Toast.LENGTH_SHORT).show()
                             } catch (e: Exception) {
                                 Log.e(TAG, e.message.toString())
                                 Toast.makeText(context, "에러 발생", Toast.LENGTH_SHORT).show()
+                            } finally {
+                                wasteListViewModel.resetWasteList()
                             }
                             showDeleteDialog = false
-                            wasteListViewModel.resetWasteList()
                         }
                     }
                 ) {
@@ -315,7 +304,7 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
 }
 
 
-// ✅ 개별 정보 항목을 정리하는 Composable
+// 개별 정보 항목을 정리하는 Composable
 @Composable
 fun InfoRow(label: String, value: String, color: Color) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -340,13 +329,13 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isLatest) Color(0xFFFFF3E0) else Color.White // ✅ 최신 상태 강조
+            containerColor = if (isLatest) Color(0xFFFFF3E0) else Color.White // 최신 상태 강조
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        border = BorderStroke(1.dp, if (isLatest) Color.Red else Color.Gray) // ✅ 최신 상태 강조
+        border = BorderStroke(1.dp, if (isLatest) Color.Red else Color.Gray) // 최신 상태 강조
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // ✅ 등록한 사용자 정보 추가
+            // 등록한 사용자 정보 추가
             Text(
                 text = "👤 처리자: ${detail.user.name}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
@@ -355,7 +344,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ✅ 상태 정보
+            // 상태 정보
             Text(
                 text = "📌 상태: ${detail.status}",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -364,7 +353,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ✅ 상세 내용
+            // 상세 내용
             Text(
                 text = "📝 내용: ${detail.wasteDetails}",
                 style = MaterialTheme.typography.bodyMedium
@@ -372,7 +361,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ✅ 기록 시간
+            // 기록 시간
             Text(
                 text = "📅 기록 시간: ${detail.date}",
                 style = MaterialTheme.typography.bodySmall,
