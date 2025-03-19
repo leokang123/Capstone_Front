@@ -86,7 +86,8 @@ fun RegisterScreen(navController: NavController) {
             value = username,
             onValueChange = { username = it },
             label = { Text("UserName *") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
 
         OutlinedTextField(
@@ -135,7 +136,8 @@ fun RegisterScreen(navController: NavController) {
             value = name,
             onValueChange = { name = it },
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
 
         OutlinedTextField(
@@ -250,7 +252,7 @@ fun RegisterScreen(navController: NavController) {
                         Toast.makeText(context,response,Toast.LENGTH_SHORT).show()
 
                     } catch (e: Exception) {
-                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
                     } finally {
                         navController.popBackStack()
                     }

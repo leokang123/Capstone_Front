@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.os.Build
@@ -34,6 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.component.DrawerContent
@@ -59,8 +61,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
         requestBluetoothPermissions()
         setContent {
             MyApplicationTheme {
@@ -77,8 +77,6 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG,"BLE 미지원")
         }
     }
-
-    // 블루투스 권한 요청 함수 (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
     private fun requestBluetoothPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12(API 31) 이상에서만 필요
             val permissions = arrayOf(
@@ -95,6 +93,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 /**
@@ -111,7 +110,15 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
     val detailViewModel: DetailViewModel = viewModel()
     val wasteListViewModel: WasteListViewModel = viewModel()
-//    val context = LocalContext.current
+
+    // ✅ 현재 네비게이션 상태 확인
+    val currentBackStackEntry = navController.currentBackStackEntryAsState()
+    val currentDestination = currentBackStackEntry.value?.destination?.route
+
+    // ✅ 로그인/회원가입 화면에서는 TopBar 숨김
+    val shouldShowTopBar = currentDestination !in listOf("login", "register")
+
+    // 왼쪽 네비바 구현
 
     // 왼쪽 네비바 구현
     ModalNavigationDrawer(
@@ -122,28 +129,30 @@ fun AppNavigation() {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("애버커스") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
-                            Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = { // 우측 상단 버튼 추가
-                        // 알림 버튼 추가
-                        IconButton(onClick = {
-//                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
-                            navController.navigate("notification")
-                        }) {
-                            Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications")
-                        }
+                if (shouldShowTopBar) {
+                    TopAppBar(
+                        title = { Text("애버커스") },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
+                                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+                            }
+                        },
+                        actions = { // 우측 상단 버튼 추가
+                            // 알림 버튼 추가
+                            IconButton(onClick = {
+    //                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("notification")
+                            }) {
+                                Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications")
+                            }
 
-                        IconButton(onClick = { navController.navigate("settings") }) {
-                            Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
-                        }
+                            IconButton(onClick = { navController.navigate("settings") }) {
+                                Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
+                            }
 
-                    }
-                )
+                        }
+                    )
+                }
             },
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
@@ -152,12 +161,7 @@ fun AppNavigation() {
                 startDestination = "login",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("login") {
-                    // 로그인으로 돌아갔을때 기존 남아있는 데이터 리셋 로직
-                    detailViewModel.reset()
-
-                    LoginScreen(navController)
-                }
+                composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }

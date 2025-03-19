@@ -12,8 +12,10 @@ import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.data.waste.WasteStorage
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 /**
  * 엔드포인트랑 사용할 api 정의하는부분
@@ -46,6 +48,10 @@ interface ApiService {
     @POST("waste/get_detail_waste_item")
     suspend fun getDetailWasteItem(@Body searchRequest: SearchRequest): WasteItemDetailResponse
 
+    @GET("waste/check_item_status")
+    suspend fun checkItemStatus(@Query("itemId") itemId: Long): Boolean
 
+    @DELETE("waste/delete_item")
+    suspend fun deleteItem(@Query("itemId") itemId: Long): Boolean
 }
 
