@@ -1,8 +1,13 @@
 package com.example.myapplication.ui.screen
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -29,6 +36,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -61,8 +71,12 @@ fun WasteListScreen(
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     val selectedItem by wasteListViewModel.selectedItem.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
+
+
     val filteredItems by wasteListViewModel.wasteList.collectAsState()
     val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     CheckAuth(navController) // ✅ 인증 체크
 
@@ -109,6 +123,8 @@ fun WasteListScreen(
                                     scope.launch {
                                         wasteListViewModel.getWasteItemDetails(item.id)
                                     }
+                                    keyboardController?.hide()  // 키보드 내리기
+                                    focusManager.clearFocus()  // 입력 포커스 해제
                                     searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
                                     showDropdown = false
                                 },
@@ -157,13 +173,18 @@ fun WasteListScreen(
 
         // ✅ 선택된 폐기물 상세 정보 표시
         selectedItem?.let {
-            ResultList(it)
+            ResultList(it, wasteListViewModel)
         }
     }
 }
 
 @Composable
-fun ResultList(selectedItem: WasteItemDetailResponse) {
+fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteListViewModel) {
+    val scope = rememberCoroutineScope()
+    var showModDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,9 +227,93 @@ fun ResultList(selectedItem: WasteItemDetailResponse) {
                     WasteDetailCard(detail, detail.status == selectedItem.status)
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            showModDialog =  wasteListViewModel.checkItemStatus(selectedItem.id)
+                            if (!showModDialog) {
+                                Toast.makeText(context, "COLLECTING 상태에서만 수정 및 삭제가 가능합니다", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                ) {
+                    Text("정정")
+                }
+                Button(
+                    onClick = {
+                        scope.launch {
+                            showDeleteDialog =  wasteListViewModel.checkItemStatus(selectedItem.id)
+                            if (!showDeleteDialog) {
+                                Toast.makeText(context, "COLLECTING 상태에서만 수정 및 삭제가 가능합니다", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                ) {
+                    Text("삭제")
+                }
+            }
         }
     }
+
+    // ✅ 정정 다이얼로그 (예제 코드, 원하는 Composable로 변경 가능)
+    if (showModDialog) {
+        AlertDialog(
+            onDismissRequest = { showModDialog = false },
+            title = { Text("정정 요청") },
+            text = { Text("이 항목을 정정하시겠습니까?") },
+            confirmButton = {
+                Button(onClick = { showModDialog = false }) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showModDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    // ✅ 삭제 확인 다이얼로그
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("삭제 확인") },
+            text = { Text("이 항목을 삭제하시겠습니까?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                wasteListViewModel.deleteItem(selectedItem.id) // ✅ 삭제 처리
+                                Toast.makeText(context, "삭제 성공", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Log.e(TAG, e.message.toString())
+                                Toast.makeText(context, "에러 발생", Toast.LENGTH_SHORT).show()
+                            }
+                            showDeleteDialog = false
+                            wasteListViewModel.resetWasteList()
+                        }
+                    }
+                ) {
+                    Text("삭제")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
 }
+
 
 // ✅ 개별 정보 항목을 정리하는 Composable
 @Composable

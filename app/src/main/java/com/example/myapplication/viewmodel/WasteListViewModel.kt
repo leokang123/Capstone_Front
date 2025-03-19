@@ -26,6 +26,11 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
     private val _selectedItem = MutableStateFlow<WasteItemDetailResponse?>(null)
     val selectedItem: StateFlow<WasteItemDetailResponse?> = _selectedItem
 
+    fun resetWasteList() {
+        _wasteItems.value = emptyList()
+        _selectedItem.value = null
+    }
+
     // ✅ 전체 리스트 가져오기
     fun fetchWasteList(mode: Int = 1) {
         viewModelScope.launch {
@@ -68,6 +73,24 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
                 Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
                 _selectedItem.value = null // 오류 발생 시 초기화
             }
+        }
+    }
+
+    suspend fun checkItemStatus(itemId: Long): Boolean {
+        return try {
+                wasteRepository.checkItemStatus(itemId)
+            } catch (e: Exception) {
+                Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+                throw e
+            }
+        }
+
+    suspend fun deleteItem(itemId: Long): Boolean {
+        return try {
+            wasteRepository.deleteItem(itemId)
+        } catch (e: Exception) {
+            Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+            throw e
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.os.Build
@@ -60,8 +61,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
         requestBluetoothPermissions()
         setContent {
             MyApplicationTheme {
@@ -78,8 +77,6 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG,"BLE 미지원")
         }
     }
-
-    // 블루투스 권한 요청 함수 (버전 몇 이상부터는 런타임중에 검사해야 정상작동한다고함)
     private fun requestBluetoothPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12(API 31) 이상에서만 필요
             val permissions = arrayOf(
@@ -96,6 +93,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 /**
@@ -163,12 +161,7 @@ fun AppNavigation() {
                 startDestination = "login",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("login") {
-                    // 로그인으로 돌아갔을때 기존 남아있는 데이터 리셋 로직
-                    detailViewModel.reset()
-
-                    LoginScreen(navController)
-                }
+                composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }
                 composable("detail") { DetailScreen(navController, detailViewModel) }

@@ -74,5 +74,19 @@ class WasteRepository(context: Context) {
             throw e
         }
     }
+    suspend fun checkItemStatus(itemId: Long): Boolean {
+        return try {
+            apiService.checkItemStatus(itemId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 
+    suspend fun deleteItem(itemId: Long): Boolean {
+        return try {
+            apiService.deleteItem(itemId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 }
