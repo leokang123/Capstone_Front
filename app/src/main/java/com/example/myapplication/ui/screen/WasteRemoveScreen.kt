@@ -58,7 +58,7 @@ fun WasteRemoveScreen(navController: NavController,
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("폐기물 이동", style = MaterialTheme.typography.headlineMedium)
+        Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -137,23 +137,25 @@ fun WasteRemoveScreen(navController: NavController,
                 coroutineScope.launch {
                     val moveRequests = MoveRequests(stepId = 2, wasteMoveRequests = selectedItems.values.toList())
                     var responseMessage = ""
-                    try {
-                        wasteRepository.moveWasteItems(moveRequests)
-                        responseMessage = "폐기물 마지막단계 처리 완료"
-                        Log.d("WasteRemoveScreen", "이동 성공")
-                    } catch (e: Exception) {
-                        responseMessage = "처리 실패"
-                        Log.e("WasteRemoveScreen", responseMessage, e)
-                    } finally {
-                        selectedItems.clear() // 요청 성공 시 체크리스트 초기화
-                        Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                        wasteListViewModel.fetchWasteList(mode = 3)
+                    if (selectedItems.isNotEmpty()) {
+                        try {
+                            wasteRepository.moveWasteItems(moveRequests)
+                            responseMessage = "폐기물 마지막단계 처리 완료"
+                            Log.d("WasteRemoveScreen", "배출 성공")
+                        } catch (e: Exception) {
+                            responseMessage = "처리 실패"
+                            Log.e("WasteRemoveScreen", responseMessage, e)
+                        } finally {
+                            selectedItems.clear() // 요청 성공 시 체크리스트 초기화
+                            Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
+                            wasteListViewModel.fetchWasteList(mode = 3)
+                        }
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("선택한 폐기물 이동")
+            Text("선택한 폐기물 배출")
         }
     }
 
@@ -161,7 +163,7 @@ fun WasteRemoveScreen(navController: NavController,
     if (showDialog && currentItemId != null) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("폐기물 등록 정보 입력") },
+            title = { Text("폐기물 배출 정보 입력") },
             text = {
                 Column {
                     Text(

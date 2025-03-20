@@ -137,18 +137,21 @@ fun WasteMoveScreen(navController: NavController,
                 coroutineScope.launch {
                     val moveRequests = MoveRequests(stepId = 1, wasteMoveRequests = selectedItems.values.toList())
                     var responseMessage = ""
-                    try {
-                        wasteRepository.moveWasteItems(moveRequests)
-                        responseMessage = "폐기물 다음단계 처리 완료"
-                        Log.d("WasteMoveScreen", "이동 성공")
-                    } catch (e: Exception) {
-                        responseMessage = "처리 실패"
-                        Log.e("WasteMoveScreen", responseMessage, e)
-                    } finally {
-                        selectedItems.clear() // 요청 성공 시 체크리스트 초기화
-                        Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                        wasteListViewModel.fetchWasteList(mode = 2)
+                    if (selectedItems.isNotEmpty()) {
+                        try {
+                            wasteRepository.moveWasteItems(moveRequests)
+                            responseMessage = "폐기물 다음단계 처리 완료"
+                            Log.d("WasteMoveScreen", "이동 성공")
+                        } catch (e: Exception) {
+                            responseMessage = "처리 실패"
+                            Log.e("WasteMoveScreen", responseMessage, e)
+                        } finally {
+                            selectedItems.clear() // 요청 성공 시 체크리스트 초기화
+                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
+                            wasteListViewModel.fetchWasteList(mode = 2)
+                        }
                     }
+
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -161,7 +164,7 @@ fun WasteMoveScreen(navController: NavController,
     if (showDialog && currentItemId != null) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("폐기물 등록 정보 입력") },
+            title = { Text("폐기물 이동 정보 입력") },
             text = {
                 Column {
                     Text(
