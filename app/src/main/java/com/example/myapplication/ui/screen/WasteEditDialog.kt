@@ -183,7 +183,7 @@ fun WasteEditDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // ✅ 세부 내용 수정
-                Text("세부 내용 수정:")
+                Text("세부 내용 수정")
                 LazyColumn {
                     itemsIndexed(wasteDetailsList) { index, detail ->
                         OutlinedTextField(

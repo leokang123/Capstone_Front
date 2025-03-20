@@ -41,14 +41,17 @@ interface ApiService {
     @POST("waste/get_wastelist_by_name")
     suspend fun getWasteItemListByName(@Body wasteType: SearchRequest): List<WasteItemResponse>
 
+    @POST("waste/get_filtered_wastelist")
+    suspend fun searchWasteItems(@Body searchRequest: SearchRequest): List<WasteItemResponse>
+
     @GET("waste/get_storage_list")
     suspend fun getStorageList(): List<WasteStorage>
 
     @POST("waste/waste_items_next_step")
     suspend fun moveWasteItems(@Body moveRequests: MoveRequests)
 
-    @POST("waste/get_detail_waste_item")
-    suspend fun getDetailWasteItem(@Body searchRequest: SearchRequest): WasteItemDetailResponse
+    @GET("waste/get_detail_waste_item")
+    suspend fun getDetailWasteItem(@Query("itemId") itemId: Long): WasteItemDetailResponse
 
     @GET("waste/check_item_status")
     suspend fun checkItemStatus(@Query("itemId") itemId: Long): Boolean

@@ -63,7 +63,11 @@ fun WasteMoveScreen(navController: NavController,
         Spacer(modifier = Modifier.height(16.dp))
 
         // 체크리스트 UI
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f) // ✅ 최대 높이 지정
+        )  {
             items(wasteItems) { wasteItem ->
                 Card(
                     modifier = Modifier
