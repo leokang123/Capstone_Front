@@ -8,6 +8,6 @@ data class WasteItemDetailResponse(
     val selectedDate: String,
     val selectedDevice: String?,
     val status: String,
-    val wasteStorage: WasteStorage,
+    val wasteStorage: WasteStorage?,
     val wasteDetails: List<WasteDetailResponse> // ✅ 상세 정보 리스트 포함
 )

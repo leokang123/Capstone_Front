@@ -26,6 +26,17 @@ class WasteRepository(context: Context) {
         }
     }
 
+    suspend fun searchWasteItems(searchRequest: SearchRequest) : List<WasteItemResponse>? {
+        return try {
+            val response = apiService.searchWasteItems(searchRequest)
+            response
+
+        } catch (e: Exception) {
+            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            null
+        }
+    }
+
     suspend fun getWasteItems() : List<WasteItemResponse>? {
         return try {
             val response = apiService.getWasteItemList()
@@ -67,9 +78,9 @@ class WasteRepository(context: Context) {
         }
     }
 
-    suspend fun getDetailWasteItem(searchRequest: SearchRequest): WasteItemDetailResponse {
+    suspend fun getDetailWasteItem(itemId: Long): WasteItemDetailResponse {
         return try {
-            apiService.getDetailWasteItem(searchRequest)
+            apiService.getDetailWasteItem(itemId)
         } catch (e: Exception) {
             throw e
         }
@@ -77,6 +88,14 @@ class WasteRepository(context: Context) {
     suspend fun checkItemStatus(itemId: Long): Boolean {
         return try {
             apiService.checkItemStatus(itemId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun updateItem(wasteItem: WasteItemDetailResponse) {
+        return try {
+            apiService.updateItem(wasteItem)
         } catch (e: Exception) {
             throw e
         }

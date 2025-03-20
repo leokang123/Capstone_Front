@@ -34,7 +34,7 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
             .fillMaxHeight()
             .background(colorResource(id = R.color.black).copy(alpha = 0.7f))
             .padding(16.dp)) {
-        Text(text = "Navigation", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
         NavigationItem("홈화면", navController, drawerState, "home")

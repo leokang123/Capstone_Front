@@ -1,9 +1,11 @@
 package com.example.myapplication.data.waste
 
 data class SearchRequest(
-    val itemId: Long = 0,
-    val wasteType: String? = "",
-    val registrantName: String? = "",
-    val selectedDate: String? = "",
-    val selectedDevice: String? = ""
+    val wasteType: String? = null,
+    val registrantName: String? = null,
+    val selectedDate: String? = null,
+    val selectedTime: String? = null,
+    val combineDate: String? = null,
+    val selectedDevice: String? = null,
+    val wasteStatus: String? = null
 )
