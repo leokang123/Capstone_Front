@@ -1,5 +1,6 @@
 package com.example.myapplication.network
 
+import androidx.room.Update
 import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.auth.RegisterRequest
@@ -15,6 +16,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 /**
@@ -39,19 +41,26 @@ interface ApiService {
     @POST("waste/get_wastelist_by_name")
     suspend fun getWasteItemListByName(@Body wasteType: SearchRequest): List<WasteItemResponse>
 
+    @POST("waste/get_filtered_wastelist")
+    suspend fun searchWasteItems(@Body searchRequest: SearchRequest): List<WasteItemResponse>
+
     @GET("waste/get_storage_list")
     suspend fun getStorageList(): List<WasteStorage>
 
     @POST("waste/waste_items_next_step")
     suspend fun moveWasteItems(@Body moveRequests: MoveRequests)
 
-    @POST("waste/get_detail_waste_item")
-    suspend fun getDetailWasteItem(@Body searchRequest: SearchRequest): WasteItemDetailResponse
+    @GET("waste/get_detail_waste_item")
+    suspend fun getDetailWasteItem(@Query("itemId") itemId: Long): WasteItemDetailResponse
 
     @GET("waste/check_item_status")
     suspend fun checkItemStatus(@Query("itemId") itemId: Long): Boolean
 
     @DELETE("waste/delete_item")
     suspend fun deleteItem(@Query("itemId") itemId: Long): Boolean
+
+    @PUT("waste/update_item")
+    suspend fun updateItem(@Body wasteItem: WasteItemDetailResponse)
+
 }
 

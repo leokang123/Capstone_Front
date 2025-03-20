@@ -1,6 +1,7 @@
 package com.example.myapplication.viewmodel
 
 import android.app.Application
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,10 +52,10 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     // ✅ 서버에서 직접 검색 API 요청
-    fun searchWasteByName(name: String) {
+    fun searchWasteItems(searchRequest: SearchRequest) {
         viewModelScope.launch {
             try {
-                val result = wasteRepository.getWasteItemsByName(name)
+                val result = wasteRepository.searchWasteItems(searchRequest)
                 _wasteItems.value = result ?: emptyList()
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 빈 리스트 반환
@@ -64,10 +65,9 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun getWasteItemDetails(itemId: Long) {
-        val searchRequest = SearchRequest(itemId = itemId)
         viewModelScope.launch {
             try {
-                val result = wasteRepository.getDetailWasteItem(searchRequest)
+                val result = wasteRepository.getDetailWasteItem(itemId)
                 _selectedItem.value = result // ✅ 선택된 아이템 업데이트
             } catch (e: Exception) {
                 Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
@@ -84,12 +84,21 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
                 throw e
             }
         }
+    suspend fun updateItem(updatedItem: WasteItemDetailResponse) {
+        return try {
+            Log.d(TAG,updatedItem.toString())
+            wasteRepository.updateItem(updatedItem)
+        } catch (e: Exception) {
+            Log.e("WasteListViewModel", "아이템 정정 실패", e)
+            throw e
+        }
+    }
 
     suspend fun deleteItem(itemId: Long): Boolean {
         return try {
             wasteRepository.deleteItem(itemId)
         } catch (e: Exception) {
-            Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+            Log.e("WasteListViewModel", "아이템 삭제 실패", e)
             throw e
         }
     }

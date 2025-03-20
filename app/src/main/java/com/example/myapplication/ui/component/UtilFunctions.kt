@@ -41,6 +41,6 @@ fun logout(context: Context) {
  * 현재 시각 가져오는 함수
  */
 fun getCurrentTime(): String {
-    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
     return sdf.format(Date()) // 현재 시간 반환
 }
