@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,9 +67,15 @@ fun LoginScreen(navController: NavController) {
 
     val userDataStore = UserDataStore(context)
 
-    if (userDataStore.getToken() != null) {
-        navController.navigate("home") { popUpTo("login") { inclusive = true } }  // ✅ 자동 로그인 방지
+    LaunchedEffect(Unit) {
+        val token = userDataStore.getAccessToken()
+        if (token != null) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +131,7 @@ fun LoginScreen(navController: NavController) {
                         // 서버없이 테스트
                         val user = User(userName = "test", password = "test", name = "test")
                         CoroutineScope(Dispatchers.IO).launch {
-                            userDataStore.saveUser(user = user, token = "token123")
+                            userDataStore.saveUser(user = user, accessToken = "token123", refreshToken = "token123")
                         }
                         navController.navigate("home")
                     }

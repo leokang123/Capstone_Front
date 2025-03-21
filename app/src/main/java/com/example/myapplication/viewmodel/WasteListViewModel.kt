@@ -5,6 +5,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemResponse

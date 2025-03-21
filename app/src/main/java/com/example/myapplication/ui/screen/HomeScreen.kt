@@ -22,6 +22,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +47,11 @@ import com.example.myapplication.ui.component.UserDataStore
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val userDataStore = UserDataStore(context)
-    val user: User? = userDataStore.getUser()
+    var user by remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(Unit) {
+        user = userDataStore.getUser()
+    }
 
     // 토큰 검증
     CheckAuth(navController)
