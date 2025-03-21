@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.WasteItemRequest
 import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.data.waste.WasteStorage
@@ -137,7 +138,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     val context = LocalContext.current
     val heightPadding = 12.dp
     val userDataStore = UserDataStore(context)
-    val user = userDataStore.getUser()
+    var user by remember { mutableStateOf<User?>(null) }
+
     var registrantName by remember { mutableStateOf(user?.name ?: "") } // 등록자 이름
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
@@ -183,6 +185,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     val wasteRepository = WasteRepository(context)
 
     LaunchedEffect(Unit) {
+        user = userDataStore.getUser()
         try {
             val storageList = wasteRepository.getWasteStorage()
             wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList

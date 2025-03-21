@@ -5,5 +5,6 @@ import com.example.myapplication.data.user.User
 
 data class LoginResponse(
     val user: User,
-    val token: String
+    val accessToken: String,
+    val refreshToken: String
 )

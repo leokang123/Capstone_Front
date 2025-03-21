@@ -11,15 +11,13 @@ fun CheckAuth(navController: NavController, roleId: Long = 1) {
     val context = LocalContext.current
     val userDataStore = remember { UserDataStore(context) }
 
-    // ✅ 단순한 값 반환이라면 remember만 사용 (불필요한 상태 관리 제거)
-    val token = remember { userDataStore.getToken() }
-    val user = remember { userDataStore.getUser() }
-
-    val userRoleId = user?.role?.id ?: 1
-    val userRoleName = user?.role?.roleName ?: "권한정보 없음"
-
-    // ✅ 사용자 정보가 로드된 후 권한 체크
+    // 사용자 정보가 로드된 후 권한 체크
     LaunchedEffect(Unit) {
+        val token = userDataStore.getAccessToken()
+        val user = userDataStore.getUser()
+        val userRoleId = user?.role?.id ?: 1
+        val userRoleName = user?.role?.roleName ?: "권한정보 없음"
+
         if (token.isNullOrEmpty()) {
             Toast.makeText(context, "로그인이 필요한 기능", Toast.LENGTH_SHORT).show()
             navController.navigate("login") {

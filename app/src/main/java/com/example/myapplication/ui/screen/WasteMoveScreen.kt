@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.viewmodel.WasteListViewModel
@@ -34,7 +35,8 @@ fun WasteMoveScreen(navController: NavController,
 ) {
     val context = LocalContext.current
     val userDataStore = UserDataStore(context)
-    val user = userDataStore.getUser()
+    var user by remember { mutableStateOf<User?>(null) }
+
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
     val selectedItems = remember { mutableStateMapOf<Long, MoveRequest>() } // 선택된 아이템 (id -> MoveRequest)
     val coroutineScope = rememberCoroutineScope()
@@ -54,6 +56,7 @@ fun WasteMoveScreen(navController: NavController,
 
     // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(Unit) {
+        user = userDataStore.getUser()
         wasteListViewModel.fetchWasteList(mode = 2)
     }
 
