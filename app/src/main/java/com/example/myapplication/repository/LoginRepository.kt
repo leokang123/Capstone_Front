@@ -23,7 +23,7 @@ class LoginRepository(val context: Context) {
     suspend fun loginUser(loginRequest: LoginRequest): LoginResponse? {
         return try {
             val response: LoginResponse = apiService.login(loginRequest)
-            userDataStore.saveUser(response.user, response.token)
+            userDataStore.saveUser(response.user, response.accessToken, response.refreshToken)
             response
 
         } catch (e: Exception) {
