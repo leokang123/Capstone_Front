@@ -111,11 +111,11 @@ fun AppNavigation() {
     val detailViewModel: DetailViewModel = viewModel()
     val wasteListViewModel: WasteListViewModel = viewModel()
 
-    // ✅ 현재 네비게이션 상태 확인
+    // 현재 네비게이션 상태 확인
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStackEntry.value?.destination?.route
 
-    // ✅ 로그인/회원가입 화면에서는 TopBar 숨김
+    // 로그인/회원가입 화면에서는 TopBar 숨김
     val shouldShowTopBar = currentDestination !in listOf("login", "register")
 
     // 왼쪽 네비바 구현

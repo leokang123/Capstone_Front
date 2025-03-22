@@ -43,20 +43,23 @@ fun WasteRemoveScreen(navController: NavController,
 
     var showDialog by remember { mutableStateOf(false) }
     var currentItemId by remember { mutableStateOf<Long?>(null) }
-    var currentUserId by remember { mutableStateOf(user?.id.toString()) }
+    var currentUserId by remember { mutableStateOf("") }
     var currentDetails by remember { mutableStateOf("") }
     var currentStatus by remember { mutableStateOf("") }
     var wasteItemDetails by remember { mutableStateOf("") }
 
-
-
-
     val wasteRepository = WasteRepository(context)
-    CheckAuth(navController, roleId = 2)
+
+    var authChecked by remember { mutableStateOf(false) }
+    CheckAuth(navController, roleId = 2) {
+        authChecked = true
+    }
 
     // UI 로딩 시 폐기물 리스트 불러오기
-    LaunchedEffect(Unit) {
+    LaunchedEffect(authChecked) {
+        if (!authChecked) return@LaunchedEffect
         user = userDataStore.getUser()
+        currentUserId = user?.id.toString();
         wasteListViewModel.fetchWasteList(mode = 3)
     }
 
@@ -69,7 +72,7 @@ fun WasteRemoveScreen(navController: NavController,
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.8f) // ✅ 최대 높이 지정
+                .fillMaxHeight(0.8f) // 최대 높이 지정
         )   {
             items(wasteItems) { wasteItem ->
                 Card(
@@ -93,7 +96,7 @@ fun WasteRemoveScreen(navController: NavController,
                             onCheckedChange = { isChecked ->
                                 if (isChecked) {
                                     currentItemId = wasteItem.id
-                                    currentStatus = wasteItem.status // ✅ 현재 상태 저장
+                                    currentStatus = wasteItem.status // 현재 상태 저장
                                     wasteItemDetails = wasteItem.wasteDetails.toString()
                                     showDialog = true // 팝업창 띄우기
                                 } else {
@@ -162,7 +165,7 @@ fun WasteRemoveScreen(navController: NavController,
         }
     }
 
-    // ✅ 팝업창 (다이얼로그)
+    // 팝업창 (다이얼로그)
     if (showDialog && currentItemId != null) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -201,9 +204,8 @@ fun WasteRemoveScreen(navController: NavController,
                     if (currentItemId != null && currentUserId.isNotEmpty()) {
                         selectedItems[currentItemId!!] = MoveRequest(
                             itemId = currentItemId!!,
-                            userId = currentUserId.toLong(),
                             wasteDetails = currentDetails,
-                            date = getCurrentTime() // ✅ 현재 시간 갱신
+                            date = getCurrentTime() // 현재 시간 갱신
                         )
                         currentStatus = ""
                         currentDetails = ""

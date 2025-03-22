@@ -48,13 +48,18 @@ fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val userDataStore = UserDataStore(context)
     var user by remember { mutableStateOf<User?>(null) }
-
-    LaunchedEffect(Unit) {
-        user = userDataStore.getUser()
-    }
+    var authChecked by remember { mutableStateOf(false) }
 
     // 토큰 검증
-    CheckAuth(navController)
+    CheckAuth(navController, roleId = 1) {
+        authChecked = true
+    }
+
+    // UI 로딩 시 폐기물 리스트 불러오기
+    LaunchedEffect(authChecked) {
+        if (!authChecked) return@LaunchedEffect
+        user = userDataStore.getUser()
+    }
 
     Column(
         modifier = Modifier

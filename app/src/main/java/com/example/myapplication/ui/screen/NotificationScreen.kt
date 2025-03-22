@@ -65,7 +65,7 @@ fun NotificationScreen(navController: NavController) {
             NotificationItem(notification) { selectedNotification = it }
         }
 
-        // ✅ 공지를 클릭하면 팝업으로 전체 내용 표시
+        // 공지를 클릭하면 팝업으로 전체 내용 표시
         if (selectedNotification != null) {
             AlertDialog(
                 onDismissRequest = { selectedNotification = null },
@@ -89,7 +89,7 @@ fun NotificationScreen(navController: NavController) {
 }
 
 /**
- * ✅ 개별 공지 아이템
+ * 개별 공지 아이템
  * 긴 공지는 50자로 제한하고, 클릭하면 전체 내용을 볼 수 있도록 설정
  */
 @Composable
@@ -101,16 +101,16 @@ fun NotificationItem(notification: String, onClick: (String) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp) // ✅ 공지 간격 추가
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp)) // ✅ 보더라인 추가
-            .clickable { onClick(notification) }, // ✅ 클릭 가능
+            .padding(vertical = 4.dp) // 공지 간격 추가
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp)) // 보더라인 추가
+            .clickable { onClick(notification) }, // 클릭 가능
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp) // ✅ 카드 그림자 효과
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp) // 카드 그림자 효과
     ) {
         Text(
             text = displayText,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(16.dp) // ✅ 내부 여백 추가
+            modifier = Modifier.padding(16.dp) // 내부 여백 추가
         )
     }
 }

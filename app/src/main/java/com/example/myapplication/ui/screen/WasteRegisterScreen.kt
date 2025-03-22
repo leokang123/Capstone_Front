@@ -68,13 +68,16 @@ fun WasteRegisterScreen(navController: NavController, wasteListViewModel: WasteL
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
     val sharedViewModel: SharedViewModel = viewModel()
     val wasteList by wasteListViewModel.wasteList.collectAsState()
+    var authChecked by remember { mutableStateOf(false) }
+    CheckAuth(navController, roleId = 1) {
+        authChecked = true
+    }
 
-    CheckAuth(navController)
+    // UI 로딩 시 폐기물 리스트 불러오기
+    LaunchedEffect(authChecked) {
+        if (!authChecked) return@LaunchedEffect
 
-    // 화면이 열릴 때 서버에서 데이터 가져오기
-    LaunchedEffect(Unit) {
         wasteListViewModel.fetchWasteList(mode = 1)
-        println(wasteListViewModel.wasteList)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -139,8 +142,38 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     val heightPadding = 12.dp
     val userDataStore = UserDataStore(context)
     var user by remember { mutableStateOf<User?>(null) }
+    var registrantName by remember { mutableStateOf("") }
 
-    var registrantName by remember { mutableStateOf(user?.name ?: "") } // 등록자 이름
+    val scope = rememberCoroutineScope()
+    val wasteRepository = WasteRepository(context)
+    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
+    val wasteTypes = listOf("격리 의료 폐기물",
+        "위해 의료 폐기물 / 조직물류 폐기물",
+        "위해 의료 폐기물 / 병리계 폐기물",
+        "위해 의료 폐기물 / 손상성 폐기물",
+        "위해 의료 폐기물 / 생물·화학 폐기물",
+        "위해 의료 폐기물 / 혈액오염 폐기물",
+        "일반 의료 폐기물") // 폐기물 종류 리스트
+
+    val mockList = listOf(
+        WasteStorage(id = 1, storageName = "기본 창고 A"),
+        WasteStorage(id = 2, storageName = "기본 창고 B")
+    )
+
+
+    LaunchedEffect(Unit) {
+        user = userDataStore.getUser()
+        registrantName = user?.name ?: ""
+        try {
+            val storageList = wasteRepository.getWasteStorage()
+            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
+
+        } catch (e: Exception) {
+            Log.e("WasteRegisterScreen", e.message.toString())
+            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
     var wasteDetails by remember { mutableStateOf("없음")}
     var location by remember { mutableStateOf("") } // 발생장소
@@ -159,42 +192,17 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     var selectedTime by remember { mutableStateOf(defaultTime) }
 
 
-    val wasteTypes = listOf("격리 의료 폐기물",
-        "위해 의료 폐기물 / 조직물류 폐기물",
-        "위해 의료 폐기물 / 병리계 폐기물",
-        "위해 의료 폐기물 / 손상성 폐기물",
-        "위해 의료 폐기물 / 생물·화학 폐기물",
-        "위해 의료 폐기물 / 혈액오염 폐기물",
-        "일반 의료 폐기물") // 폐기물 종류 리스트
-
-    val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
 
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
     // 창고 리스트를 저장할 상태
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
     // 선택한 창고
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
-    val wasteRepository = WasteRepository(context)
 
-    LaunchedEffect(Unit) {
-        user = userDataStore.getUser()
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
 
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     Card(
         modifier = Modifier
@@ -387,7 +395,6 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                     scope.launch {
                         try {
                             val wasteItem = WasteItemRequest(
-                                userId = user?.id ?: 0,
                                 wasteType = wasteType,
                                 selectedDate = "$selectedDate $selectedTime",
                                 wasteDetails = wasteDetails,

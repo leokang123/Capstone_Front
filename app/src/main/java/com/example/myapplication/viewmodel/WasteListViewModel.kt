@@ -20,11 +20,11 @@ import kotlinx.coroutines.launch
 class WasteListViewModel(application: Application) : AndroidViewModel(application) {
     private val wasteRepository: WasteRepository = WasteRepository(getApplication<Application>().applicationContext)
 
-    // ✅ 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
+    // 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
     private val _wasteItems = MutableStateFlow<List<WasteItemResponse>>(emptyList())
     val wasteList: StateFlow<List<WasteItemResponse>> = _wasteItems
 
-    // ✅ 선택된 폐기물 상세 정보
+    // 선택된 폐기물 상세 정보
     private val _selectedItem = MutableStateFlow<WasteItemDetailResponse?>(null)
     val selectedItem: StateFlow<WasteItemDetailResponse?> = _selectedItem
 
@@ -33,17 +33,17 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
         _selectedItem.value = null
     }
 
-    // ✅ 전체 리스트 가져오기
+    // 전체 리스트 가져오기
     fun fetchWasteList(mode: Int = 1) {
         viewModelScope.launch {
             try {
                 val response = wasteRepository.getWasteItems()
                 if (mode == 1) {
-                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // ✅ API 결과 저장
+                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
                 } else if (mode == 2) {
-                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // ✅ API 결과 저장
+                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
                 } else if (mode == 3) {
-                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // ✅ API 결과 저장
+                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
                 }
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
@@ -52,7 +52,7 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // ✅ 서버에서 직접 검색 API 요청
+    // 서버에서 직접 검색 API 요청
     fun searchWasteItems(searchRequest: SearchRequest) {
         viewModelScope.launch {
             try {
@@ -69,7 +69,7 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             try {
                 val result = wasteRepository.getDetailWasteItem(itemId)
-                _selectedItem.value = result // ✅ 선택된 아이템 업데이트
+                _selectedItem.value = result // 선택된 아이템 업데이트
             } catch (e: Exception) {
                 Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
                 _selectedItem.value = null // 오류 발생 시 초기화

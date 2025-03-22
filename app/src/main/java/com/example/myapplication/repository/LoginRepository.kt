@@ -6,6 +6,7 @@ import android.util.Log
 import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.auth.RegisterRequest
+import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.ui.component.UserDataStore
@@ -56,6 +57,14 @@ class LoginRepository(val context: Context) {
         } catch (e: Exception) {
             Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // 네트워크 에러 로그
             "네트워크 오류 발생: ${e.message}" // 기본 에러 메시지 반환
+            throw Exception(e.message)
+        }
+    }
+
+    suspend fun getHospitalList(): List<Hospital>? {
+        return try {
+            apiService.getHospitalList() // API 호출
+        } catch (e: Exception) {
             throw Exception(e.message)
         }
     }

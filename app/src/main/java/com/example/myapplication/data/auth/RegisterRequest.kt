@@ -7,6 +7,6 @@ data class RegisterRequest(
     val email: String,
     val name: String,
     val phoneNumber: String,
-    val selectedHospital: String,
+    val selectedHospitalId: Long,
     val roleId : Long,
 )
