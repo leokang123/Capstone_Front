@@ -8,6 +8,6 @@ data class User(
     val email: String? = null,
     val name: String = "",
     val phoneNumber: String? = null,
-    val selectedHospital: String? = null,
+    val hospital: Hospital? = null,
     val role: Role? = null,
 )
