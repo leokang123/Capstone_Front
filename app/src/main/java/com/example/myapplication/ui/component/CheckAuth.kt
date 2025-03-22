@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
-fun CheckAuth(navController: NavController, roleId: Long = 1) {
+fun CheckAuth(navController: NavController, roleId: Long = 1, onAuthChecked: () -> Unit) {
     val context = LocalContext.current
     val userDataStore = remember { UserDataStore(context) }
 
@@ -23,11 +23,12 @@ fun CheckAuth(navController: NavController, roleId: Long = 1) {
             navController.navigate("login") {
                 popUpTo(0) // 네비게이션 스택 초기화 (뒤로 가기 방지)
             }
-        }
-
-        if (user != null && userRoleId < roleId) {
+        } else if (user != null && userRoleId < roleId) {
             Toast.makeText(context, "$userRoleName (이)가 사용할 수 없는 기능", Toast.LENGTH_SHORT).show()
             navController.navigateUp() // popBackStack() 대신 navigateUp() 사용
+        } else {
+            onAuthChecked()
+
         }
     }
 }

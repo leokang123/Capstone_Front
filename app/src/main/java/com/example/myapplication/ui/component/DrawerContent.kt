@@ -42,6 +42,11 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
         NavigationItem("폐기물 등록", navController, drawerState, "waste_register")
         NavigationItem("주변 페기물 처리", navController, drawerState, "waste_move")
         NavigationItem("폐기물 배출", navController, drawerState, "waste_remove")
+
+        Spacer(modifier = Modifier.height(24.dp)) // 구분을 위한 여백
+
+        BackNavigationItem("뒤로가기", navController, drawerState)
+
     }
 }
 
@@ -53,6 +58,25 @@ fun NavigationItem(title: String, navController: NavController, drawerState: Dra
         onClick = {
             scope.launch { drawerState.close() } // Drawer 닫기
             navController.navigate(route) // 네비게이션 이동
+        },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+    ) {
+        Text(text = title)
+    }
+}
+
+@Composable
+fun BackNavigationItem(title: String, navController: NavController, drawerState: DrawerState) {
+    val scope = rememberCoroutineScope()
+
+    Button(
+        onClick = {
+            scope.launch {
+                drawerState.close()
+                if (navController.previousBackStackEntry != null) {
+                    navController.popBackStack()
+                }
+            }
         },
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {

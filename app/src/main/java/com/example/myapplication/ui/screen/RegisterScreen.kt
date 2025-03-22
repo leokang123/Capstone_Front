@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.auth.RegisterRequest
+import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.Role
+import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.repository.LoginRepository
 import kotlinx.coroutines.launch
 
@@ -35,7 +37,7 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
-    var selectedHospital by remember { mutableStateOf("") }
+    var selectedHospital by remember { mutableStateOf<Hospital?>(null) }
     var selectedRoleName by remember { mutableStateOf("") }
 
     var selectedRoleId by remember { mutableLongStateOf(1L) }
@@ -48,8 +50,14 @@ fun RegisterScreen(navController: NavController) {
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var showHospitalDropdown by remember { mutableStateOf(false) }
     var showRoleDropdown by remember { mutableStateOf(false) }
+    var hospitalList by remember { mutableStateOf<List<Hospital>>(emptyList()) }
 
-    val hospitals = listOf("서울병원", "강남병원", "부산병원", "광주병원")
+    val mockHospitalList = listOf(
+        Hospital(id = 1, hospitalName = "서울병원"),
+        Hospital(id = 2, hospitalName = "강남병원"),
+        Hospital(id = 3, hospitalName = "구로병원"),
+        Hospital(id = 4, hospitalName = "성모병원")
+        )
     val roles = listOf(
         Role(id = 1, roleName = "일반 사용자"),
         Role(id = 2, roleName = "중간 관리직"),
@@ -71,7 +79,17 @@ fun RegisterScreen(navController: NavController) {
     }
 
     val isFormValid by remember(username, password, selectedHospital) {
-        derivedStateOf { username.isNotBlank() && password.isNotBlank() && selectedHospital.isNotBlank() }
+        derivedStateOf { username.isNotBlank() && password.isNotBlank() && selectedHospital != null }
+    }
+    LaunchedEffect(Unit) {
+        try {
+            val hosList = loginRepository.getHospitalList()
+            hospitalList = hosList.takeIf { !it.isNullOrEmpty() } ?: mockHospitalList
+
+        } catch (e: Exception) {
+            Log.e("RegisterScreen", e.message.toString())
+            Toast.makeText(context, "병원 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     Column(
@@ -196,7 +214,7 @@ fun RegisterScreen(navController: NavController) {
         // 병원 선택 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = selectedHospital,
+                value = selectedHospital?.hospitalName ?: "",
                 onValueChange = {},
                 label = { Text("Select Hospital *") },
                 readOnly = true,
@@ -211,9 +229,9 @@ fun RegisterScreen(navController: NavController) {
                 expanded = showHospitalDropdown,
                 onDismissRequest = { showHospitalDropdown = false }
             ) {
-                hospitals.forEach { hospital ->
+                hospitalList.forEach { hospital ->
                     DropdownMenuItem(
-                        text = { Text(hospital) },
+                        text = { Text(hospital.hospitalName) },
                         onClick = {
                             selectedHospital = hospital
                             showHospitalDropdown = false
@@ -243,7 +261,7 @@ fun RegisterScreen(navController: NavController) {
                     email = email.trim(),
                     phoneNumber = phoneNumber.trim(),
                     name = name.trim(),
-                    selectedHospital = selectedHospital,
+                    selectedHospitalId = selectedHospital?.id!!,
                     roleId = selectedRoleId,
                 )
                 scope.launch {
@@ -264,7 +282,7 @@ fun RegisterScreen(navController: NavController) {
                     && isPasswordValid
                     && isPasswordMatch
                     && name.isNotBlank()
-                    && selectedHospital.isNotBlank()
+                    && selectedHospital != null
                     && selectedRoleName.isNotBlank()
         ) {
             Text("Sign Up")

@@ -1,7 +1,6 @@
 package com.example.myapplication.data.waste
 
 data class WasteItemRequest(
-    val userId: Long,
     val wasteType: String,
     val wasteDetails: String?,
     val location: String,

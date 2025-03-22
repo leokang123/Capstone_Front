@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -87,19 +88,27 @@ fun WasteListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    CheckAuth(navController) // 인증 체크
-    LaunchedEffect(searchFilter) {  // ✅ searchFilter의 모든 변경사항을 감지하여 실행
+    var authChecked by remember { mutableStateOf(false) }
+
+    CheckAuth(navController, roleId = 1) {
+        authChecked = true
+    }
+
+    LaunchedEffect(searchFilter, authChecked) {
+        if (!authChecked) return@LaunchedEffect
+
         if (searchFilter.wasteType?.isBlank() == true) {
             showDropdown = false
             return@LaunchedEffect
         }
 
-        wasteListViewModel.resetWasteList()  // ✅ 검색 시작 전에 초기화
-        delay(500) // 0.5초 대기 후 검색 실행
+        wasteListViewModel.resetWasteList()
+        delay(500)
         wasteListViewModel.searchWasteItems(searchFilter)
     }
 
-    LaunchedEffect(filteredItems) {  // ✅ 검색 결과가 변경될 때 드롭다운 상태 업데이트
+    LaunchedEffect(filteredItems, authChecked) {
+        if (!authChecked) return@LaunchedEffect
         showDropdown = filteredItems.isNotEmpty()
     }
 
@@ -274,7 +283,11 @@ fun ResultList(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteL
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.
+                fillMaxWidth()
+                .fillMaxHeight(0.8f),
+                ) {
                 val detailsList = selectedItem.wasteDetails.sortedByDescending { it.date }
 
                 itemsIndexed(detailsList) { index, detail ->

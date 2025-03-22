@@ -5,6 +5,8 @@ import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.auth.RegisterRequest
 import com.example.myapplication.data.auth.RegisterResponse
+import com.example.myapplication.data.user.Beacon
+import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItemDetailResponse
@@ -44,8 +46,6 @@ interface ApiService {
     @POST("waste/get_filtered_wastelist")
     suspend fun searchWasteItems(@Body searchRequest: SearchRequest): List<WasteItemResponse>
 
-    @GET("waste/get_storage_list")
-    suspend fun getStorageList(): List<WasteStorage>
 
     @POST("waste/waste_items_next_step")
     suspend fun moveWasteItems(@Body moveRequests: MoveRequests)
@@ -61,6 +61,15 @@ interface ApiService {
 
     @PUT("waste/update_item")
     suspend fun updateItem(@Body wasteItem: WasteItemDetailResponse)
+
+    @GET("setting/get_storage_list")
+    suspend fun getStorageList(): List<WasteStorage>
+
+    @GET("setting/get_hospital_list")
+    suspend fun getHospitalList(): List<Hospital>
+
+    @GET("setting/get_beacon_list")
+    suspend fun getBeaconList(): List<Beacon>
 
 }
 

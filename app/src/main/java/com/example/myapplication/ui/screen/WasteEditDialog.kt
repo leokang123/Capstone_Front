@@ -50,17 +50,17 @@ fun WasteEditDialog(
     val scope = rememberCoroutineScope()
     val wasteRepository = WasteRepository(context)
 
-    // ✅ 상태 관리 (선택된 값)
+    // 상태 관리 (선택된 값)
     var wasteType by remember { mutableStateOf(selectedItem.wasteType) }
     var location by remember { mutableStateOf(selectedItem.location) }
     var selectedDevice by remember { mutableStateOf(selectedItem.selectedDevice) }
     var wasteStorage by remember { mutableStateOf(selectedItem.wasteStorage) }
 
-    // ✅ DropdownMenu 상태 (하단부에서 펼쳐지도록)
+    // DropdownMenu 상태 (하단부에서 펼쳐지도록)
     var expandedType by remember { mutableStateOf(false) }
     var expandedStorage by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색 다이얼로그
-    // ✅ 선택 가능한 목록
+    // 선택 가능한 목록
     val wasteTypes = listOf(
         "격리 의료 폐기물",
         "위해 의료 폐기물 / 조직물류 폐기물",
@@ -96,7 +96,7 @@ fun WasteEditDialog(
         title = { Text("정정 요청") },
         text = {
             Column {
-                // ✅ 폐기물 종류 선택
+                // 폐기물 종류 선택
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = wasteType,
@@ -125,7 +125,7 @@ fun WasteEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ✅ 창고 선택
+                // 창고 선택
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = wasteStorage?.storageName.toString(),
@@ -154,7 +154,7 @@ fun WasteEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ✅ 블루투스 기기 선택
+                // 블루투스 기기 선택
                 Button(
                     onClick = { showDialog = true },
                     modifier = Modifier.fillMaxWidth()
@@ -162,7 +162,7 @@ fun WasteEditDialog(
                     Text("블루투스 선택: $selectedDevice")
                 }
 
-                // ✅ 블루투스 검색 다이얼로그
+                // 블루투스 검색 다이얼로그
                 if (showDialog) {
                     BluetoothDialog(sharedViewModel, onDismiss = {
                         showDialog = false
@@ -172,7 +172,7 @@ fun WasteEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ✅ 위치 입력
+                // 위치 입력
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
@@ -182,7 +182,7 @@ fun WasteEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ✅ 세부 내용 수정
+                // 세부 내용 수정
                 Text("세부 내용 수정")
                 LazyColumn {
                     itemsIndexed(wasteDetailsList) { index, detail ->

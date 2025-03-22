@@ -117,7 +117,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     }
 }
 
-// ✅ 더미 블루투스 장치 모델
+// 더미 블루투스 장치 모델
 data class MockBluetoothDevice(
     val name: String,
     val address: String
