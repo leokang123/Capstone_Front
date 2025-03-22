@@ -23,7 +23,7 @@ import com.example.myapplication.viewmodel.DetailViewModel
 
 @Composable
 fun DetailScreen(navController: NavController, detailViewModel: DetailViewModel = viewModel()) {
-    var showDialog by remember { mutableStateOf(false) }  // ✅ 팝업 상태 관리
+    var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Detail Screen", style = MaterialTheme.typography.headlineMedium)
@@ -43,7 +43,7 @@ fun DetailScreen(navController: NavController, detailViewModel: DetailViewModel 
             Text("Increase")
         }
         Button(
-            onClick = { showDialog = true },  // ✅ 버튼 클릭 시 다이얼로그 표시
+            onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
             modifier = Modifier.padding(top = 16.dp)
         ) {
             Text("Show Popup")

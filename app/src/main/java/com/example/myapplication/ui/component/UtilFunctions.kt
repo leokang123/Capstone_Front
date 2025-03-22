@@ -32,7 +32,7 @@ fun isEmulator(): Boolean {
  */
 fun logout(context: Context) {
     val userDataStore = UserDataStore(context)
-    CoroutineScope(Dispatchers.IO).launch {  // ✅ 비동기 처리 (IO 작업에 적합)
+    CoroutineScope(Dispatchers.IO).launch {  // 비동기 처리 (IO 작업에 적합)
         userDataStore.clearUserData()
     }
 }

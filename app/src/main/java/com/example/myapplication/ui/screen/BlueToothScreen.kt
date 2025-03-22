@@ -49,7 +49,7 @@ fun BluetoothDialog(
             BluetoothScreen(targetViewModel, viewModel, onDismiss)
         }
         Button(
-            onClick = { onDismiss() }, // ✅ 버튼 클릭 시 모달 닫기
+            onClick = { onDismiss() }, // 버튼 클릭 시 모달 닫기
         ) {
             Text("닫기")
         }
@@ -79,7 +79,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
         .padding(16.dp)) {
         Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
 
-        // ✅ 블루투스 스캔 버튼
+        // 블루투스 스캔 버튼
         Button(
             onClick = {
 
@@ -90,7 +90,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
             Text("Scan Devices")
         }
 
-        // ✅ 블루투스 장치 목록 표시
+        // 블루투스 장치 목록 표시
         LazyColumn {
             items(devices) { device ->
                 DeviceItem(device) { selected ->
@@ -113,7 +113,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
 //fun DeviceItem(device: BluetoothDevice, onClick: (BluetoothDevice) -> Unit) {
 //    val context = LocalContext.current
 //
-//    // ✅ BLUETOOTH_CONNECT 권한 체크
+//    // BLUETOOTH_CONNECT 권한 체크
 //    val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 //        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
 //            device.name ?: "Unknown Device"
@@ -143,7 +143,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
 fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Unit) {
     val context = LocalContext.current
 
-    // ✅ BLUETOOTH_CONNECT 권한 체크
+    // BLUETOOTH_CONNECT 권한 체크
     val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
             device.name

@@ -92,7 +92,7 @@ fun LoginScreen(navController: NavController) {
             onValueChange = { username = it },
             label = { Text("UserName") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // password가 아니면 이상하게 키보드가 안뜸
-            modifier = Modifier.fillMaxWidth()// ✅ 포커스 가능하도록 설정
+            modifier = Modifier.fillMaxWidth()// 포커스 가능하도록 설정
 
         )
 
@@ -123,7 +123,7 @@ fun LoginScreen(navController: NavController) {
                     val loginRequest = LoginRequest(username.trim(), password)
                     val response: LoginResponse? = loginRepository.loginUser(loginRequest)
                     if (response != null) {
-                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
+                        navController.navigate("home") // 로그인 성공 시 홈 화면으로 이동
                         Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
                     } else {
                         errorMessage = "Invalid username or password"
@@ -147,7 +147,7 @@ fun LoginScreen(navController: NavController) {
         }
 
         TextButton(
-            onClick = { navController.navigate("register") }, // ✅ 회원가입 페이지 이동
+            onClick = { navController.navigate("register") }, // 회원가입 페이지 이동
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Don't have an account? Sign up")
