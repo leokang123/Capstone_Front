@@ -68,6 +68,8 @@ fun HomeScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("안녕하세요! ${user?.name} 님👋", style = MaterialTheme.typography.headlineSmall)
+        Text(user?.hospital?.hospitalName ?: "", style = MaterialTheme.typography.bodySmall)
+
         Text("${user?.role?.roleName}", style = MaterialTheme.typography.labelSmall)
         Spacer(modifier = Modifier.height(32.dp))
 
