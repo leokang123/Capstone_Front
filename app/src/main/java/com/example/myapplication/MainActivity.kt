@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.Manifest
-import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.os.Build
