@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.viewmodel.BluetoothViewModel
-import com.example.myapplication.viewmodel.MockBluetoothDevice
+import com.example.myapplication.data.mock.MockBluetoothDevice
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.SharedViewModel
 
 /**
@@ -34,7 +34,7 @@ import com.example.myapplication.viewmodel.SharedViewModel
 @Composable
 fun BluetoothDialog(
     targetViewModel: SharedViewModel,
-    viewModel: BluetoothViewModel = viewModel(),
+    viewModel: BlueToothViewModel = viewModel(),
     onDismiss: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss ) {
@@ -43,15 +43,11 @@ fun BluetoothDialog(
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight(0.6f)
                 .padding(16.dp)
 
         ) {
             BluetoothScreen(targetViewModel, viewModel, onDismiss)
-        }
-        Button(
-            onClick = { onDismiss() }, // 버튼 클릭 시 모달 닫기
-        ) {
-            Text("닫기")
         }
     }
 }
@@ -64,7 +60,7 @@ fun BluetoothDialog(
  */
 
 @Composable
-fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewModel = viewModel(), onDismiss: () -> Unit) {
+fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BlueToothViewModel = viewModel(), onDismiss: () -> Unit) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }

@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.data.user.User
-import com.example.myapplication.ui.component.CheckAuth
-import com.example.myapplication.ui.component.UserDataStore
+import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.UserDataStore
 
 /**
  * 홈화면

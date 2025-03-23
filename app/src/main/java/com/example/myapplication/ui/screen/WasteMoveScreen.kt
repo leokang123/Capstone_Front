@@ -24,9 +24,9 @@ import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.viewmodel.WasteListViewModel
 import com.example.myapplication.repository.WasteRepository
-import com.example.myapplication.ui.component.CheckAuth
-import com.example.myapplication.ui.component.UserDataStore
-import com.example.myapplication.ui.component.getCurrentTime
+import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.utils.getCurrentTime
 import kotlinx.coroutines.launch
 
 @Composable

@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.myapplication.ui.component.logout
+import com.example.myapplication.utils.logout
 
 /**
  * 설정창
