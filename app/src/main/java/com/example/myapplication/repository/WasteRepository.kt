@@ -47,6 +47,20 @@ class WasteRepository(context: Context) {
             null
         }
     }
+
+
+    suspend fun getStorageWasteItems(storageId: Long) : List<WasteItemResponse>? {
+        return try {
+            val sr = SearchRequest(wasteStorageId = storageId)
+            val response = apiService.searchWasteItems(sr)
+            response
+
+        } catch (e: Exception) {
+            Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            null
+        }
+    }
+
     suspend fun getWasteItemsByName(wasteType: String) : List<WasteItemResponse>? {
         return try {
             val response = apiService.getWasteItemListByName(SearchRequest(wasteType = wasteType))

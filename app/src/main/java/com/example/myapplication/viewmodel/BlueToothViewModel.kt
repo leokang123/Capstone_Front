@@ -15,7 +15,8 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
-import com.example.myapplication.ui.component.isEmulator
+import com.example.myapplication.data.mock.MockBluetoothDevice
+import com.example.myapplication.utils.isEmulator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -24,7 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
  * 사용할 수도 있고 안할 수도 있음 (그냥 어지간하면 다 viewmodel 만들었음)
  * Screen에서는 데이터를 보여주고, 데이터의 저장 및 변화나 갱신에 대한 연산은 거의 전부 viewModel에서 하는 느낌
  */
-class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
+class BlueToothViewModel(application: Application) : AndroidViewModel(application) {
 
     private val bluetoothManager: BluetoothManager by lazy {
         application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -117,8 +118,3 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     }
 }
 
-// 더미 블루투스 장치 모델
-data class MockBluetoothDevice(
-    val name: String,
-    val address: String
-)

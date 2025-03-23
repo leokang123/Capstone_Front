@@ -7,15 +7,18 @@ package com.example.myapplication.ui.screen
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,11 +26,12 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.MoveRequests
+import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.viewmodel.WasteListViewModel
 import com.example.myapplication.repository.WasteRepository
-import com.example.myapplication.ui.component.CheckAuth
-import com.example.myapplication.ui.component.UserDataStore
-import com.example.myapplication.ui.component.getCurrentTime
+import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.utils.getCurrentTime
 import kotlinx.coroutines.launch
 
 @Composable
@@ -48,7 +52,16 @@ fun WasteRemoveScreen(navController: NavController,
     var currentStatus by remember { mutableStateOf("") }
     var wasteItemDetails by remember { mutableStateOf("") }
 
+    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
+    var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
+    // DropdownMenu 상태
+    var expandedStorage by remember { mutableStateOf(false) }
     val wasteRepository = WasteRepository(context)
+
+    val mockList = listOf(
+        WasteStorage(id = 1, storageName = "기본 창고 A"),
+        WasteStorage(id = 2, storageName = "기본 창고 B")
+    )
 
     var authChecked by remember { mutableStateOf(false) }
     CheckAuth(navController, roleId = 2) {
@@ -60,14 +73,44 @@ fun WasteRemoveScreen(navController: NavController,
         if (!authChecked) return@LaunchedEffect
         user = userDataStore.getUser()
         currentUserId = user?.id.toString();
-        wasteListViewModel.fetchWasteList(mode = 3)
+        try {
+            val storageList = wasteRepository.getWasteStorage()
+            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
+
+        } catch (e: Exception) {
+            Log.e("WasteRemoveScreen", e.message.toString())
+            Toast.makeText(context, "배출화면 정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        // 폐기물 종류 선택 (DropdownMenu)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expandedStorage = true }
+                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = selectedStorage?.storageName ?: "창고 선택",
+                    color = if (selectedStorage == null || expandedStorage) Color.Gray else Color.Black
+                )
+            }
+            DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+                wasteStorageList.forEach { storage ->
+                    DropdownMenuItem(text = { Text(storage.storageName.toString()) }, onClick = {
+                        selectedStorage = storage
+                        wasteListViewModel.fetchStorageWasteList(selectedStorage!!.id!!)
+                        expandedStorage = false
+                    })
+                }
+            }
+        }
         // 체크리스트 UI
         LazyColumn(
             modifier = Modifier

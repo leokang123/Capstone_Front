@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.component
+package com.example.myapplication.utils
 
 import android.content.Context
 import android.util.Log
@@ -7,7 +7,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.data.user.User
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 
 val Context.dataStore by preferencesDataStore("user_prefs")

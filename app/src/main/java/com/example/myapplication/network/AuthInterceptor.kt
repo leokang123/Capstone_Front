@@ -1,12 +1,11 @@
 package com.example.myapplication.network
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import com.example.myapplication.ui.component.UserDataStore
+import com.example.myapplication.utils.UserDataStore
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

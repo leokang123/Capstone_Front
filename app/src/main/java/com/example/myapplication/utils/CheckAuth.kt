@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.component
+package com.example.myapplication.utils
 
 import android.widget.Toast
 import androidx.compose.runtime.*
