@@ -296,9 +296,3 @@ fun RegisterScreen(navController: NavController) {
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen(navController = rememberNavController())
-}

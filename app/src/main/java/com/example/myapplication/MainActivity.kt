@@ -37,11 +37,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui.component.DrawerContent
+import com.example.myapplication.utils.DrawerContent
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.screen.HomeScreen
-import com.example.myapplication.ui.screen.DetailScreen
-import com.example.myapplication.ui.screen.PopUpScreen
 import com.example.myapplication.ui.screen.LoginScreen
 import com.example.myapplication.ui.screen.RegisterScreen
 import com.example.myapplication.viewmodel.DetailViewModel
@@ -52,7 +50,6 @@ import com.example.myapplication.ui.screen.WasteListScreen
 import com.example.myapplication.ui.screen.WasteMoveScreen
 import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
-import com.example.myapplication.viewmodel.WasteListViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -108,7 +105,6 @@ fun AppNavigation() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer 상태 관리
     val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
     val detailViewModel: DetailViewModel = viewModel()
-    val wasteListViewModel: WasteListViewModel = viewModel()
 
     // 현재 네비게이션 상태 확인
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
@@ -163,12 +159,10 @@ fun AppNavigation() {
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }
-                composable("detail") { DetailScreen(navController, detailViewModel) }
-                composable("waste_list") { WasteListScreen(navController, wasteListViewModel) }
-                composable("waste_register") { WasteRegisterScreen(navController, wasteListViewModel) }
-                composable("waste_move") { WasteMoveScreen(navController, wasteListViewModel) }
-                composable("waste_remove") { WasteRemoveScreen(navController, wasteListViewModel) }
-                dialog("popup") { PopUpScreen(navController) }
+                composable("waste_list") { WasteListScreen(navController) }
+                composable("waste_register") { WasteRegisterScreen(navController) }
+                composable("waste_move") { WasteMoveScreen(navController) }
+                composable("waste_remove") { WasteRemoveScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
                 dialog("notification") { NotificationDialog(navController) }
             }

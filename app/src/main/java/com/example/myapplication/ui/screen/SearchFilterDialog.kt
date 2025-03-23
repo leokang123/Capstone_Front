@@ -2,6 +2,9 @@ package com.example.myapplication.ui.screen
 
 import android.app.TimePickerDialog
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
@@ -33,9 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteStorage
+import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.viewmodel.WasteListViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -50,6 +59,8 @@ fun SearchFilterDialog(
 ) {
     var expandedWasteType by remember { mutableStateOf(false) }
     var expandedStatusType by remember { mutableStateOf(false) }
+    var expandedStorageType by remember { mutableStateOf(false) }
+
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -57,16 +68,22 @@ fun SearchFilterDialog(
     val defaultDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
     val defaultTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
 
+    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
+    var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
+    // DropdownMenu 상태
 
     // ✅ 체크박스로 입력 활성화 여부 관리
     var isWasteTypeChecked by remember { mutableStateOf(false) }
     var isRegistrantChecked by remember { mutableStateOf(false) }
+    var isWasteStorageChecked by remember { mutableStateOf(false) }
     var isDeviceChecked by remember { mutableStateOf(false) }
     var isDateChecked by remember { mutableStateOf(false) }
     var isStatusChecked by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(searchFilter.selectedDate ?: defaultDate) }
     var selectedTime by remember { mutableStateOf(searchFilter.selectedTime ?: defaultTime) }
 
+    val context = LocalContext.current;
+    val wasteRepository = WasteRepository(context)
     // ✅ 선택 가능한 폐기물 유형 목록
     val wasteTypes = listOf(
         "격리 의료 폐기물",
@@ -85,7 +102,26 @@ fun SearchFilterDialog(
         "STORED",
         "DISPOSED"
     )
+
+    val mockList = listOf(
+        WasteStorage(id = 1, storageName = "기본 창고 A"),
+        WasteStorage(id = 2, storageName = "기본 창고 B")
+    )
+
     LaunchedEffect(Unit) {
+        try {
+            val storageList = wasteRepository.getWasteStorage()
+            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
+
+        } catch (e: Exception) {
+            Log.e("WasteRegisterScreen", e.message.toString())
+            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+
+        if (searchFilter.wasteStorageId != null) {
+            selectedStorage = wasteStorageList.find {it.id == searchFilter.wasteStorageId}
+            isWasteStorageChecked = true
+        }
         if (searchFilter.wasteStatus != null) isStatusChecked = true
         if (searchFilter.wasteType != null) isWasteTypeChecked = true
         if (searchFilter.registrantName != null) isRegistrantChecked = true
@@ -93,7 +129,7 @@ fun SearchFilterDialog(
         if (searchFilter.combineDate != null) isDateChecked = true
         if (searchFilter.selectedDate == null) onFilterChange(searchFilter.copy(selectedDate = defaultDate))
         if (searchFilter.selectedTime == null) onFilterChange(searchFilter.copy(selectedTime = defaultTime))
-        Log.d("123", searchFilter.selectedDate.toString())
+
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -110,24 +146,18 @@ fun SearchFilterDialog(
                 }
                 if (isWasteTypeChecked) {
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = searchFilter.wasteType ?: "",
-                            onValueChange = { onFilterChange(searchFilter.copy(wasteType = it)) },
-                            label = { Text("폐기물 유형") },
-                            readOnly = !isWasteTypeChecked,
-                            trailingIcon = {
-                                if (isWasteTypeChecked) {
-                                    IconButton(onClick = { expandedWasteType = true }) {
-                                        Icon(
-                                            Icons.Default.ArrowDropDown,
-                                            contentDescription = "Dropdown"
-                                        )
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = isWasteTypeChecked
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedWasteType = true }
+                                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = searchFilter.wasteType ?: "폐기물 유형 선택",
+                                color = if (searchFilter.wasteType == null) Color.Gray else Color.Black
+                            )
+                        }
                         DropdownMenu(
                             expanded = expandedWasteType,
                             onDismissRequest = { expandedWasteType = false }
@@ -164,6 +194,46 @@ fun SearchFilterDialog(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isWasteStorageChecked, onCheckedChange = {
+                        isWasteStorageChecked = it
+                        selectedStorage = null
+                        if (!isWasteStorageChecked) onFilterChange(searchFilter.copy(wasteStorageId = null))
+                    })
+                    Text("저장창고 선택")
+                }
+                if (isWasteStorageChecked) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedStorageType = true }
+                                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = selectedStorage?.storageName ?: "저장창고 선택",
+                                color = if (selectedStorage == null) Color.Gray else Color.Black
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expandedStorageType,
+                            onDismissRequest = { expandedStorageType = false }
+                        ) {
+                            wasteStorageList.forEach { storage ->
+                                DropdownMenuItem(
+                                    text = { Text(storage.storageName.toString()) },
+                                    onClick = {
+                                        onFilterChange(searchFilter.copy(wasteStorageId = storage.id))
+                                        selectedStorage = storage
+                                        expandedStorageType = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isStatusChecked, onCheckedChange = {
                         isStatusChecked = it
                         if (!isStatusChecked) onFilterChange(searchFilter.copy(wasteStatus = null))
@@ -172,24 +242,18 @@ fun SearchFilterDialog(
                 }
                 if (isStatusChecked) {
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = searchFilter.wasteStatus ?: "",
-                            onValueChange = { onFilterChange(searchFilter.copy(wasteStatus = it)) },
-                            label = { Text("상태") },
-                            readOnly = !isStatusChecked,
-                            trailingIcon = {
-                                if (isStatusChecked) {
-                                    IconButton(onClick = { expandedStatusType = true }) {
-                                        Icon(
-                                            Icons.Default.ArrowDropDown,
-                                            contentDescription = "Dropdown"
-                                        )
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = isStatusChecked
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedStatusType = true }
+                                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = searchFilter.wasteStatus ?: "상태 선택",
+                                color = if (searchFilter.wasteStatus == null) Color.Gray else Color.Black
+                            )
+                        }
                         DropdownMenu(
                             expanded = expandedStatusType,
                             onDismissRequest = { expandedStatusType = false }

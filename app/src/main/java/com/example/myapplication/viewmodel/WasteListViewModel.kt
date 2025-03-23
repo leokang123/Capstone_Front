@@ -5,7 +5,6 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemResponse
@@ -45,6 +44,18 @@ class WasteListViewModel(application: Application) : AndroidViewModel(applicatio
                 } else if (mode == 3) {
                     _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
                 }
+            } catch (e: Exception) {
+                _wasteItems.value = emptyList() // 오류 발생 시 초기화
+                Log.e("WasteListViewModel", "API 요청 실패", e)
+            }
+        }
+    }
+
+    fun fetchStorageWasteList(wasteStorageId: Long) {
+        viewModelScope.launch {
+            try {
+                val response = wasteRepository.getStorageWasteItems(wasteStorageId)
+                _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)

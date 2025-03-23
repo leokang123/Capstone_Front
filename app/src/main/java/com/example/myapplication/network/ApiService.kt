@@ -46,7 +46,6 @@ interface ApiService {
     @POST("waste/get_filtered_wastelist")
     suspend fun searchWasteItems(@Body searchRequest: SearchRequest): List<WasteItemResponse>
 
-
     @POST("waste/waste_items_next_step")
     suspend fun moveWasteItems(@Body moveRequests: MoveRequests)
 

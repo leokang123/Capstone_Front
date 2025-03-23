@@ -9,7 +9,7 @@ import com.example.myapplication.data.auth.RegisterRequest
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
-import com.example.myapplication.ui.component.UserDataStore
+import com.example.myapplication.utils.UserDataStore
 import org.json.JSONObject
 
 /**
