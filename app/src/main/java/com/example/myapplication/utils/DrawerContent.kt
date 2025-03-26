@@ -43,10 +43,6 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
         NavigationItem("주변 페기물 처리", navController, drawerState, "waste_move")
         NavigationItem("폐기물 배출", navController, drawerState, "waste_remove")
 
-        Spacer(modifier = Modifier.height(24.dp)) // 구분을 위한 여백
-
-        BackNavigationItem("뒤로가기", navController, drawerState)
-
     }
 }
 

@@ -13,6 +13,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
@@ -104,7 +106,6 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer 상태 관리
     val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
-    val detailViewModel: DetailViewModel = viewModel()
 
     // 현재 네비게이션 상태 확인
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
@@ -112,6 +113,7 @@ fun AppNavigation() {
 
     // 로그인/회원가입 화면에서는 TopBar 숨김
     val shouldShowTopBar = currentDestination !in listOf("login", "register")
+    val shouldShowBackButton = currentDestination !in listOf("home")
 
     // 왼쪽 네비바 구현
 
@@ -128,21 +130,41 @@ fun AppNavigation() {
                     TopAppBar(
                         title = { Text("애버커스") },
                         navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
-                                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+                            if (shouldShowBackButton) {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "뒤로 가기"
+                                    )
+                                }
                             }
+                            else {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
+                                    Icon(
+                                        imageVector = Icons.Filled.Menu,
+                                        contentDescription = "Menu"
+                                    )
+                                }
+                            }
+
                         },
                         actions = { // 우측 상단 버튼 추가
                             // 알림 버튼 추가
                             IconButton(onClick = {
-    //                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
+                                //                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("notification")
                             }) {
-                                Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications")
+                                Icon(
+                                    imageVector = Icons.Filled.Notifications,
+                                    contentDescription = "Notifications"
+                                )
                             }
 
                             IconButton(onClick = { navController.navigate("settings") }) {
-                                Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = "Settings"
+                                )
                             }
 
                         }
