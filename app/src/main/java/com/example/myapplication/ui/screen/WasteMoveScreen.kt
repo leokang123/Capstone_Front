@@ -118,6 +118,16 @@ fun WasteMoveScreen(navController: NavController,
                                 color = MaterialTheme.colorScheme.secondary
                             )
                             Text(
+                                text = "창고명: ${wasteItem.storageName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                            Text(
+                                text = "비콘이름: ${wasteItem.selectedDevice}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                            Text(
                                 text = "상세내역: ${wasteItem.wasteDetails}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary

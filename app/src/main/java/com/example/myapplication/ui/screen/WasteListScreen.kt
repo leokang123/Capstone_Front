@@ -94,7 +94,6 @@ fun WasteListScreen(
             delay(500)
             wasteListViewModel.searchWasteItems(searchFilter)
         }
-
     }
 
     LaunchedEffect(filteredItems, authChecked) {
@@ -159,68 +158,62 @@ fun WasteListScreen(
         }
         // 검색어가 입력될 때 자동완성 하단 바 표시
         if (!isSelected && filteredItems.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            LazyColumn( // Column 대신 LazyColumn 사용 (스크롤 가능)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                LazyColumn( // ✅ Column 대신 LazyColumn 사용 (스크롤 가능)
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    itemsIndexed(filteredItems) { index, item ->  // ✅ itemsIndexed 사용
-                        Card(
+                itemsIndexed(filteredItems) { index, item ->  // itemsIndexed 사용
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                scope.launch {
+                                    wasteListViewModel.getWasteItemDetails(item.id)
+                                }
+                                keyboardController?.hide()  // 키보드 내리기
+                                focusManager.clearFocus()  // 입력 포커스 해제
+                                showDropdown = false
+                            },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                        border = BorderStroke(1.dp, Color.Gray)
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                                    append("🗑 폐기물 유형: ")
+                                }
+                                append(item.wasteType + "\n")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
+                                    append("👤 처리자: ")
+                                }
+                                append(item.registrantName + "\n")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
+                                    append("📍 발생위치: ")
+                                }
+                                append(item.location + "\n")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
+                                    append("📦 저장위치: ")
+                                }
+                                append(item.storageName + "\n")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
+                                    append("📅 날짜: ")
+                                }
+                                append(item.selectedDate + "\n")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Gray)) {
+                                    append("➡️ 현재 상태: ")
+                                }
+                                append(item.status)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    scope.launch {
-                                        wasteListViewModel.getWasteItemDetails(item.id)
-                                    }
-                                    keyboardController?.hide()  // 키보드 내리기
-                                    focusManager.clearFocus()  // 입력 포커스 해제
-                                    showDropdown = false
-                                },
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
-                            border = BorderStroke(1.dp, Color.Gray)
-                        ) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
-                                        append("🗑 폐기물 유형: ")
-                                    }
-                                    append(item.wasteType + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                                        append("👤 처리자: ")
-                                    }
-                                    append(item.registrantName + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
-                                        append("📍 발생위치: ")
-                                    }
-                                    append(item.location + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
-                                        append("📦 저장위치: ")
-                                    }
-                                    append(item.storageName + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
-                                        append("📅 날짜: ")
-                                    }
-                                    append(item.selectedDate + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Gray)) {
-                                        append("➡️ 현재 상태: ")
-                                    }
-                                    append(item.status)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            )
-                        }
+                                .padding(16.dp)
+                        )
                     }
                 }
             }
@@ -230,7 +223,7 @@ fun WasteListScreen(
 
         // 선택된 폐기물 상세 정보 표시
         selectedItem?.let {
-            isSelected = true;
+            isSelected = true
             WasteItemDetailComponent(it, wasteListViewModel)
         }
     }
