@@ -116,8 +116,6 @@ fun AppNavigation() {
     val shouldShowBackButton = currentDestination !in listOf("home")
 
     // 왼쪽 네비바 구현
-
-    // 왼쪽 네비바 구현
     ModalNavigationDrawer(
         drawerContent = {
             DrawerContent(navController, drawerState) // Drawer 내부 UI
