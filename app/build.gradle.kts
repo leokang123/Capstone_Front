@@ -2,7 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    alias(libs.plugins.dagger.hilt)
+    alias(libs.plugins.kotlin.kapt)
+
+}
+hilt {
+    enableAggregatingTask = false
 }
 
 android {
@@ -78,4 +83,14 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    // Hilt + Compose 연결
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.lifecycle.viewmodel.ktx)
+
 }
