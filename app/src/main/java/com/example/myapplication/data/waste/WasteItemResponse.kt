@@ -1,5 +1,6 @@
 package com.example.myapplication.data.waste
 
+// 폐기물 등록 요청 데이터 클래스
 data class WasteItemResponse(
     val id: Long,  // 서버에서 생성된 ID
     val userId: Long,  // 서버에서 생성된 ID

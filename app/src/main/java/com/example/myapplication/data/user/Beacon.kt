@@ -1,5 +1,7 @@
 package com.example.myapplication.data.user
 
+/** 수정 완료 **/
+
 data class Beacon(
     val id: Int,
     val uuid: String,

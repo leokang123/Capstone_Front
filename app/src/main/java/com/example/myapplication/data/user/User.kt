@@ -1,7 +1,7 @@
 package com.example.myapplication.data.user
-
 import com.example.myapplication.data.enums.Roles
 
+/** 수정 완료 **/
 
 data class User(
     val uuid: String = "",
