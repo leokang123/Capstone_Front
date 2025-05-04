@@ -7,13 +7,13 @@ data class User(
     val uuid: String = "",
     val userName: String,
     val password: String,
-    val email: String? = null,
+    val email: String = "",
     val name: String = "",
-    val phoneNumber: String? = null,
-    val hospitalId: Int,
-    val roles: List<Roles>,
-    val primaryRoles: Roles,
-    val token: String,
+    val phoneNumber: String = "",
+    val hospitalId: Int? = null,
+    val roles: List<Roles>? = null,
+    val primaryRoles: Roles? = null,
+    val token: String = "",
     val fcmToken: String = ""
 )
 

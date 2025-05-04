@@ -1,8 +1,8 @@
 package com.example.myapplication.di
 
 import com.example.myapplication.repository.LoginRepository
-import com.example.myapplication.repository.impl.LoginRepositoryImpl
 import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.LoginRepositoryImpl
 import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import dagger.Binds
 import dagger.Module

@@ -7,7 +7,6 @@ import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.auth.RegisterRequest
 import com.example.myapplication.data.user.Hospital
-import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.utils.UserDataStore

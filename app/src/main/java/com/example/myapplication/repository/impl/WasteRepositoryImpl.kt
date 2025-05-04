@@ -9,7 +9,6 @@ import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemRequest
 import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.WasteRepository
 import javax.inject.Inject

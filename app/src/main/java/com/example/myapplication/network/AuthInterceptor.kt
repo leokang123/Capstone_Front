@@ -86,7 +86,7 @@ class AuthInterceptor(
                 val json = JSONObject(response.body?.string() ?: "")
                 json.getString("accessToken")
             } else {
-                Log.d("1111","Refresh 토큰 만료, 재 로그인 바람" )
+                Log.d("1111", "Refresh 토큰 만료, 재 로그인 바람")
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
                 }
