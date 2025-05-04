@@ -1,21 +1,34 @@
 package com.example.myapplication.ui.screen
 
 import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.mock.MockBluetoothDevice
 import com.example.myapplication.viewmodel.BlueToothViewModel
@@ -34,10 +47,10 @@ import com.example.myapplication.viewmodel.SharedViewModel
 @Composable
 fun BluetoothDialog(
     targetViewModel: SharedViewModel,
-    viewModel: BlueToothViewModel = viewModel(),
+    viewModel: BlueToothViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss ) {
+    Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -60,7 +73,11 @@ fun BluetoothDialog(
  */
 
 @Composable
-fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BlueToothViewModel = viewModel(), onDismiss: () -> Unit) {
+fun BluetoothScreen(
+    targetViewModel: SharedViewModel,
+    viewModel: BlueToothViewModel = viewModel(),
+    onDismiss: () -> Unit
+) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
@@ -70,9 +87,11 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BlueToothViewMo
     var selectedDevice by remember { mutableStateOf<MockBluetoothDevice?>(null) }
 
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
 
         // 블루투스 스캔 버튼
@@ -80,7 +99,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BlueToothViewMo
             onClick = {
 
                 viewModel.startScan()
-                      },
+            },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
             Text("Scan Devices")
@@ -141,7 +160,11 @@ fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Un
 
     // BLUETOOTH_CONNECT 권한 체크
     val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             device.name
         } else {
             "Permission Required"

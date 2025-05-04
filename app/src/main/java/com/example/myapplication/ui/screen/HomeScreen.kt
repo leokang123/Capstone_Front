@@ -76,12 +76,21 @@ fun HomeScreen(navController: NavController) {
 
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                HomeButton("폐기물 목록", Icons.AutoMirrored.Filled.List) { navController.navigate("waste_list") }
+                HomeButton(
+                    "폐기물 목록",
+                    Icons.AutoMirrored.Filled.List
+                ) { navController.navigate("waste_list") }
                 HomeButton("폐기물 등록", Icons.Default.Add) { navController.navigate("waste_register") }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                HomeButton("주변 폐기물 처리", Icons.Default.LocationOn) { navController.navigate("waste_move") }
-                HomeButton("폐기물 배출", Icons.Default.Delete) { navController.navigate("waste_remove") }
+                HomeButton(
+                    "주변 폐기물 처리",
+                    Icons.Default.LocationOn
+                ) { navController.navigate("waste_move") }
+                HomeButton(
+                    "폐기물 배출",
+                    Icons.Default.Delete
+                ) { navController.navigate("waste_remove") }
             }
         }
     }

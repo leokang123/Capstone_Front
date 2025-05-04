@@ -36,11 +36,13 @@ import androidx.navigation.NavController
 
 @Composable
 fun NotificationDialog(navController: NavController) {
-    Dialog(onDismissRequest = {navController.popBackStack()}) {
+    Dialog(onDismissRequest = { navController.popBackStack() }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             NotificationScreen(navController)
         }

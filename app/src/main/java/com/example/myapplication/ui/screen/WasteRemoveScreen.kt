@@ -1,4 +1,5 @@
 package com.example.myapplication.ui.screen
+
 /**
  * 폐기물 처리 창
  * 3/11(강정훈)
@@ -9,40 +10,67 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.viewmodel.WasteListViewModel
-import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.utils.UserDataStore
 import com.example.myapplication.utils.getCurrentTime
+import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun WasteRemoveScreen(navController: NavController,
-                    wasteListViewModel: WasteListViewModel = viewModel()
+fun WasteRemoveScreen(
+    navController: NavController,
+    wasteListViewModel: WasteListViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val userDataStore = UserDataStore(context)
     var user by remember { mutableStateOf<User?>(null) }
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
-    val selectedItems = remember { mutableStateMapOf<Long, MoveRequest>() } // 선택된 아이템 (id -> MoveRequest)
+    val selectedItems =
+        remember { mutableStateMapOf<Long, MoveRequest>() } // 선택된 아이템 (id -> MoveRequest)
     val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
@@ -52,11 +80,10 @@ fun WasteRemoveScreen(navController: NavController,
     var currentStatus by remember { mutableStateOf("") }
     var wasteItemDetails by remember { mutableStateOf("") }
 
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
-    val wasteRepository = WasteRepository(context)
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
 
     val mockList = listOf(
         WasteStorage(id = 1, storageName = "기본 창고 A"),
@@ -73,17 +100,11 @@ fun WasteRemoveScreen(navController: NavController,
         if (!authChecked) return@LaunchedEffect
         user = userDataStore.getUser()
         currentUserId = user?.id.toString();
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRemoveScreen", e.message.toString())
-            Toast.makeText(context, "배출화면 정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -101,7 +122,9 @@ fun WasteRemoveScreen(navController: NavController,
                     color = if (selectedStorage == null || expandedStorage) Color.Gray else Color.Black
                 )
             }
-            DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+            DropdownMenu(
+                expanded = expandedStorage,
+                onDismissRequest = { expandedStorage = false }) {
                 wasteStorageList.forEach { storage ->
                     DropdownMenuItem(text = { Text(storage.storageName.toString()) }, onClick = {
                         selectedStorage = storage
@@ -116,7 +139,7 @@ fun WasteRemoveScreen(navController: NavController,
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f) // 최대 높이 지정
-        )   {
+        ) {
             items(wasteItems) { wasteItem ->
                 Card(
                     modifier = Modifier
@@ -157,7 +180,7 @@ fun WasteRemoveScreen(navController: NavController,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = wasteItem.wasteType  + " (" + wasteItem.selectedDate + ")",
+                                text = wasteItem.wasteType + " (" + wasteItem.selectedDate + ")",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -189,11 +212,12 @@ fun WasteRemoveScreen(navController: NavController,
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests = MoveRequests(stepId = 2, wasteMoveRequests = selectedItems.values.toList())
+                    val moveRequests =
+                        MoveRequests(stepId = 2, wasteMoveRequests = selectedItems.values.toList())
                     var responseMessage = ""
                     if (selectedItems.isNotEmpty()) {
                         try {
-                            wasteRepository.moveWasteItems(moveRequests)
+                            wasteListViewModel.moveWasteItems(moveRequests)
                             responseMessage = "폐기물 마지막단계 처리 완료"
                             Log.d("WasteRemoveScreen", "배출 성공")
                         } catch (e: Exception) {

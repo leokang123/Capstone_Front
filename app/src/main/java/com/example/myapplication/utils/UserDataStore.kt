@@ -2,20 +2,25 @@ package com.example.myapplication.utils
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.data.user.User
 import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
 
-val Context.dataStore by preferencesDataStore("user_prefs")
+val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
 
-class UserDataStore(private val context: Context) {
+class UserDataStore @Inject constructor(@ApplicationContext context: Context) {
+    private val dataStore = context.userDataStore
+
     private val gson = Gson()
 
     suspend fun saveUser(user: User, accessToken: String, refreshToken: String) {
-        context.dataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             prefs[stringPreferencesKey("user")] = gson.toJson(user)
             prefs[stringPreferencesKey("accessToken")] = accessToken
             prefs[stringPreferencesKey("refreshToken")] = refreshToken
@@ -24,25 +29,25 @@ class UserDataStore(private val context: Context) {
     }
 
     suspend fun getUser(): User? {
-        val userJson = context.dataStore.data.first()[stringPreferencesKey("user")]
+        val userJson = dataStore.data.first()[stringPreferencesKey("user")]
         return userJson?.let { gson.fromJson(it, User::class.java) }
     }
 
     suspend fun getAccessToken(): String? {
-        return context.dataStore.data.first()[stringPreferencesKey("accessToken")]
+        return dataStore.data.first()[stringPreferencesKey("accessToken")]
     }
 
     suspend fun getRefreshToken(): String? {
-        return context.dataStore.data.first()[stringPreferencesKey("refreshToken")]
+        return dataStore.data.first()[stringPreferencesKey("refreshToken")]
     }
 
     suspend fun saveAccessToken(token: String) {
-        context.dataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             prefs[stringPreferencesKey("accessToken")] = token
         }
     }
 
     suspend fun clearUserData() {
-        context.dataStore.edit { it.clear() }
+        dataStore.edit { it.clear() }
     }
 }

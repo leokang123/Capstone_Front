@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -24,14 +22,13 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import com.example.myapplication.viewmodel.WasteListViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -54,6 +51,7 @@ import java.util.Locale
 fun SearchFilterDialog(
     searchFilter: SearchRequest,
     onFilterChange: (SearchRequest) -> Unit,
+    wasteListViewModel: WasteListViewModel,
     onDismiss: () -> Unit,
     onApplyFilter: () -> Unit
 ) {
@@ -68,7 +66,6 @@ fun SearchFilterDialog(
     val defaultDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
     val defaultTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
 
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
 
@@ -82,8 +79,8 @@ fun SearchFilterDialog(
     var selectedDate by remember { mutableStateOf(searchFilter.selectedDate ?: defaultDate) }
     var selectedTime by remember { mutableStateOf(searchFilter.selectedTime ?: defaultTime) }
 
-    val context = LocalContext.current;
-    val wasteRepository = WasteRepository(context)
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+
     // ✅ 선택 가능한 폐기물 유형 목록
     val wasteTypes = listOf(
         "격리 의료 폐기물",
@@ -109,17 +106,9 @@ fun SearchFilterDialog(
     )
 
     LaunchedEffect(Unit) {
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
 
         if (searchFilter.wasteStorageId != null) {
-            selectedStorage = wasteStorageList.find {it.id == searchFilter.wasteStorageId}
+            selectedStorage = wasteStorageList.find { it.id == searchFilter.wasteStorageId }
             isWasteStorageChecked = true
         }
         if (searchFilter.wasteStatus != null) isStatusChecked = true
@@ -359,7 +348,12 @@ fun SearchFilterDialog(
 
                         DatePicker(state = dateState)
                         selectedDate = newDate
-                        onFilterChange(searchFilter.copy(selectedDate = newDate, combineDate = "$newDate $selectedTime"))
+                        onFilterChange(
+                            searchFilter.copy(
+                                selectedDate = newDate,
+                                combineDate = "$newDate $selectedTime"
+                            )
+                        )
                     }
                 }
 
@@ -369,9 +363,15 @@ fun SearchFilterDialog(
                     TimePickerDialog(
                         context,
                         { _, hourOfDay, minute ->
-                            val newTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
+                            val newTime =
+                                String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
                             selectedTime = newTime
-                            onFilterChange(searchFilter.copy(selectedTime = newTime, combineDate = "$selectedDate $newTime"))
+                            onFilterChange(
+                                searchFilter.copy(
+                                    selectedTime = newTime,
+                                    combineDate = "$selectedDate $newTime"
+                                )
+                            )
                             showTimePicker = false
                         },
                         calendar.get(Calendar.HOUR_OF_DAY),

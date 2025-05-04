@@ -2,7 +2,6 @@ package com.example.myapplication.viewmodel
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Application
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -14,21 +13,28 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import com.example.myapplication.data.mock.MockBluetoothDevice
 import com.example.myapplication.utils.isEmulator
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 /**
  * BlueToothScreen 전용 viewModel
  * 사용할 수도 있고 안할 수도 있음 (그냥 어지간하면 다 viewmodel 만들었음)
  * Screen에서는 데이터를 보여주고, 데이터의 저장 및 변화나 갱신에 대한 연산은 거의 전부 viewModel에서 하는 느낌
  */
-class BlueToothViewModel(application: Application) : AndroidViewModel(application) {
+
+@HiltViewModel
+class BlueToothViewModel @Inject constructor(
+    @ApplicationContext private val context: Context
+) : ViewModel() {
 
     private val bluetoothManager: BluetoothManager by lazy {
-        application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     }
     private val bluetoothAdapter: BluetoothAdapter? by lazy { bluetoothManager.adapter }
     private val scanner: BluetoothLeScanner? by lazy { bluetoothAdapter?.bluetoothLeScanner }
@@ -69,7 +75,10 @@ class BlueToothViewModel(application: Application) : AndroidViewModel(applicatio
                         if (!currentDevices.contains(device)) {
                             currentDevices.add(device)
                             _devices.value = currentDevices
-                            Log.d(TAG, "Device Found: ${device.name ?: "Unknown"} - ${device.address}")
+                            Log.d(
+                                TAG,
+                                "Device Found: ${device.name ?: "Unknown"} - ${device.address}"
+                            )
                         }
                     }
                 }
@@ -96,7 +105,6 @@ class BlueToothViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-
     private fun mockBluetoothDevices() {
         val mockDevicesList = listOf(
             MockBluetoothDevice("Mock Device 1", "00:11:22:33:44:55"),
@@ -108,8 +116,11 @@ class BlueToothViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun hasScanPermission(): Boolean {
-        val context = getApplication<Application>().applicationContext
-        return if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
+        return if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             true
         } else {
             Log.w(TAG, "BLUETOOTH_SCAN permission not granted.")

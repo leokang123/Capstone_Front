@@ -43,7 +43,10 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteListViewModel) {
+fun WasteItemDetailComponent(
+    selectedItem: WasteItemDetailResponse,
+    wasteListViewModel: WasteListViewModel
+) {
     val scope = rememberCoroutineScope()
     var showModDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -85,8 +88,8 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
-                modifier = Modifier.
-                fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .fillMaxHeight(0.8f),
             ) {
                 val detailsList = selectedItem.wasteDetails.sortedByDescending { it.date }
@@ -104,7 +107,7 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
                 Button(
                     onClick = {
                         scope.launch {
-                            showModDialog =  true
+                            showModDialog = true
 
                         }
                     }
@@ -114,9 +117,10 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
                 Button(
                     onClick = {
                         scope.launch {
-                            showDeleteDialog =  wasteListViewModel.checkItemStatus(selectedItem.id)
+                            showDeleteDialog = wasteListViewModel.checkItemStatus(selectedItem.id)
                             if (!showDeleteDialog) {
-                                Toast.makeText(context, "삭제할 수 없는 STATUS", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "삭제할 수 없는 STATUS", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     }

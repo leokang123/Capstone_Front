@@ -13,19 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,24 +33,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteEditDialog(
     wasteListViewModel: WasteListViewModel,
-    sharedViewModel: SharedViewModel = viewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     selectedItem: WasteItemDetailResponse,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val wasteRepository = WasteRepository(context)
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
 
     // 상태 관리 (선택된 값)
     var wasteType by remember { mutableStateOf(selectedItem.wasteType) }
@@ -75,7 +73,6 @@ fun WasteEditDialog(
         "위해 의료 폐기물 / 혈액오염 폐기물",
         "일반 의료 폐기물"
     )
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
 
     val mockList = listOf(
         WasteStorage(id = 1, storageName = "기본 창고 A"),
@@ -85,16 +82,6 @@ fun WasteEditDialog(
         mutableStateListOf(*selectedItem.wasteDetails.toTypedArray())
     }
 
-    LaunchedEffect(Unit) {
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -115,7 +102,9 @@ fun WasteEditDialog(
                             color = if (expandedType) Color.Gray else Color.Black
                         )
                     }
-                    DropdownMenu(expanded = expandedType, onDismissRequest = { expandedType = false }) {
+                    DropdownMenu(
+                        expanded = expandedType,
+                        onDismissRequest = { expandedType = false }) {
                         wasteTypes.forEach { type ->
                             DropdownMenuItem(
                                 text = { Text(type) },
@@ -144,7 +133,9 @@ fun WasteEditDialog(
                             color = if (expandedStorage) Color.Gray else Color.Black
                         )
                     }
-                    DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+                    DropdownMenu(
+                        expanded = expandedStorage,
+                        onDismissRequest = { expandedStorage = false }) {
                         wasteStorageList.forEach { storage ->
                             DropdownMenuItem(
                                 text = { Text(storage.storageName.toString()) },

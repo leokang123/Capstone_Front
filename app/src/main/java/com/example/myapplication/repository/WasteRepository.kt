@@ -12,114 +12,23 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 
-class WasteRepository(context: Context) {
-    private val apiService = ApiClient.getInstance(context).create(ApiService::class.java)
+interface WasteRepository {
+    suspend fun registerWaste(wasteRegisterRequest: WasteItemRequest): String?
+    suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItemResponse>?
 
-    suspend fun registerWaste(wasteRegisterRequest: WasteItemRequest): String? {
-        return try {
-            val response: RegisterResponse = apiService.registerWasteItem(wasteRegisterRequest)
-            response.message
+    suspend fun getWasteItems(): List<WasteItemResponse>?
 
-        } catch (e: Exception) {
-            Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-
-    suspend fun searchWasteItems(searchRequest: SearchRequest) : List<WasteItemResponse>? {
-        return try {
-            val response = apiService.searchWasteItems(searchRequest)
-            response
-
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-
-    suspend fun getWasteItems() : List<WasteItemResponse>? {
-        return try {
-            val response = apiService.getWasteItemList()
-            response
-
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
+    suspend fun getStorageWasteItems(storageId: Long): List<WasteItemResponse>?
+    suspend fun getWasteItemsByName(wasteType: String): List<WasteItemResponse>?
+    suspend fun getWasteStorage(): List<WasteStorage>?
 
 
-    suspend fun getStorageWasteItems(storageId: Long) : List<WasteItemResponse>? {
-        return try {
-            val sr = SearchRequest(wasteStorageId = storageId)
-            val response = apiService.searchWasteItems(sr)
-            response
+    suspend fun moveWasteItems(moveRequests: MoveRequests)
 
-        } catch (e: Exception) {
-            Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
+    suspend fun getDetailWasteItem(itemId: Long): WasteItemDetailResponse
+    suspend fun checkItemStatus(itemId: Long): Boolean
 
-    suspend fun getWasteItemsByName(wasteType: String) : List<WasteItemResponse>? {
-        return try {
-            val response = apiService.getWasteItemListByName(SearchRequest(wasteType = wasteType))
-            response
+    suspend fun updateItem(wasteItem: WasteItemDetailResponse)
 
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-
-    suspend fun getWasteStorage() : List<WasteStorage>? {
-        return try {
-            val response = apiService.getStorageList()
-            response
-
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_STORAGE", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-
-
-    suspend fun moveWasteItems(moveRequests: MoveRequests) {
-        try {
-            apiService.moveWasteItems(moveRequests)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
-    suspend fun getDetailWasteItem(itemId: Long): WasteItemDetailResponse {
-        return try {
-            apiService.getDetailWasteItem(itemId)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-    suspend fun checkItemStatus(itemId: Long): Boolean {
-        return try {
-            apiService.checkItemStatus(itemId)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
-    suspend fun updateItem(wasteItem: WasteItemDetailResponse) {
-        return try {
-            apiService.updateItem(wasteItem)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
-    suspend fun deleteItem(itemId: Long): Boolean {
-        return try {
-            apiService.deleteItem(itemId)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
+    suspend fun deleteItem(itemId: Long): Boolean
 }

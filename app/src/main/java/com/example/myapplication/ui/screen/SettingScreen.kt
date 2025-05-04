@@ -23,16 +23,19 @@ import com.example.myapplication.utils.logout
  */
 @Composable
 fun SettingsDialog(navController: NavController) {
-    Dialog(onDismissRequest = {navController.popBackStack()}) {
+    Dialog(onDismissRequest = { navController.popBackStack() }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             SettingsScreen(navController)
         }
     }
 }
+
 @Composable
 fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current

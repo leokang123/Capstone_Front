@@ -40,11 +40,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.waste.SearchRequest
-import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.ui.component.WasteItemDetailComponent
+import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WasteListScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = viewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel()
 ) {
     val selectedItem by wasteListViewModel.selectedItem.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
@@ -116,7 +116,7 @@ fun WasteListScreen(
                     searchFilter = searchFilter.copy(wasteType = newValue)
                     wasteListViewModel.resetWasteList()
                     isSelected = false
-                                },
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -144,6 +144,7 @@ fun WasteListScreen(
             SearchFilterDialog(
                 searchFilter = searchFilter,
                 onFilterChange = { searchFilter = it },
+                wasteListViewModel,
                 onDismiss = {
                     isSelected = false
                     showFilterDialog = false
@@ -180,32 +181,62 @@ fun WasteListScreen(
                     ) {
                         Text(
                             text = buildAnnotatedString {
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                ) {
                                     append("🗑 폐기물 유형: ")
                                 }
                                 append(item.wasteType + "\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Blue
+                                    )
+                                ) {
                                     append("👤 처리자: ")
                                 }
                                 append(item.registrantName + "\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.DarkGray
+                                    )
+                                ) {
                                     append("📍 발생위치: ")
                                 }
                                 append(item.location + "\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFD2B48C)
+                                    )
+                                ) {
                                     append("📦 저장위치: ")
                                 }
                                 append(item.storageName + "\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.Red
+                                    )
+                                ) {
                                     append("📅 날짜: ")
                                 }
                                 append(item.selectedDate + "\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Gray)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.Gray
+                                    )
+                                ) {
                                     append("➡️ 현재 상태: ")
                                 }
                                 append(item.status)

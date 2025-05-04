@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,62 +40,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.WasteItemRequest
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.ui.screen.BluetoothDialog
-import com.example.myapplication.utils.UserDataStore
 import com.example.myapplication.viewmodel.SharedViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.text.isNotBlank
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
+fun WasteRegisterCard(
+    wasteListViewModel: WasteListViewModel,
+    sharedViewModel: SharedViewModel,
+    onDismiss: () -> Unit
+) {
     val context = LocalContext.current
+
+    val user by wasteListViewModel.user.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+
     val heightPadding = 12.dp
-    val userDataStore = UserDataStore(context)
-    var user by remember { mutableStateOf<User?>(null) }
-    var registrantName by remember { mutableStateOf("") }
+    var registrantName by remember { mutableStateOf(user?.name ?: "알수없음")}
 
     val scope = rememberCoroutineScope()
-    val wasteRepository = WasteRepository(context)
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
-    val wasteTypes = listOf("격리 의료 폐기물",
+    val wasteTypes = listOf(
+        "격리 의료 폐기물",
         "위해 의료 폐기물 / 조직물류 폐기물",
         "위해 의료 폐기물 / 병리계 폐기물",
         "위해 의료 폐기물 / 손상성 폐기물",
         "위해 의료 폐기물 / 생물·화학 폐기물",
         "위해 의료 폐기물 / 혈액오염 폐기물",
-        "일반 의료 폐기물") // 폐기물 종류 리스트
+        "일반 의료 폐기물"
+    ) // 폐기물 종류 리스트
 
-    val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
-
-
-    LaunchedEffect(Unit) {
-        user = userDataStore.getUser()
-        registrantName = user?.name ?: ""
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     var wasteType by remember { mutableStateOf("") } // 폐기물 종류
-    var wasteDetails by remember { mutableStateOf("없음")}
+    var wasteDetails by remember { mutableStateOf("없음") }
     var location by remember { mutableStateOf("") } // 발생장소
     val selectedDevice = sharedViewModel.selectedBluetoothDevice // 선택된 블루투스 기기
 
@@ -111,15 +96,20 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
     var selectedTime by remember { mutableStateOf(defaultTime) }
 
 
-
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
-    // 창고 리스트를 저장할 상태
     // 선택한 창고
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
 
+    val toastMessage by wasteListViewModel.toastMessage.collectAsState(initial = null)
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(modifier = Modifier.padding(heightPadding * 2)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
@@ -144,7 +134,11 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 onValueChange = {},
                 label = { Text("폐기물 종류") },
                 readOnly = true,
-                trailingIcon = { IconButton(onClick = { expanded = true }) { Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown") } },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        expanded = true
+                    }) { Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown") }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -183,7 +177,9 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 modifier = Modifier.fillMaxWidth()
             )
 
-            DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+            DropdownMenu(
+                expanded = expandedStorage,
+                onDismissRequest = { expandedStorage = false }) {
                 wasteStorageList.forEach { storage ->
                     DropdownMenuItem(
                         text = { Text(storage.storageName.toString()) },
@@ -208,12 +204,16 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
         Spacer(modifier = Modifier.height(heightPadding))
 
         // 날짜 & 시간 선택 버튼을 정렬
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Button(
                 onClick = { showDatePicker = true },
                 modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
             ) {
-                Column(modifier = Modifier.fillMaxWidth(),
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("등록날짜")
@@ -225,7 +225,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                 onClick = { showTimePicker = true },
                 modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
             ) {
-                Column(modifier = Modifier.fillMaxWidth(),
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("등록시간")
@@ -260,7 +261,8 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
             TimePickerDialog(
                 context,
                 { _, hourOfDay, minute ->
-                    selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
+                    selectedTime =
+                        String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
                     showTimePicker = false
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
@@ -301,7 +303,10 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
         // 등록 버튼
         Button(
             onClick = {
-                Log.d("WasteRegisterCard", "등록자ID: ${user?.id} 등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}")
+                Log.d(
+                    "WasteRegisterCard",
+                    "등록자ID: ${user?.id} 등록자: $registrantName, 종류: $wasteType, 날짜: $selectedDate, 장소: $location, 기기: ${selectedDevice ?: "없음"}"
+                )
                 // 여기서 서버로 데이터 보내고 처리완료 응답받으면 onDismiss
 
                 scope.launch {
@@ -315,7 +320,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
                             storageId = selectedStorage?.id ?: 0 // 선택한 창고의 ID 포함
 
                         )
-                        val response: String? = wasteRepository.registerWaste(wasteItem)
+                        val response: String? = wasteListViewModel.registerWasteItem(wasteItem)
                         Toast.makeText(context, response, Toast.LENGTH_SHORT).show()
 
 
@@ -332,7 +337,7 @@ fun WasteRegisterCard(wasteListViewModel: WasteListViewModel, sharedViewModel: S
             modifier = Modifier.fillMaxWidth(),
             enabled = registrantName.isNotBlank()
                     && wasteType.isNotBlank()
-                    &&  location.isNotBlank()
+                    && location.isNotBlank()
                     && selectedStorage != null
                     && selectedDevice != null
                     && selectedTime.isNotBlank()
