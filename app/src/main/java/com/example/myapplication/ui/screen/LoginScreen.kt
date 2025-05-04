@@ -1,14 +1,13 @@
 package com.example.myapplication.ui.screen
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -22,6 +21,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,22 +35,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import androidx.core.content.edit
-import com.example.myapplication.data.LoginRequest
-import com.example.myapplication.data.LoginResponse
-import com.example.myapplication.data.User
-import com.example.myapplication.repository.LoginRepository
-import com.example.myapplication.ui.component.UserDataStore
+import com.example.myapplication.data.auth.LoginRequest
+import com.example.myapplication.data.auth.LoginResponse
+import com.example.myapplication.data.user.User
+import com.example.myapplication.repository.impl.LoginRepositoryImpl
+import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.viewmodel.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import okhttp3.internal.userAgent
+import kotlinx.coroutines.launch
 
 /**
  * 로그인 화면
@@ -58,39 +55,50 @@ import okhttp3.internal.userAgent
  */
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    val username by remember { derivedStateOf { viewModel.username } }
+    val password by remember { derivedStateOf { viewModel.password } }
+    val errorMessage = viewModel.errorMessage
+
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-    val loginRepository = LoginRepository(context)
-    val scope = rememberCoroutineScope()
-
-    val userDataStore = UserDataStore(context)
-
-    if (userDataStore.getToken() != null) {
-        navController.navigate("home") { popUpTo("login") { inclusive = true } }  // ✅ 자동 로그인 방지
+    LaunchedEffect(Unit) {
+        viewModel.loginSuccess.collect { success ->
+            if (success) {
+                Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
+            } else {
+                Toast.makeText(context, "Login Failed", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .imePadding(), // 키보드가 올라오면 자동으로 공간 확보
+        verticalArrangement = Arrangement.Center // 중앙 정렬
+
     ) {
-        Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Text("애버커스", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = { viewModel.username = it },
             label = { Text("UserName") },
-            modifier = Modifier.fillMaxWidth()
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // password가 아니면 이상하게 키보드가 안뜸
+            modifier = Modifier.fillMaxWidth()// 포커스 가능하도록 설정
+
         )
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.password = it },
             label = { Text("Password *") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
@@ -109,26 +117,7 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = {
-                scope.launch {
-                    // 서버 돌아갈시
-                    val loginRequest = LoginRequest(username.trim(), password)
-                    val response: LoginResponse? = loginRepository.loginUser(loginRequest)
-                    if (response != null) {
-                        navController.navigate("home") // ✅ 로그인 성공 시 홈 화면으로 이동
-                        Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
-                    } else {
-                        errorMessage = "Invalid username or password"
-
-                        // 서버없이 테스트
-                        val user = User(userName = "test", password = "test", name = "test")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            userDataStore.saveUser(user = user, token = "token123")
-                        }
-                        navController.navigate("home")
-                    }
-                }
-            },
+            onClick = { viewModel.login() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Login")
@@ -139,16 +128,13 @@ fun LoginScreen(navController: NavController) {
         }
 
         TextButton(
-            onClick = { navController.navigate("register") }, // ✅ 회원가입 페이지 이동
+            onClick = { navController.navigate("register") }, // 회원가입 페이지 이동
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Don't have an account? Sign up")
         }
     }
 }
-
-
-
 
 
 @Preview(showBackground = true)

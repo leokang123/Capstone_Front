@@ -3,20 +3,23 @@ package com.example.myapplication.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,21 +28,26 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.ui.component.CheckAuth
+import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.ui.component.WasteItemDetailComponent
+import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * 폐기물 목록 조회 창
@@ -49,31 +57,47 @@ import kotlinx.coroutines.delay
  * 고급 검색기능도 아직 미구현
  * 상세 조회 창 띄우는것도 아직 미구현
  */
+
 @Composable
 fun WasteListScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = viewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel()
 ) {
-    var showDialog by remember { mutableStateOf(false) } // ✅ 팝업 상태 관리
-    var searchText by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedItem by remember { mutableStateOf<WasteItemResponse?>(null) }
+    val selectedItem by wasteListViewModel.selectedItem.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
 
+    var showFilterDialog by remember { mutableStateOf(false) } // 필터 팝업 상태
+    var searchFilter by remember { mutableStateOf(SearchRequest()) } // 검색 필터 데이터
+    var isSelected by remember { mutableStateOf(false) }
+
     val filteredItems by wasteListViewModel.wasteList.collectAsState()
+    val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
-    CheckAuth(navController) // ✅ 인증 체크
+    var authChecked by remember { mutableStateOf(false) }
 
-    /**
-     *  사용자 입력을 특정시간동안 기다렸다가 검색 실행 (API 최적화)
-     */
-    LaunchedEffect(searchText.text) {
-        if (searchText.text.isBlank()) {
+    CheckAuth(navController, roleId = 1) {
+        authChecked = true
+    }
+
+    LaunchedEffect(searchFilter.wasteType, authChecked) {
+        if (!authChecked) return@LaunchedEffect
+
+        if (searchFilter.wasteType?.isBlank() == true) {
             showDropdown = false
             return@LaunchedEffect
         }
 
-        delay(500) // ✅ 0.5초 대기 후 검색 실행
-        wasteListViewModel.searchWasteByName(searchText.text)
+        if (!showFilterDialog) {
+            wasteListViewModel.resetWasteList()
+            delay(500)
+            wasteListViewModel.searchWasteItems(searchFilter)
+        }
+    }
+
+    LaunchedEffect(filteredItems, authChecked) {
+        if (!authChecked) return@LaunchedEffect
         showDropdown = filteredItems.isNotEmpty()
     }
 
@@ -82,79 +106,145 @@ fun WasteListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // ✅ 검색 입력창
-        OutlinedTextField(
-            value = searchText,
-            onValueChange = { searchText = it },
-            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
-            label = { Text("검색어를 입력하세요") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = searchFilter.wasteType ?: "",
+                onValueChange = { newValue ->
+                    searchFilter = searchFilter.copy(wasteType = newValue)
+                    wasteListViewModel.resetWasteList()
+                    isSelected = false
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search"
+                    )
+                },
+                label = { Text("검색어를 입력하세요") },
+                modifier = Modifier.weight(1f) // 검색창이 대부분을 차지하게 함
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 필터 버튼
+            IconButton(
+                onClick = { showFilterDialog = true },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(imageVector = Icons.Default.Edit, contentDescription = "필터")
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        // ✅ 검색어가 입력될 때 자동완성 하단 바 표시
-        if (searchText.text.isNotEmpty() && filteredItems.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        // 검색 필터 팝업
+        if (showFilterDialog) {
+            SearchFilterDialog(
+                searchFilter = searchFilter,
+                onFilterChange = { searchFilter = it },
+                wasteListViewModel,
+                onDismiss = {
+                    isSelected = false
+                    showFilterDialog = false
+                },
+                onApplyFilter = {
+                    wasteListViewModel.resetWasteList()
+                    wasteListViewModel.searchWasteItems(searchFilter)
+                    isSelected = false
+                    showFilterDialog = false
+                }
+            )
+        }
+        // 검색어가 입력될 때 자동완성 하단 바 표시
+        if (!isSelected && filteredItems.isNotEmpty()) {
+            LazyColumn( // Column 대신 LazyColumn 사용 (스크롤 가능)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
-                    filteredItems.forEachIndexed { index, item ->
-                        Card(
+                itemsIndexed(filteredItems) { index, item ->  // itemsIndexed 사용
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                scope.launch {
+                                    wasteListViewModel.getWasteItemDetails(item.id)
+                                }
+                                keyboardController?.hide()  // 키보드 내리기
+                                focusManager.clearFocus()  // 입력 포커스 해제
+                                showDropdown = false
+                            },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                        border = BorderStroke(1.dp, Color.Gray)
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                ) {
+                                    append("🗑 폐기물 유형: ")
+                                }
+                                append(item.wasteType + "\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Blue
+                                    )
+                                ) {
+                                    append("👤 처리자: ")
+                                }
+                                append(item.registrantName + "\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.DarkGray
+                                    )
+                                ) {
+                                    append("📍 발생위치: ")
+                                }
+                                append(item.location + "\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFD2B48C)
+                                    )
+                                ) {
+                                    append("📦 저장위치: ")
+                                }
+                                append(item.storageName + "\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.Red
+                                    )
+                                ) {
+                                    append("📅 날짜: ")
+                                }
+                                append(item.selectedDate + "\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.Gray
+                                    )
+                                ) {
+                                    append("➡️ 현재 상태: ")
+                                }
+                                append(item.status)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)), // 연한 초록색 배경
-                            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
-                        ) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
-                                        append("🗑 폐기물 유형: ")
-                                    }
-                                    append(item.wasteType + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                                        append("👤 등록자: ")
-                                    }
-                                    append(item.registrantName + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
-                                        append("📍 발생위치: ")
-                                    }
-                                    append(item.location + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
-                                        append("📦 저장위치: ")
-                                    }
-                                    append(item.storageName + "\n")
-
-                                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
-                                        append("📅 날짜: ")
-                                    }
-                                    append(item.selectedDate)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        selectedItem = item
-                                        searchText = TextFieldValue("") // ✅ 선택하면 입력창 초기화
-                                        showDropdown = false
-                                    }
-                                    .padding(16.dp)
-                            )
-                        }
-
-                        // ✅ 각 리스트 항목 아래 구분선(Delimiter) 추가 (마지막 항목 제외)
-                        if (index != filteredItems.lastIndex) {
-                            Divider(
-                                color = Color.Gray,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
+                                .padding(16.dp)
+                        )
                     }
                 }
             }
@@ -162,65 +252,12 @@ fun WasteListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ 선택된 폐기물 상세 정보 표시
-        selectedItem.let {
-            Text(
-                text = "조회된 정보: ${it?.wasteType}",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            ResultList(it)
+        // 선택된 폐기물 상세 정보 표시
+        selectedItem?.let {
+            isSelected = true
+            WasteItemDetailComponent(it, wasteListViewModel)
         }
     }
 }
 
-@Composable
-fun ResultList(selectedItem: WasteItemResponse?) {
-    selectedItem?.let {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color.Gray) // ✅ 테두리 추가
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // ✅ 폐기물 기본 정보
-                Text(
-                    text = "🗑 ${selectedItem.wasteType}",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black
-                )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
-                InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
-                InfoRow("📦 저장위치", selectedItem.storageName, Color(0xFFD2B48C))
-                InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
-                InfoRow("🔍 상세 정보", selectedItem.wasteDetails ?: "없음", Color.Gray)
-                InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
-                InfoRow("📌 상태", selectedItem.status, Color.Magenta)
-            }
-        }
-    }
-}
-
-// ✅ 개별 정보 항목을 정리하는 Composable
-@Composable
-fun InfoRow(label: String, value: String, color: Color) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
-                    append("$label: ")
-                }
-                append(value)
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(vertical = 4.dp)
-        )
-        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-    }
-}

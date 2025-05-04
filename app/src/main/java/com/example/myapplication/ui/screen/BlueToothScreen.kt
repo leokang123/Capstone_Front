@@ -1,27 +1,37 @@
 package com.example.myapplication.ui.screen
 
 import android.Manifest
-import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.myapplication.viewmodel.BluetoothViewModel
-import com.example.myapplication.viewmodel.MockBluetoothDevice
+import com.example.myapplication.data.mock.MockBluetoothDevice
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.SharedViewModel
 
 /**
@@ -37,24 +47,20 @@ import com.example.myapplication.viewmodel.SharedViewModel
 @Composable
 fun BluetoothDialog(
     targetViewModel: SharedViewModel,
-    viewModel: BluetoothViewModel = viewModel(),
+    viewModel: BlueToothViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss ) {
+    Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight(0.6f)
                 .padding(16.dp)
 
         ) {
             BluetoothScreen(targetViewModel, viewModel, onDismiss)
-        }
-        Button(
-            onClick = { onDismiss() }, // ✅ 버튼 클릭 시 모달 닫기
-        ) {
-            Text("닫기")
         }
     }
 }
@@ -67,7 +73,11 @@ fun BluetoothDialog(
  */
 
 @Composable
-fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewModel = viewModel(), onDismiss: () -> Unit) {
+fun BluetoothScreen(
+    targetViewModel: SharedViewModel,
+    viewModel: BlueToothViewModel = viewModel(),
+    onDismiss: () -> Unit
+) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
@@ -76,20 +86,26 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
     val devices by viewModel.mockDevices.collectAsState()
     var selectedDevice by remember { mutableStateOf<MockBluetoothDevice?>(null) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
 
-        // ✅ 블루투스 스캔 버튼
+        // 블루투스 스캔 버튼
         Button(
-            onClick = { viewModel.startScan() },
+            onClick = {
+
+                viewModel.startScan()
+            },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
             Text("Scan Devices")
         }
 
-        // ✅ 블루투스 장치 목록 표시
+        // 블루투스 장치 목록 표시
         LazyColumn {
             items(devices) { device ->
                 DeviceItem(device) { selected ->
@@ -112,7 +128,7 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
 //fun DeviceItem(device: BluetoothDevice, onClick: (BluetoothDevice) -> Unit) {
 //    val context = LocalContext.current
 //
-//    // ✅ BLUETOOTH_CONNECT 권한 체크
+//    // BLUETOOTH_CONNECT 권한 체크
 //    val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 //        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
 //            device.name ?: "Unknown Device"
@@ -142,15 +158,19 @@ fun BluetoothScreen(targetViewModel: SharedViewModel, viewModel: BluetoothViewMo
 fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Unit) {
     val context = LocalContext.current
 
-    // ✅ BLUETOOTH_CONNECT 권한 체크
+    // BLUETOOTH_CONNECT 권한 체크
     val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            device.name ?: "Unknown Device"
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            device.name
         } else {
             "Permission Required"
         }
     } else {
-        device.name ?: "Unknown Device"
+        device.name
     }
 
     Row(

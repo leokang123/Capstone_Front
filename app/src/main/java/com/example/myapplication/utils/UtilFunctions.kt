@@ -1,12 +1,13 @@
-package com.example.myapplication.ui.component
+package com.example.myapplication.utils
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Build
-import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 /**
@@ -31,8 +32,15 @@ fun isEmulator(): Boolean {
  */
 fun logout(context: Context) {
     val userDataStore = UserDataStore(context)
-    CoroutineScope(Dispatchers.IO).launch {  // ✅ 비동기 처리 (IO 작업에 적합)
+    CoroutineScope(Dispatchers.IO).launch {  // 비동기 처리 (IO 작업에 적합)
         userDataStore.clearUserData()
     }
 }
 
+/**
+ * 현재 시각 가져오는 함수
+ */
+fun getCurrentTime(): String {
+    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    return sdf.format(Date()) // 현재 시간 반환
+}

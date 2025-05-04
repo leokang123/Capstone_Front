@@ -2,58 +2,33 @@ package com.example.myapplication.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.myapplication.data.RegisterResponse
-import com.example.myapplication.data.SearchRequest
-import com.example.myapplication.data.WasteItemRequest
-import com.example.myapplication.data.WasteItemResponse
-import com.example.myapplication.data.WasteStorage
+import com.example.myapplication.data.auth.RegisterResponse
+import com.example.myapplication.data.waste.MoveRequests
+import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemRequest
+import com.example.myapplication.data.waste.WasteItemResponse
+import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.network.ApiClient
 import com.example.myapplication.network.ApiService
 
-class WasteRepository(context: Context) {
-    private val apiService = ApiClient.getInstance(context).create(ApiService::class.java)
+interface WasteRepository {
+    suspend fun registerWaste(wasteRegisterRequest: WasteItemRequest): String?
+    suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItemResponse>?
 
-    suspend fun registerWaste(wasteRegisterRequest: WasteItemRequest): String? {
-        return try {
-            val response: RegisterResponse = apiService.registerWasteItem(wasteRegisterRequest)
-            response.message
+    suspend fun getWasteItems(): List<WasteItemResponse>?
 
-        } catch (e: Exception) {
-            Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
+    suspend fun getStorageWasteItems(storageId: Long): List<WasteItemResponse>?
+    suspend fun getWasteItemsByName(wasteType: String): List<WasteItemResponse>?
+    suspend fun getWasteStorage(): List<WasteStorage>?
 
-    suspend fun getWasteItems() : List<WasteItemResponse>? {
-        return try {
-            val response = apiService.getWasteItemList()
-            response
 
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-    suspend fun getWasteItemsByName(wasteType: String) : List<WasteItemResponse>? {
-        return try {
-            val response = apiService.getWasteItemListByName(SearchRequest(wasteType = wasteType))
-            response
+    suspend fun moveWasteItems(moveRequests: MoveRequests)
 
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
+    suspend fun getDetailWasteItem(itemId: Long): WasteItemDetailResponse
+    suspend fun checkItemStatus(itemId: Long): Boolean
 
-    suspend fun getWasteStorage() : List<WasteStorage>? {
-        return try {
-            val response = apiService.getStorageList()
-            response
+    suspend fun updateItem(wasteItem: WasteItemDetailResponse)
 
-        } catch (e: Exception) {
-            Log.e("GET_WASTE_STORAGE", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
-        }
-    }
-
+    suspend fun deleteItem(itemId: Long): Boolean
 }

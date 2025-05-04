@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 /**
  * 많은 창에서 공통적으로 사용되는 데이터를 관리하기위해 따로 만들어놓은 viewModel
