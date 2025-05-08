@@ -1,13 +1,17 @@
 package com.example.myapplication.ui.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -15,12 +19,16 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,6 +37,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,6 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.viewmodel.RegisterViewModel
 
 // RegisterScreen.kt
@@ -56,13 +67,14 @@ fun RegisterScreen(
     val phoneNumber = registerViewModel.phoneNumber
     val name = registerViewModel.name
     val selectedHospital = registerViewModel.selectedHospital
-    val selectedRoleName = registerViewModel.selectedRoleName
-    val selectedRoleId = registerViewModel.selectedRoleId
+    val selectedRoles = registerViewModel.selectedRoles // SnapshotStateList<Roles>
+    val selectedPrimaryRole = registerViewModel.selectedPrimaryRole // MutableState<Roles?>
 
     val passwordVisible = remember { mutableStateOf(false) }
     val confirmPasswordVisible = remember { mutableStateOf(false) }
     val showHospitalDropdown = remember { mutableStateOf(false) }
-    val showRoleDropdown = remember { mutableStateOf(false) }
+    var showRoleDropdown = remember { mutableStateOf(false) }
+
 
     val isPasswordValid = registerViewModel.isPasswordValid()
     val isPasswordMatch = registerViewModel.isPasswordMatch()
@@ -118,7 +130,9 @@ fun RegisterScreen(
             label = { Text("Confirm Password *") },
             visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }) {
+                IconButton(onClick = {
+                    confirmPasswordVisible.value = !confirmPasswordVisible.value
+                }) {
                     Icon(
                         imageVector = if (confirmPasswordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Toggle Password Visibility"
@@ -164,33 +178,90 @@ fun RegisterScreen(
         // 역할 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = selectedRoleName.value,
+                value = if (selectedRoles.isEmpty()) "선택 안됨" else "선택한 역할: ${selectedRoles.size}개",
                 onValueChange = {},
-                label = { Text("Select Role *") },
+                label = { Text("Select Roles *") },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showRoleDropdown.value = true }) {
-                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
+                        Icon(
+                            imageVector = if (showRoleDropdown.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             )
+
             DropdownMenu(
                 expanded = showRoleDropdown.value,
-                onDismissRequest = { showRoleDropdown.value = false }
+                onDismissRequest = { showRoleDropdown.value = false },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopStart) // 기준 위치 맞추기
             ) {
-                registerViewModel.roles.forEach { role ->
+                Roles.entries.forEach { role ->
                     DropdownMenuItem(
-                        text = { Text(role.roleName) },
-                        onClick = {
-                            selectedRoleName.value = role.roleName
-                            selectedRoleId.longValue = role.id
-                            showRoleDropdown.value = false
-                        }
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = selectedRoles.contains(role),
+                                    onCheckedChange = {
+                                        if (it) selectedRoles.add(role)
+                                        else {
+                                            selectedRoles.remove(role)
+                                            if (selectedPrimaryRole.value == role)
+                                                selectedPrimaryRole.value = null
+                                        }
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(role.name, modifier = Modifier.weight(1f))
+                                RadioButton(
+                                    selected = selectedPrimaryRole.value == role,
+                                    onClick = {
+                                        if (selectedRoles.contains(role)) {
+                                            selectedPrimaryRole.value = role
+                                        }
+                                    },
+                                    enabled = selectedRoles.contains(role)
+                                )
+                            }
+                        },
+                        onClick = {} // 무시
                     )
                 }
             }
         }
+
+//            OutlinedTextField(
+//                value = selectedRoleName.value,
+//                onValueChange = {},
+//                label = { Text("Select Role *") },
+//                readOnly = true,
+//                trailingIcon = {
+//                    IconButton(onClick = { showRoleDropdown.value = true }) {
+//                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
+//                    }
+//                },
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//            DropdownMenu(
+//                expanded = showRoleDropdown.value,
+//                onDismissRequest = { showRoleDropdown.value = false }
+//            ) {
+//                registerViewModel.roles.forEach { role ->
+//                    DropdownMenuItem(
+//                        text = { Text(role.roleName) },
+//                        onClick = {
+//                            selectedRoleName.value = role.roleName
+//                            selectedRoleId.longValue = role.id
+//                            showRoleDropdown.value = false
+//                        }
+//                    )
+//                }
+//            }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -233,7 +304,13 @@ fun RegisterScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = isFormValid && isPasswordValid && isPasswordMatch && name.value.isNotBlank() && selectedHospital.value != null && selectedRoleName.value.isNotBlank()
+            enabled = isFormValid
+                    && isPasswordValid
+                    && isPasswordMatch
+                    && name.value.isNotBlank()
+                    && selectedHospital.value != null
+                    && selectedRoles.isNotEmpty()
+                    && selectedPrimaryRole.value != null
         ) {
             Text("Sign Up")
         }

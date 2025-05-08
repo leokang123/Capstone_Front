@@ -29,10 +29,12 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.ui.component.WasteRegisterCard
 import com.example.myapplication.utils.CheckAuth
-import com.example.myapplication.viewmodel.SharedViewModel
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 
 /**
@@ -44,7 +46,7 @@ import com.example.myapplication.viewmodel.WasteListViewModel
 @Composable
 fun WasteRegisterCardDialog(
     wasteListViewModel: WasteListViewModel,
-    sharedViewModel: SharedViewModel,
+    beaconViewModel: BlueToothViewModel,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -56,7 +58,7 @@ fun WasteRegisterCardDialog(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
         ) {
-            WasteRegisterCard(wasteListViewModel, sharedViewModel) { onDismiss() }
+            WasteRegisterCard(wasteListViewModel, beaconViewModel) { onDismiss() }
         }
     }
 }
@@ -64,13 +66,19 @@ fun WasteRegisterCardDialog(
 @Composable
 fun WasteRegisterScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = hiltViewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel(),
+    beaconViewModel: BlueToothViewModel = hiltViewModel()
 ) {
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
-    val sharedViewModel: SharedViewModel = viewModel()
     val wasteList by wasteListViewModel.wasteList.collectAsState()
+
+    val wasteTypeList = wasteListViewModel.wasteTypeList
+    val wasteStatusList = wasteListViewModel.wasteStatusList
+    val beaconList = wasteListViewModel.beaconList
+    val wasteStorageList = wasteListViewModel.wasteStorageList
+
     var authChecked by remember { mutableStateOf(false) }
-    CheckAuth(navController, roleId = 1) {
+    CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 
@@ -78,18 +86,11 @@ fun WasteRegisterScreen(
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
 
-        wasteListViewModel.fetchWasteList(mode = 1)
+        wasteListViewModel.fetchWasteList(wasteTypeId = 1)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
-        // 새로고침 버튼
-        Button(
-            onClick = { wasteListViewModel.fetchWasteList(mode = 1) },
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text("새로고침")
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -107,7 +108,7 @@ fun WasteRegisterScreen(
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
             items(wasteList.size) { index ->
-                val waste: WasteItemResponse? = wasteList.getOrNull(index)
+                val waste: WasteItem? = wasteList.getOrNull(index)
                 Log.d("wasteItem", waste.toString())
 
                 Card(
@@ -117,18 +118,16 @@ fun WasteRegisterScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
+                    val wasteType = wasteTypeList.find { it.id == waste?.wasteTypeId }
+                    val wasteStatus = wasteStatusList.find { it.id == waste?.wasteStatusId }
+                    val beacon = beaconList.find { it.id == waste?.beaconId }
+                    val storage = wasteStorageList.find { it.id == waste?.storageId }
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "등록자: ${waste?.registrantName}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text("종류: ${waste?.wasteType}")
-                        Text("부가 정보: ${waste?.wasteDetails}")
-                        Text("날짜: ${waste?.selectedDate}")
-                        Text("장소: ${waste?.location}")
-                        Text("저장장소: ${waste?.storageName}")
-                        Text("기기: ${waste?.selectedDevice ?: "없음"}")
-                        Text("상태: ${waste?.status ?: "없음"}")
+                        Text("종류: ${wasteType?.typeName}")
+                        Text("부가 정보: ${waste?.description}")
+                        Text("저장장소: ${storage?.storageName}")
+                        Text("기기: ${beacon?.label ?: "없음"}")
+                        Text("상태: ${wasteStatus?.description ?: "없음"}")
 
                     }
                 }
@@ -137,7 +136,7 @@ fun WasteRegisterScreen(
 
     }
     if (showDialog) {
-        WasteRegisterCardDialog(wasteListViewModel, sharedViewModel) { showDialog = false }
-        wasteListViewModel.fetchWasteList(mode = 1)
+        WasteRegisterCardDialog(wasteListViewModel, beaconViewModel) { showDialog = false }
+        wasteListViewModel.fetchWasteList(wasteTypeId = 1)
     }
 }

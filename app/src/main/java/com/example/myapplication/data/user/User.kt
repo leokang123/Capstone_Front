@@ -19,7 +19,7 @@ data class User(
 
 //data class User(
 //    val id: Long = 0,
-//    val userName: String,
+//    val asdsomeName: String,
 //    val password: String,
 //    val email: String? = null,
 //    val name: String = "",

@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.example.myapplication.utils.UserDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -13,16 +14,17 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONObject
+import javax.inject.Inject
 
 /**
  * 더이상 건들일 없을 코드 같긴한데
  * 그냥 ApiClient에서 Retrofit 객체 만들고 그러는 과정에 BearerToken 넣어주는 역할
  */
 
-class AuthInterceptor(
-    private val context: Context,
+class AuthInterceptor @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val userDataStore: UserDataStore
 ) : Interceptor {
-    private val userDataStore = UserDataStore(context)
     private val BASE_URL = "http://10.0.2.2:8080"
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -41,32 +43,10 @@ class AuthInterceptor(
         // accessToken 만료 등으로 401 Unauthorized 반환 시
         if (response.code == 401 || response.code == 403) {
             response.close() // 이전 응답 닫기
-
-            val refreshToken = runBlocking { userDataStore.getRefreshToken() }
-            if (!refreshToken.isNullOrBlank()) {
-                val newAccessToken = refreshAccessToken(refreshToken)
-                Log.d("TOKEN", "accessToken 기한만료,  재발급")
-
-                if (!newAccessToken.isNullOrBlank()) {
-                    // 새 accessToken 저장
-                    runBlocking {
-                        userDataStore.saveAccessToken(newAccessToken)
-                    }
-
-                    // 요청 다시 시도 (새 accessToken으로)
-                    val newRequest = request.newBuilder()
-                        .removeHeader("Authorization")
-                        .addHeader("Authorization", "Bearer $newAccessToken")
-                        .build()
-
-                    return chain.proceed(newRequest)
-                }
-            }
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
             }
         }
-
         return response
     }
 

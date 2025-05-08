@@ -1,12 +1,14 @@
 package com.example.myapplication.viewmodel
 
-import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.auth.RegisterRequest
+import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.Role
+import com.example.myapplication.data.user.User
+import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val loginRepository: LoginRepository
+    private val loginRepository: LoginRepository,
+    private val  etcRepository: EtcRepository
 ) : ViewModel() {
 
     val username = mutableStateOf("")
@@ -28,8 +31,8 @@ class RegisterViewModel @Inject constructor(
     val name = mutableStateOf("")
 
     val selectedHospital = mutableStateOf<Hospital?>(null)
-    val selectedRoleName = mutableStateOf("")
-    val selectedRoleId = mutableLongStateOf(1L)
+    val selectedRoles = mutableStateListOf<Roles>() // 체크박스로 여러 개 선택
+    val selectedPrimaryRole = mutableStateOf<Roles?>(null) // 하나만 선택 (Radio 등)
 
     val hospitalList = MutableStateFlow<List<Hospital>>(emptyList())
 
@@ -45,7 +48,7 @@ class RegisterViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                val hosList = loginRepository.getHospitalList()
+                val hosList = etcRepository.getHospitalList()
                 hospitalList.value = hosList?.ifEmpty { mockList() } ?: mockList()
             } catch (e: Exception) {
                 hospitalList.value = mockList()
@@ -55,16 +58,16 @@ class RegisterViewModel @Inject constructor(
     }
 
     fun register(onSuccess: () -> Unit) {
-        val request = RegisterRequest(
-            username = username.value.trim(),
+        val request = User(
+            userName = username.value.trim(),
             password = password.value,
             email = email.value.trim(),
             phoneNumber = phoneNumber.value.trim(),
             name = name.value.trim(),
-            selectedHospitalId = selectedHospital.value?.id ?: 0,
-            roleId = selectedRoleId.longValue
+            hospitalId = selectedHospital.value?.id ?: 0,
+            roles = selectedRoles.toList(),
+            primaryRoles = selectedPrimaryRole.value
         )
-
         viewModelScope.launch {
             try {
                 val result = loginRepository.registerUser(request)

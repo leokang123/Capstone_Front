@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,30 +36,34 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.data.user.AppUser
 import com.example.myapplication.data.user.User
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.viewmodel.HomeViewModel
 
 /**
  * 홈화면
  */
 @Composable
-fun HomeScreen(navController: NavController) {
-    val context = LocalContext.current
-    val userDataStore = UserDataStore(context)
-    var user by remember { mutableStateOf<User?>(null) }
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val user by viewModel.user.collectAsState()
     var authChecked by remember { mutableStateOf(false) }
 
     // 토큰 검증
-    CheckAuth(navController, roleId = 1) {
+    CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 
     // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
-        user = userDataStore.getUser()
     }
 
     Column(
@@ -69,8 +74,7 @@ fun HomeScreen(navController: NavController) {
     ) {
         Text("안녕하세요! ${user?.name} 님👋", style = MaterialTheme.typography.headlineSmall)
         Text(user?.hospital?.hospitalName ?: "", style = MaterialTheme.typography.bodySmall)
-
-        Text("${user?.role?.roleName}", style = MaterialTheme.typography.labelSmall)
+        Text("${user?.primaryRoles}", style = MaterialTheme.typography.labelSmall)
         Spacer(modifier = Modifier.height(32.dp))
 
 

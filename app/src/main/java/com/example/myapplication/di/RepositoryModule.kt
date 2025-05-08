@@ -1,7 +1,9 @@
 package com.example.myapplication.di
 
+import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.EtcRepositoryImpl
 import com.example.myapplication.repository.impl.LoginRepositoryImpl
 import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import dagger.Binds
@@ -27,5 +29,10 @@ abstract class RepositoryModule {
     abstract fun bindWasteRepository(
         impl: WasteRepositoryImpl
     ): WasteRepository
+
+    @Binds
+    abstract fun bindEtcRepository(
+        impl: EtcRepositoryImpl
+    ): EtcRepository
 
 }

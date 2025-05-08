@@ -1,12 +1,8 @@
 package com.example.myapplication.repository.impl
 
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.util.Log
-import com.example.myapplication.data.auth.LoginRequest
-import com.example.myapplication.data.auth.LoginResponse
-import com.example.myapplication.data.auth.RegisterRequest
-import com.example.myapplication.data.user.Hospital
+import com.example.myapplication.data.user.User
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.utils.UserDataStore
@@ -18,18 +14,17 @@ import javax.inject.Inject
  */
 class LoginRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val userDataStore: UserDataStore
 ) :
     LoginRepository {
 
     /**
      * 로그인 API 호출 (POST 요청)
      */
-    override suspend fun loginUser(loginRequest: LoginRequest): LoginResponse? {
+    override suspend fun loginUser(user: User): User? {
         return try {
-            val response: LoginResponse = apiService.login(loginRequest)
-            userDataStore.saveUser(response.user, response.accessToken, response.refreshToken)
-            response
+            val response = apiService.signIn(user)
+            val user = response.body()
+            user
 
         } catch (e: Exception) {
             Log.e("LOGIN_ERROR", "API 요청 실패: ${e.message}", e) // 로그 추가
@@ -37,12 +32,12 @@ class LoginRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun registerUser(registerRequest: RegisterRequest): String? {
+    override suspend fun registerUser(user: User): String? {
         return try {
-            val response = apiService.register(registerRequest) // API 호출
-
+            val response = apiService.signUp(user) // API 호출
+            val user = response.body()
             if (response.isSuccessful) {
-                val successResponse = response.body()?.message ?: "회원가입 성공" // 성공 메시지 반환
+                val successResponse = "${user?.userName} 회원가입 성공" // 성공 메시지 반환
                 successResponse
 
             } else {
@@ -65,11 +60,4 @@ class LoginRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getHospitalList(): List<Hospital> {
-        return try {
-            apiService.getHospitalList() // API 호출
-        } catch (e: Exception) {
-            throw Exception(e.message)
-        }
-    }
 }

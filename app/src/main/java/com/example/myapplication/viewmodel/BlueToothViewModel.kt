@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.data.mock.MockBluetoothDevice
+import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.utils.isEmulator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,8 +45,19 @@ class BlueToothViewModel @Inject constructor(
 
     private var scanCallback: ScanCallback? = null
 
-    private val _mockDevices = MutableStateFlow<List<MockBluetoothDevice>>(emptyList())
-    val mockDevices: StateFlow<List<MockBluetoothDevice>> = _mockDevices
+    private val _mockDevices = MutableStateFlow<List<Beacon>>(emptyList())
+    val mockDevices: StateFlow<List<Beacon>> = _mockDevices
+
+    private val _selectedBeaconId = MutableStateFlow<Int?>(null)
+    val selectedBeaconId: StateFlow<Int?> = _selectedBeaconId
+
+    fun selectBeacon(id: Int) {
+        _selectedBeaconId.value = id
+    }
+
+    fun resetSelectedBeacon() {
+        _selectedBeaconId.value = null
+    }
 
     /** 🚀 블루투스 검색 시작 */
     fun startScan() {
@@ -106,10 +118,35 @@ class BlueToothViewModel @Inject constructor(
 
 
     private fun mockBluetoothDevices() {
+        val beacon1 = Beacon(
+            id = 1,
+            deviceAddress = "00:11:22:33:44:55",
+            location = "응급실 입구",
+            label = "Beacon-A",
+            hospitalId = 100,
+            used = true
+        )
+
+        val beacon2 = Beacon(
+            id = 2,
+            deviceAddress = "66:77:88:99:AA:BB",
+            location = "수술실 앞",
+            label = "Beacon-B",
+            hospitalId = 100,
+            used = true
+        )
+
+        val beacon3 = Beacon(
+            id = 3,
+            deviceAddress = "CC:DD:EE:FF:00:11",
+            location = "소각장",
+            label = "Beacon-C",
+            hospitalId = 101,
+            used = false
+        )
+
         val mockDevicesList = listOf(
-            MockBluetoothDevice("Mock Device 1", "00:11:22:33:44:55"),
-            MockBluetoothDevice("Mock Device 2", "66:77:88:99:AA:BB"),
-            MockBluetoothDevice("Mock Device 3", "CC:DD:EE:FF:00:11")
+            beacon1, beacon2, beacon3
         )
 
         _mockDevices.value = mockDevicesList

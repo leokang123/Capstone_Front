@@ -12,10 +12,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
  * 여러창에서 공용으로 사용될거같으면 여기다 적으면 됨
  */
 class SharedViewModel : ViewModel() {
-    var selectedBluetoothDevice by mutableStateOf<String?>(null)
+    var selectedBluetoothDevice by mutableStateOf<Int?>(null)
         private set
 
-    fun selectDevice(device: String) {
+    fun selectDevice(device: Int) {
         selectedBluetoothDevice = device
     }
 

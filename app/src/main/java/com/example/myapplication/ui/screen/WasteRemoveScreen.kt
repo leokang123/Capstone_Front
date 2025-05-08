@@ -49,6 +49,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.data.user.AppUser
 import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.MoveRequests
@@ -58,6 +60,7 @@ import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.utils.UserDataStore
 import com.example.myapplication.utils.getCurrentTime
 import com.example.myapplication.viewmodel.WasteListViewModel
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -66,40 +69,36 @@ fun WasteRemoveScreen(
     wasteListViewModel: WasteListViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val userDataStore = UserDataStore(context)
-    var user by remember { mutableStateOf<User?>(null) }
+    val user by wasteListViewModel.user.collectAsState()
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
     val selectedItems =
-        remember { mutableStateMapOf<Long, MoveRequest>() } // 선택된 아이템 (id -> MoveRequest)
+        remember { mutableStateMapOf<String, String>() } // 선택된 아이템 (id -> MoveRequest)
     val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
-    var currentItemId by remember { mutableStateOf<Long?>(null) }
-    var currentUserId by remember { mutableStateOf("") }
+    var currentItemId by remember { mutableStateOf<String?>(null) }
+    var currentUserId by remember { mutableStateOf<String?>(null) }
     var currentDetails by remember { mutableStateOf("") }
-    var currentStatus by remember { mutableStateOf("") }
+    var currentStatusId by remember { mutableStateOf<Int?>(null) }
     var wasteItemDetails by remember { mutableStateOf("") }
 
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
-    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
-
-    val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
+    val wasteStorageList = wasteListViewModel.wasteStorageList
+    val wasteStatusList = wasteListViewModel.wasteStatusList
+    val wasteTypeList = wasteListViewModel.wasteTypeList
+    val beaconList = wasteListViewModel.beaconList
 
     var authChecked by remember { mutableStateOf(false) }
-    CheckAuth(navController, roleId = 2) {
+    CheckAuth(navController, role= Roles.WAREHOUSE_MANAGER) {
         authChecked = true
     }
 
     // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
-        user = userDataStore.getUser()
-        currentUserId = user?.id.toString();
+        currentUserId = user?.uuid.toString()
     }
 
     Column(modifier = Modifier
@@ -162,8 +161,8 @@ fun WasteRemoveScreen(
                             onCheckedChange = { isChecked ->
                                 if (isChecked) {
                                     currentItemId = wasteItem.id
-                                    currentStatus = wasteItem.status // 현재 상태 저장
-                                    wasteItemDetails = wasteItem.wasteDetails.toString()
+                                    currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
+                                    wasteItemDetails = wasteItem.description
                                     showDialog = true // 팝업창 띄우기
                                 } else {
                                     selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
@@ -174,28 +173,26 @@ fun WasteRemoveScreen(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
+                            val wasteType = wasteTypeList.find { it.id == wasteItem.wasteStatusId }
+                            val beacon = beaconList.find { it.id == wasteItem.beaconId }
+                            val status = wasteStatusList.find { it.id == wasteItem.wasteStatusId }
                             Text(
-                                text = wasteItem.registrantName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = wasteItem.wasteType + " (" + wasteItem.selectedDate + ")",
+                                text = wasteType?.typeName ?: "",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.secondary
                             )
                             Text(
-                                text = "비콘이름: ${wasteItem.selectedDevice}",
+                                text = "비콘이름: ${beacon?.label}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )
                             Text(
-                                text = "상세내역: ${wasteItem.wasteDetails}",
+                                text = "상세내역: ${wasteItem.description}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )
                             Text(
-                                text = "상태: ${wasteItem.status}",
+                                text = "상태: ${status?.description}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )
@@ -212,8 +209,7 @@ fun WasteRemoveScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests =
-                        MoveRequests(stepId = 2, wasteMoveRequests = selectedItems.values.toList())
+                    val moveRequests = selectedItems.values.toList()
                     var responseMessage = ""
                     if (selectedItems.isNotEmpty()) {
                         try {
@@ -226,7 +222,7 @@ fun WasteRemoveScreen(
                         } finally {
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            wasteListViewModel.fetchWasteList(mode = 3)
+                            wasteListViewModel.fetchWasteList(wasteTypeId = 3) // FIX
                         }
                     }
                 }
@@ -243,9 +239,10 @@ fun WasteRemoveScreen(
             onDismissRequest = { showDialog = false },
             title = { Text("폐기물 배출 정보 입력") },
             text = {
+                val status = wasteStatusList.find { it.id == currentStatusId }
                 Column {
                     Text(
-                        text = "현재 상태: $currentStatus",
+                        text = "현재 상태: ${status?.description}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -258,7 +255,7 @@ fun WasteRemoveScreen(
 
                     OutlinedTextField(
                         enabled = false,
-                        value = currentUserId,
+                        value = currentUserId.toString(),
                         onValueChange = { currentUserId = it },
                         label = { Text("등록한 사용자 ID") }
                     )
@@ -273,13 +270,9 @@ fun WasteRemoveScreen(
             },
             confirmButton = {
                 Button(onClick = {
-                    if (currentItemId != null && currentUserId.isNotEmpty()) {
-                        selectedItems[currentItemId!!] = MoveRequest(
-                            itemId = currentItemId!!,
-                            wasteDetails = currentDetails,
-                            date = getCurrentTime() // 현재 시간 갱신
-                        )
-                        currentStatus = ""
+                    if (currentItemId != null && currentUserId?.isNotEmpty() == true) {
+                        selectedItems[currentItemId!!] = currentDetails
+                        currentStatusId = null
                         currentDetails = ""
                         wasteItemDetails = ""
                         showDialog = false
@@ -291,7 +284,7 @@ fun WasteRemoveScreen(
             dismissButton = {
                 Button(onClick = {
                     showDialog = false
-                    currentStatus = ""
+                    currentStatusId = null
                     currentDetails = ""
                     wasteItemDetails = ""
                 }) {

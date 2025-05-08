@@ -4,14 +4,21 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.user.AppUser
 import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemDetails
 import com.example.myapplication.data.waste.WasteItemRequest
 import com.example.myapplication.data.waste.WasteItemResponse
+import com.example.myapplication.data.waste.WasteStatus
 import com.example.myapplication.data.waste.WasteStorage
+import com.example.myapplication.data.waste.WasteType
+import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.WasteRepository
+import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,22 +34,25 @@ import javax.inject.Inject
 @HiltViewModel
 class WasteListViewModel @Inject constructor(
     private val wasteRepository: WasteRepository,
+    masterDataRepository: MasterDataRepository,
     private val userDataStore: UserDataStore
 ) : ViewModel() {
 
-    private val _user = MutableStateFlow<User?>(null)
-    val user: StateFlow<User?> = _user
+    private val _user = MutableStateFlow<AppUser?>(null)
+    val user: StateFlow<AppUser?> = _user
 
-    private val _wasteStorageList = MutableStateFlow<List<WasteStorage>>(emptyList())
-    val wasteStorageList: StateFlow<List<WasteStorage>> = _wasteStorageList
+    val wasteStorageList = masterDataRepository.storageList
+    val wasteStatusList = masterDataRepository.wasteStatusList
+    val wasteTypeList = masterDataRepository.wasteTypeList
+    val beaconList = masterDataRepository.beaconList
 
     // 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
-    private val _wasteItems = MutableStateFlow<List<WasteItemResponse>>(emptyList())
-    val wasteList: StateFlow<List<WasteItemResponse>> = _wasteItems
+    private val _wasteItems = MutableStateFlow<List<WasteItem>>(emptyList())
+    val wasteList: StateFlow<List<WasteItem>> = _wasteItems
 
     // 선택된 폐기물 상세 정보
-    private val _selectedItem = MutableStateFlow<WasteItemDetailResponse?>(null)
-    val selectedItem: StateFlow<WasteItemDetailResponse?> = _selectedItem
+    private val _selectedItem = MutableStateFlow<WasteItemDetails?>(null)
+    val selectedItem: StateFlow<WasteItemDetails?> = _selectedItem
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
@@ -56,33 +66,32 @@ class WasteListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _user.value = userDataStore.getUser()
-            try {
-                val storageList = wasteRepository.getWasteStorage()
-                _wasteStorageList.value = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-            } catch (e: Exception) {
-                Log.e("WasteRegisterScreen", e.message.toString())
-                _toastMessage.emit("창고 목록을 불러오는데 실패했습니다.")
-            }
         }
     }
+
     fun resetWasteList() {
         _wasteItems.value = emptyList()
         _selectedItem.value = null
     }
 
     // 전체 리스트 가져오기
-    fun fetchWasteList(mode: Int = 1) {
+    fun fetchWasteList(wasteTypeId: Int = 1) {
         viewModelScope.launch {
             try {
-                val response = wasteRepository.getWasteItems()
-                if (mode == 1) {
-                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
-                } else if (mode == 2) {
-                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
-                } else if (mode == 3) {
-                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
+                val response =
+                    wasteRepository.searchWasteItems(SearchRequest(wasteTypeId = wasteTypeId))
+                if (response != null) {
+                    _wasteItems.value = response
+                } else {
+                    resetWasteList()
                 }
+//                if (mode == 1) {
+//                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
+//                } else if (mode == 2) {
+//                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
+//                } else if (mode == 3) {
+//                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
+//                }
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)
@@ -90,11 +99,13 @@ class WasteListViewModel @Inject constructor(
         }
     }
 
-    fun fetchStorageWasteList(wasteStorageId: Long) {
+    fun fetchStorageWasteList(wasteStorageId: Int) {
         viewModelScope.launch {
             try {
                 val response = wasteRepository.getStorageWasteItems(wasteStorageId)
-                _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
+                _wasteItems.value =
+                    response?.filter { it.wasteStatusId == wasteStatusList.find { it.description == "STORED" }?.id }
+                        ?: emptyList() // API 결과 저장
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)
@@ -115,7 +126,7 @@ class WasteListViewModel @Inject constructor(
         }
     }
 
-    fun getWasteItemDetails(itemId: Long) {
+    fun getWasteItemDetails(itemId: String) {
         viewModelScope.launch {
             try {
                 val result = wasteRepository.getDetailWasteItem(itemId)
@@ -127,21 +138,24 @@ class WasteListViewModel @Inject constructor(
         }
     }
 
-    suspend fun registerWasteItem(wasteItem: WasteItemRequest): String? {
+    suspend fun registerWasteItem(wasteItem: WasteItem): String? {
         return wasteRepository.registerWaste(wasteItem)
     }
 
-    suspend fun checkItemStatus(itemId: Long): Boolean {
+    suspend fun checkItemStatus(itemId: String): Boolean {
         return try {
-                wasteRepository.checkItemStatus(itemId)
-            } catch (e: Exception) {
-                Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
-                throw e
-            }
+            val waste = wasteRepository.getWasteItem(itemId)
+            val status = wasteStatusList.find { it.id == waste?.wasteStatusId }
+            status?.statusLevel == 1
+        } catch (e: Exception) {
+            Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
+            throw e
         }
-    suspend fun updateItem(updatedItem: WasteItemDetailResponse) {
+    }
+
+    suspend fun updateItem(updatedItem: WasteItem): WasteItem? {
         return try {
-            Log.d(TAG,updatedItem.toString())
+            Log.d(TAG, updatedItem.toString())
             wasteRepository.updateItem(updatedItem)
         } catch (e: Exception) {
             Log.e("WasteListViewModel", "아이템 정정 실패", e)
@@ -149,11 +163,12 @@ class WasteListViewModel @Inject constructor(
         }
     }
 
-    suspend fun moveWasteItems(moveRequests: MoveRequests) {
+    // List uuid 로 한번에 상태 이동 처리
+    suspend fun moveWasteItems(moveRequests: List<String>) {
         return wasteRepository.moveWasteItems(moveRequests)
     }
 
-    suspend fun deleteItem(itemId: Long): Boolean {
+    suspend fun deleteItem(itemId: String): Boolean {
         return try {
             wasteRepository.deleteItem(itemId)
         } catch (e: Exception) {

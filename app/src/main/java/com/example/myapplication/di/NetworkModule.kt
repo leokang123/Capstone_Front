@@ -3,6 +3,8 @@ package com.example.myapplication.di
 import android.content.Context
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.network.AuthInterceptor
+import com.example.myapplication.repository.EtcRepository
+import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
 import dagger.Module
 import dagger.Provides
@@ -21,14 +23,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideUserDataStore(@ApplicationContext context: Context): UserDataStore {
+    fun provideUserDataStore(
+        @ApplicationContext context: Context
+    ): UserDataStore {
         return UserDataStore(context)
     }
 
     @Provides
     @Singleton
-    fun provideAuthInterceptor(@ApplicationContext context: Context): AuthInterceptor {
-        return AuthInterceptor(context)
+    fun provideAuthInterceptor(
+        @ApplicationContext context: Context,
+        userDataStore: UserDataStore
+    ): AuthInterceptor {
+        return AuthInterceptor(context, userDataStore)
     }
 
     @Provides
