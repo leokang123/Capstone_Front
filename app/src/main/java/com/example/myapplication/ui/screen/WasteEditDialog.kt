@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,8 +50,8 @@ fun WasteEditDialog(
     val beaconList = wasteListViewModel.beaconList
 
     // 상태 관리 (선택된 값)
-    var selectedWasteTypeId by remember { mutableStateOf(selectedItem.wasteType) }
-    var selectedDeviceId by remember { mutableStateOf(selectedItem.beacon) }
+    var selectedWasteTypeId by remember { mutableIntStateOf(selectedItem.wasteType) }
+    var selectedDeviceId by remember { mutableIntStateOf(selectedItem.beacon) }
     var selectedWasteStorageId: Int? by remember { mutableStateOf(selectedItem.storage) }
 
     // DropdownMenu 상태 (하단부에서 펼쳐지도록)
@@ -77,7 +78,7 @@ fun WasteEditDialog(
                             .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                             .padding(16.dp)
                     ) {
-                        val wasteType = wasteTypeList.find { selectedItem.wasteType == it.id }
+                        val wasteType = wasteTypeList.find { selectedWasteTypeId == it.id }
                         Text(
                             text = wasteType?.typeName.toString(),
                             color = if (expandedType) Color.Gray else Color.Black
@@ -109,7 +110,7 @@ fun WasteEditDialog(
                             .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                             .padding(16.dp)
                     ) {
-                        val wasteStorage = wasteStorageList.find { selectedItem.storage == it.id }
+                        val wasteStorage = wasteStorageList.find { selectedWasteStorageId == it.id }
                         Text(
                             text = wasteStorage?.storageName.toString(),
                             color = if (expandedStorage) Color.Gray else Color.Black

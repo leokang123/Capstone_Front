@@ -23,6 +23,7 @@ class LoginRepositoryImpl @Inject constructor(
     override suspend fun loginUser(user: User): User? {
         return try {
             val response = apiService.signIn(user)
+            Log.d("LOGIN_DEBUG", response.toString())
             val user = response.body()
             user
 
@@ -37,7 +38,7 @@ class LoginRepositoryImpl @Inject constructor(
             val response = apiService.signUp(user) // API 호출
             val user = response.body()
             if (response.isSuccessful) {
-                val successResponse = "${user?.userName} 회원가입 성공" // 성공 메시지 반환
+                val successResponse = "${user?.uuid} 회원가입 성공" // 성공 메시지 반환
                 successResponse
 
             } else {

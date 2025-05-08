@@ -19,7 +19,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+//    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://medicap.kro.kr/"
 
     @Provides
     @Singleton
@@ -35,7 +36,7 @@ object NetworkModule {
         @ApplicationContext context: Context,
         userDataStore: UserDataStore
     ): AuthInterceptor {
-        return AuthInterceptor(context, userDataStore)
+        return AuthInterceptor(context, userDataStore, BASE_URL)
     }
 
     @Provides

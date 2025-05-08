@@ -6,8 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.User
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
@@ -34,33 +32,34 @@ class LoginViewModel @Inject constructor(
 
     fun login() {
         viewModelScope.launch {
-            val mockUser = User(
-                uuid = "123",
-                userName = username,
-                password = password,
-                email = "$username@naver.com",
-                name = username,
-                phoneNumber = "01012341234",
-                hospitalId = 1,
-                roles = listOf(Roles.USER, Roles.WAREHOUSE_MANAGER),
-                primaryRoles = Roles.USER,
-                token = "123",
-                fcmToken = "123"
-            )
-            val mockHospital = Hospital(
-                id = 1,
-                hospitalName = "서울병원",
-                hospitalCall = "01012344321"
-            )
+//            val mockUser = User(
+//                uuid = "123",
+//                userName = username,
+//                password = password,
+//                email = "$username@naver.com",
+//                name = username,
+//                phoneNumber = "01012341234",
+//                hospitalId = 1,
+//                roles = listOf(Roles.USER, Roles.WAREHOUSE_MANAGER),
+//                primaryRoles = Roles.USER,
+//                token = "123",
+//                fcmToken = "123"
+//            )
+//            val mockHospital = Hospital(
+//                id = 1,
+//                hospitalName = "서울병원",
+//                hospitalCall = "01012344321"
+//            )
             val loginUser =
-                loginRepository.loginUser(User(userName = username.trim(), password = password))?: mockUser
-            val hospital = masterDataRepository.getHospital(loginUser?.hospitalId ?: 0)?: mockHospital
+                loginRepository.loginUser(User(username = username.trim(), password = password))
             Log.d("LOGIN", loginUser.toString())
-            if (loginUser != null && hospital != null) {
-                userDataStore.saveUser(loginUser, hospital)
+            if (loginUser != null) {
+                masterDataRepository.initAll(loginUser.hospitalId ?: 0)
+                val hospital = masterDataRepository.getHospital(loginUser.hospitalId ?: 1)
+
+                userDataStore.saveUser(loginUser, hospital!!)
 
                 // 필요한 리스트 전부 masterDataRepository 로드
-                masterDataRepository.initAll(loginUser.hospitalId ?: 0)
                 _loginSuccess.emit(true)
             } else {
                 errorMessage = "Invalid username or password"

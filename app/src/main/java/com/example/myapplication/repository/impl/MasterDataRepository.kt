@@ -8,7 +8,6 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
 import com.example.myapplication.repository.EtcRepository
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 import javax.inject.Singleton

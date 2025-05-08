@@ -9,6 +9,7 @@ import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.WasteRepository
+import java.time.LocalDate
 import javax.inject.Inject
 
 class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService) :
@@ -94,8 +95,8 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
                 wasteTypeId = searchRequest.wasteTypeId,
                 wasteStatusId = searchRequest.wasteStatusId,
                 storageId = searchRequest.wasteStorageId,
-                startDate = searchRequest.startDate.toString(),
-                endDate = searchRequest.endDate.toString(),
+                startDate = searchRequest.startDate,
+                endDate = searchRequest.endDate,
             )
             response.body()
 

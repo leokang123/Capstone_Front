@@ -18,6 +18,8 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * 엔드포인트랑 사용할 api 정의하는부분
@@ -68,8 +70,8 @@ interface ApiService {
         @Query("wasteTypeId") wasteTypeId: Int? = null,
         @Query("wasteStatusId") wasteStatusId: Int? = null,
         @Query("storageId") storageId: Int? = null,
-        @Query("startDate") startDate: String? = null,
-        @Query("endDate") endDate: String? = null
+        @Query("startDate") startDate: LocalDateTime? = null,
+        @Query("endDate") endDate: LocalDateTime? = null
     ): Response<List<WasteItem>>
 
     @GET("waste")
@@ -87,7 +89,7 @@ interface ApiService {
     @PATCH("waste/toNext/{id}")
     suspend fun transportStatus(@Path("id") wasteItemId: String): Response<WasteItem>
 
-    @GET("wsStatus")
+    @GET("admin/wsStatus")
     suspend fun getAllWasteStatus(): Response<List<WasteStatus>>
 
     @GET("wsType")

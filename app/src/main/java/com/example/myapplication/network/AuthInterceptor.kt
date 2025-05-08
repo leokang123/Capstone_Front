@@ -23,9 +23,10 @@ import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val userDataStore: UserDataStore
+    private val userDataStore: UserDataStore,
+    baseUrl: String,
 ) : Interceptor {
-    private val BASE_URL = "http://10.0.2.2:8080"
+    private val BASE_URL = baseUrl
 
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
