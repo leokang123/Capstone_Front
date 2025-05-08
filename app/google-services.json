@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "136398036055",
+    "project_id": "capstonealram",
+    "storage_bucket": "capstonealram.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136398036055:android:c0042c80bb80b9e1f75712",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByo5FVcvrEdP6rYK2Yi7XsAHsauKHZffE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
