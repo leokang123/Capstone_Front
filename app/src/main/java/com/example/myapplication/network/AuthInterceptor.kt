@@ -51,34 +51,34 @@ class AuthInterceptor @Inject constructor(
     }
 
     // 실제로 토큰 재발급 API를 호출하는 함수
-    private fun refreshAccessToken(refreshToken: String): String? {
-        return try {
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .url("${baseUrl}/auth/refresh") // 재발급 API 주소
-                .addHeader("Authorization", "Bearer $refreshToken")
-                .post("".toRequestBody(null)) // body 필요 없으면 빈 값
-                .build()
-
-            val response = client.newCall(request).execute()
-
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "")
-                json.getString("accessToken")
-            } else {
-                Log.d("1111", "Refresh 토큰 만료, 재 로그인 바람")
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
-                }
-                null
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.d("2222", "Refresh 토큰 만료, 재 로그인 바람")
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
-            }
-            null
-        }
-    }
+//    private fun refreshAccessToken(refreshToken: String): String? {
+//        return try {
+//            val client = OkHttpClient()
+//            val request = Request.Builder()
+//                .url("${baseUrl}/auth/refresh") // 재발급 API 주소
+//                .addHeader("Authorization", "Bearer $refreshToken")
+//                .post("".toRequestBody(null)) // body 필요 없으면 빈 값
+//                .build()
+//
+//            val response = client.newCall(request).execute()
+//
+//            if (response.isSuccessful) {
+//                val json = JSONObject(response.body?.string() ?: "")
+//                json.getString("accessToken")
+//            } else {
+//                Log.d("1111", "Refresh 토큰 만료, 재 로그인 바람")
+//                Handler(Looper.getMainLooper()).post {
+//                    Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
+//                }
+//                null
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            Log.d("2222", "Refresh 토큰 만료, 재 로그인 바람")
+//            Handler(Looper.getMainLooper()).post {
+//                Toast.makeText(context, "Refresh 토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
+//            }
+//            null
+//        }
+//    }
 }

@@ -3,12 +3,13 @@ package com.example.myapplication.utils
 import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.data.user.AppUser
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.User
-import com.example.myapplication.repository.impl.MasterDataRepository
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
