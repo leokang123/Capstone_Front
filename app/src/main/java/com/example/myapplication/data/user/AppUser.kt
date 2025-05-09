@@ -10,6 +10,6 @@ data class AppUser(
     val hospital: Hospital? = null,
     val roles: List<Roles>? = null,
     val primaryRoles: Roles? = null,
-    val token: String = "",
+    val token: String? = null,
     val fcmToken: String? = null
 )

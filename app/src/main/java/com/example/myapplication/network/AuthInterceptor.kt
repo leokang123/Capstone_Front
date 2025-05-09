@@ -24,9 +24,8 @@ import javax.inject.Inject
 class AuthInterceptor @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userDataStore: UserDataStore,
-    baseUrl: String,
+    private val baseUrl: String,
 ) : Interceptor {
-    private val BASE_URL = baseUrl
 
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
@@ -56,7 +55,7 @@ class AuthInterceptor @Inject constructor(
         return try {
             val client = OkHttpClient()
             val request = Request.Builder()
-                .url("${BASE_URL}/auth/refresh") // 재발급 API 주소
+                .url("${baseUrl}/auth/refresh") // 재발급 API 주소
                 .addHeader("Authorization", "Bearer $refreshToken")
                 .post("".toRequestBody(null)) // body 필요 없으면 빈 값
                 .build()

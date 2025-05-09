@@ -37,6 +37,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.ui.screen.AuthCheckScreen
 import com.example.myapplication.ui.screen.HomeScreen
 import com.example.myapplication.ui.screen.LoginScreen
 import com.example.myapplication.ui.screen.NotificationDialog
@@ -172,9 +173,12 @@ fun AppNavigation() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "login",
+                startDestination = "auth_check",
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable("auth_check") {
+                    AuthCheckScreen(navController)
+                }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }

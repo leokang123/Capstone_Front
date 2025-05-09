@@ -13,8 +13,8 @@ data class User(
     val hospitalId: Int? = null,
     val roles: List<Roles>? = null,
     val primaryRoles: Roles? = null,
-    val token: String = "",
-    val fcmToken: String = ""
+    val token: String? = null,
+    val fcmToken: String? = null
 )
 
 //data class User(

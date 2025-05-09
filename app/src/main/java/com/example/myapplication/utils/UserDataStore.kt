@@ -39,7 +39,7 @@ class UserDataStore @Inject constructor(
         )
         dataStore.edit { prefs ->
             prefs[stringPreferencesKey("user")] = gson.toJson(appUser)
-            prefs[stringPreferencesKey("accessToken")] = appUser.token.toString()
+            prefs[stringPreferencesKey("accessToken")] = appUser.token!!
         }
         Log.d("USER", user.toString())
     }
