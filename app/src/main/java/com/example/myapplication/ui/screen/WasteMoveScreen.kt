@@ -44,13 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.User
-import com.example.myapplication.data.waste.MoveRequest
-import com.example.myapplication.data.waste.MoveRequests
-import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import com.example.myapplication.utils.CheckAuth
-import com.example.myapplication.utils.UserDataStore
-import com.example.myapplication.utils.getCurrentTime
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 
@@ -87,7 +81,7 @@ fun WasteMoveScreen(
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
         currentUserId = user?.uuid.toString()
-        wasteListViewModel.fetchWasteList(wasteTypeId = 2)
+        wasteListViewModel.fetchWasteList(mode = 2)
     }
 
     Column(modifier = Modifier
@@ -186,7 +180,7 @@ fun WasteMoveScreen(
                         } finally {
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            wasteListViewModel.fetchWasteList(wasteTypeId = 2)
+                            wasteListViewModel.fetchWasteList(mode = 2)
                         }
                     }
 

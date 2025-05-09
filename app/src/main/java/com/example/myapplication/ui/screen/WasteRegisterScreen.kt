@@ -27,11 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.WasteItem
-import com.example.myapplication.data.waste.WasteItemResponse
 import com.example.myapplication.ui.component.WasteRegisterCard
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.BlueToothViewModel
@@ -86,7 +84,7 @@ fun WasteRegisterScreen(
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
 
-        wasteListViewModel.fetchWasteList(wasteTypeId = 1)
+        wasteListViewModel.fetchWasteList(mode = 1)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -137,6 +135,6 @@ fun WasteRegisterScreen(
     }
     if (showDialog) {
         WasteRegisterCardDialog(wasteListViewModel, beaconViewModel) { showDialog = false }
-        wasteListViewModel.fetchWasteList(wasteTypeId = 1)
+        wasteListViewModel.fetchWasteList(mode = 1)
     }
 }

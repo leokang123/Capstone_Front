@@ -5,11 +5,14 @@ import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.repository.impl.EtcRepositoryImpl
 import com.example.myapplication.repository.impl.LoginRepositoryImpl
+import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 
 // 인터페이스는 @Inject를 사용해도 자동주입이 안돼서

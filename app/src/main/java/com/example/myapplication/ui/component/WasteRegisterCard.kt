@@ -323,7 +323,7 @@ fun WasteRegisterCard(
                         Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                     } finally {
                         beaconViewModel.resetSelectedBeacon() // 뷰모델 데이터 초기화
-                        wasteListViewModel.fetchWasteList(wasteTypeId = 1)
+                        wasteListViewModel.fetchWasteList(mode = 1)
                         onDismiss()
                     }
                 }

@@ -50,17 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.AppUser
-import com.example.myapplication.data.user.User
-import com.example.myapplication.data.waste.MoveRequest
-import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.impl.WasteRepositoryImpl
 import com.example.myapplication.utils.CheckAuth
-import com.example.myapplication.utils.UserDataStore
-import com.example.myapplication.utils.getCurrentTime
 import com.example.myapplication.viewmodel.WasteListViewModel
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -222,7 +214,7 @@ fun WasteRemoveScreen(
                         } finally {
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            wasteListViewModel.fetchWasteList(wasteTypeId = 3) // FIX
+                            wasteListViewModel.fetchWasteList(mode = 3)
                         }
                     }
                 }

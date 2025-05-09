@@ -5,18 +5,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.user.AppUser
-import com.example.myapplication.data.user.User
-import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
-import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemDetails
-import com.example.myapplication.data.waste.WasteItemRequest
-import com.example.myapplication.data.waste.WasteItemResponse
-import com.example.myapplication.data.waste.WasteStatus
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.data.waste.WasteType
-import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
@@ -75,23 +67,25 @@ class WasteListViewModel @Inject constructor(
     }
 
     // 전체 리스트 가져오기
-    fun fetchWasteList(wasteTypeId: Int = 1) {
+    fun fetchWasteList(mode: Int = 1) {
         viewModelScope.launch {
+            val collectingId = wasteStatusList.find { it.statusLevel == 1 }?.id
+            val movingId = wasteStatusList.find { it.statusLevel == 2 }?.id
+            val storingId = wasteStatusList.find { it.statusLevel == 3 }?.id
+            val disposedId = wasteStatusList.find { it.statusLevel == 4 }?.id
             try {
-                val response =
-                    wasteRepository.searchWasteItems(SearchRequest(wasteTypeId = wasteTypeId))
-                if (response != null) {
-                    _wasteItems.value = response
-                } else {
-                    resetWasteList()
+                val response = wasteRepository.getWasteItems()
+                if (mode == 1) { // disposed가 아닌 상태 모두 출력
+                    _wasteItems.value = response?.filterNot { it.wasteStatusId == disposedId }
+                        ?: emptyList() // API 결과 저장
+                } else if (mode == 2) { // collecting, moving 상태 출력
+                    _wasteItems.value =
+                        response?.filterNot { it.wasteStatusId == storingId || it.wasteStatusId == disposedId }
+                            ?: emptyList() // API 결과 저장
+                } else if (mode == 3) { // storing상태만 출력
+                    _wasteItems.value = response?.filter { it.wasteStatusId == storingId }
+                        ?: emptyList() // API 결과 저장
                 }
-//                if (mode == 1) {
-//                    _wasteItems.value = response?.filterNot { it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
-//                } else if (mode == 2) {
-//                    _wasteItems.value = response?.filterNot { it.status == "STORED" || it.status == "DISPOSED" } ?: emptyList() // API 결과 저장
-//                } else if (mode == 3) {
-//                    _wasteItems.value = response?.filter { it.status == "STORED" } ?: emptyList() // API 결과 저장
-//                }
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)

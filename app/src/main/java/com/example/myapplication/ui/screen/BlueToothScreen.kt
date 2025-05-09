@@ -75,6 +75,7 @@ fun BluetoothDialog(
 @Composable
 fun BluetoothScreen(
     viewModel: BlueToothViewModel,
+
     onDismiss: () -> Unit
 ) {
     // 실제 폰
@@ -82,7 +83,7 @@ fun BluetoothScreen(
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
 
     // 에뮬레이터 한정
-    val devices by viewModel.mockDevices.collectAsState()
+    val devices by viewModel.serverBeacons.collectAsState()
     var selectedDevice by remember { mutableStateOf<Beacon?>(null) }
 
 
