@@ -48,6 +48,8 @@ import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.utils.DrawerContent
+import com.example.myapplication.utils.FirebaseTokenManager
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -63,6 +65,18 @@ class MainActivity : ComponentActivity() {
                 AppNavigation()
             }
         }
+
+        //Firebase Token 받기
+    FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val token = task.result
+            Log.d("FCM", "FCM Token: $token")
+            FirebaseTokenManager.setToken(token)
+        } else {
+            Log.e("FCM", "FCM Token fetch failed", task.exception)
+        }
+    }
+
     }
 
     // 폰에서 앱에 다시 돌아올떄 실행됨 (비교적 자주실행)

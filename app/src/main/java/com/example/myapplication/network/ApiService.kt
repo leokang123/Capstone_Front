@@ -93,5 +93,9 @@ interface ApiService {
     @GET("wsType")
     suspend fun getAllWasteType(): Response<List<WasteType>>
 
+    //firebase token
+    @POST("fcm/token")
+    suspend fun registerFcmToken(@Body tokenMap: Map<String, String>): Response<Unit>
+
 }
 
