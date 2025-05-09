@@ -23,10 +23,14 @@ class LoginRepositoryImpl @Inject constructor(
     override suspend fun loginUser(user: User): User? {
         return try {
             val response = apiService.signIn(user)
-            Log.d("LOGIN_DEBUG", response.toString())
-            val user = response.body()
-            user
-
+            if (response.isSuccessful){
+                Log.d("LOGIN_DEBUG", response.toString())
+                val user = response.body()
+                user
+            } else {
+                Log.e("LOGIN_ERROR", "응답 실패: ${response.code()} - ${response.message()}")
+                null
+            }
         } catch (e: Exception) {
             Log.e("LOGIN_ERROR", "API 요청 실패: ${e.message}", e) // 로그 추가
             null

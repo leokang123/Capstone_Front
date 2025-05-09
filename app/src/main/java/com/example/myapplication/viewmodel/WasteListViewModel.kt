@@ -133,7 +133,12 @@ class WasteListViewModel @Inject constructor(
     }
 
     suspend fun registerWasteItem(wasteItem: WasteItem): String? {
-        return wasteRepository.registerWaste(wasteItem)
+        val wasteType = wasteTypeList.find { it.id == wasteItem.wasteTypeId }
+        return if(wasteRepository.registerWaste(wasteItem)) {
+            "${wasteType?.typeName} 등록 완료"
+        } else {
+            "${wasteType?.typeName} 등록 실패"
+        }
     }
 
     suspend fun checkItemStatus(itemId: String): Boolean {

@@ -11,7 +11,7 @@ import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.data.waste.WasteStorage
 
 interface WasteRepository {
-    suspend fun registerWaste(wasteItem: WasteItem): String?
+    suspend fun registerWaste(wasteItem: WasteItem): Boolean
     suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItem>?
 
     suspend fun getWasteItems(): List<WasteItem>?

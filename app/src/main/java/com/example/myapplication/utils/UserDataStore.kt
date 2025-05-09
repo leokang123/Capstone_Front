@@ -25,7 +25,7 @@ class UserDataStore @Inject constructor(
 
     private val gson = Gson()
 
-    suspend fun saveUser(user: User, hospital: Hospital) {
+    suspend fun saveUser(user: User, hospital: Hospital?) {
         val appUser = AppUser(
             uuid = user.uuid,
             email = user.email,

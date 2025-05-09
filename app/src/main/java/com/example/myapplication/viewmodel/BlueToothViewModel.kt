@@ -136,7 +136,7 @@ class BlueToothViewModel @Inject constructor(
     private fun mockBluetoothDevices() {
         val beacon1 = RealBeacon(
             uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647825",
-            deviceAddress = "AA:BB:CC:DD:EE:01",
+            deviceAddress = "asdfawef",
             major = 1001,
             minor = 2001,
             interval = 1000,
@@ -145,7 +145,7 @@ class BlueToothViewModel @Inject constructor(
         )
         val beacon2 = RealBeacon(
             uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647826",
-            deviceAddress = "AA:BB:CC:DD:EE:02",
+            deviceAddress = "55",
             major = 1002,
             minor = 2002,
             interval = 900,
@@ -154,7 +154,7 @@ class BlueToothViewModel @Inject constructor(
         )
         val beacon3 = RealBeacon(
             uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647827",
-            deviceAddress = "AA:BB:CC:DD:EE:03",
+            deviceAddress = "2346",
             major = 1003,
             minor = 2003,
             interval = 1200,

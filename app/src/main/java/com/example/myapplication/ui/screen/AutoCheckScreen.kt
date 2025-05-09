@@ -18,9 +18,8 @@ fun AuthCheckScreen(navController: NavController, viewModel: LoginViewModel = hi
     LaunchedEffect(Unit) {
         val user = viewModel.checkAutoLogin()
         if (user != null && user.token?.isNotBlank() == true) {
-            launch {
-                viewModel.initData(user.hospital?.id ?: 0)
-            }
+            viewModel.initData(user.hospital?.id ?: 0)
+
             navController.navigate("home") {
                 popUpTo("auth_check") { inclusive = true } // 뒤로가기 안 되도록 제거
             }

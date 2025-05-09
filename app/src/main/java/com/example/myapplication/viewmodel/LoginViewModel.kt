@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.user.AppUser
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.User
@@ -15,6 +14,7 @@ import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,12 +29,20 @@ class LoginViewModel @Inject constructor(
     var username by mutableStateOf("")
     var password by mutableStateOf("")
     var errorMessage by mutableStateOf("")
+    val hospitalList = MutableStateFlow<List<Hospital>?>(emptyList())
+    init {
+        viewModelScope.launch {
+            hospitalList.value = masterDataRepository.getHospitalList()
+        }
+    }
 
     private val _loginSuccess = MutableSharedFlow<Boolean>()
     val loginSuccess = _loginSuccess.asSharedFlow()
 
-    suspend fun initData(hospitalId: Int) {
-        masterDataRepository.initAll(hospitalId)
+    fun initData(hospitalId: Int) {
+        viewModelScope.launch {
+            masterDataRepository.initAll(hospitalId)
+        }
     }
 
     suspend fun checkAutoLogin(): AppUser? {
@@ -65,12 +73,9 @@ class LoginViewModel @Inject constructor(
                 loginRepository.loginUser(User(username = username.trim(), password = password))//?: mockUser
             Log.d("LOGIN", loginUser.toString())
             if (loginUser != null) {
-                launch { // 별도 코루틴에서 initAll
-                    initData(loginUser.hospitalId?: 0)
-                }
-                val hospital = masterDataRepository.getHospital(loginUser.hospitalId ?: 1)//?:mockHospital
-
-                userDataStore.saveUser(loginUser, hospital!!)
+                val hospital = hospitalList.value?.find { it.id == loginUser.hospitalId }
+                userDataStore.saveUser(loginUser, hospital)
+                initData(loginUser.hospitalId?: 0)
 
                 // 필요한 리스트 전부 masterDataRepository 로드
                 _loginSuccess.emit(true)

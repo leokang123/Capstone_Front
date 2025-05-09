@@ -15,15 +15,14 @@ import javax.inject.Inject
 class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService) :
     WasteRepository {
 
-    override suspend fun registerWaste(wasteItem: WasteItem): String? {
+    override suspend fun registerWaste(wasteItem: WasteItem): Boolean {
         return try {
             val response = apiService.createWaste(wasteItem)
-            val data = response.body()
-            "${data?.id} 등록 완료"
+            response.isSuccessful
 
         } catch (e: Exception) {
             Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
-            null
+            false
         }
     }
 
@@ -31,7 +30,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
     override suspend fun getWasteItems(): List<WasteItem>? {
         return try {
             val response = apiService.getAllWaste()
-            response.body()
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_WASTE_LIST_ERROR", "응답 실패: ${response.code()} - ${response.message()}")
+                null
+            }
 
         } catch (e: Exception) {
             Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
@@ -42,8 +46,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
     override suspend fun getStorageWasteItems(storageId: Int): List<WasteItem>? {
         return try {
             val response = apiService.getAllWasteHs(storageId = storageId)
-            response.body()
-
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                null
+            }
         } catch (e: Exception) {
             Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
             null
@@ -62,7 +70,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
     override suspend fun getDetailWasteItem(itemId: String): WasteItemDetails? {
         return try {
             val response = apiService.getAllData(itemId)
-            response.body()
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_DETAIL_WASTE_ITEM", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             throw e
         }
@@ -72,7 +85,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
         return try {
             val wasteItemId = wasteItem.id ?: ""
             val response = apiService.updateWaste(wasteItemId, wasteItem)
-            response.body()
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("UPDATE_ITEM", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             throw e
         }
@@ -80,8 +98,13 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
 
     override suspend fun deleteItem(itemId: String): Boolean {
         return try {
-            apiService.deleteWaste(itemId)
-            true
+            val response = apiService.deleteWaste(itemId)
+            if (response.isSuccessful) {
+                true
+            } else {
+                Log.e("DELETE_ITEM", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             throw e
         }
@@ -98,8 +121,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
                 startDate = searchRequest.startDate,
                 endDate = searchRequest.endDate,
             )
-            response.body()
-
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                null
+            }
         } catch (e: Exception) {
             Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
             null
@@ -109,7 +136,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
     override suspend fun getWasteItem(itemId: String): WasteItem? {
         return try {
             val response = apiService.getWaste(itemId)
-            response.body()
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_WASTE_ITEM", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             throw e
         }
@@ -129,8 +161,12 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
     override suspend fun getWasteItemsByName(wasteId: String): List<WasteItem>? {
         return try {
             val response = apiService.getAllWasteHs(wasteId = wasteId)
-            response.body()
-
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
             null
@@ -139,7 +175,13 @@ class WasteRepositoryImpl @Inject constructor(private val apiService: ApiService
 
     override suspend fun moveWasteItem(wasteItemId: String) {
         try {
-            apiService.transportStatus(wasteItemId)
+            val response = apiService.transportStatus(wasteItemId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                Log.e("MOVE_WASTE_ITEM", "API 요청 실패: ${response.code()} - ${response.message()}") // ✅ 로그 추가
+                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+            }
         } catch (e: Exception) {
             throw e
         }
