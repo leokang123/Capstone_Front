@@ -1,5 +1,6 @@
 package com.example.myapplication.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.enums.Roles
@@ -40,6 +41,8 @@ class AuthViewModel @Inject constructor(
                             FirebaseTokenManager.getToken()?.let { fcmToken ->
                                 viewModelScope.launch {
                                     notificationRepository.sendFcmToken(userId, fcmToken)
+                                    //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
+                                    Log.d("FCM", "Sending token to server: $fcmToken")
                                 }
                             }
                         }
