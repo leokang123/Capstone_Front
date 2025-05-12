@@ -1,5 +1,6 @@
 package com.example.myapplication.network
 
+import com.example.myapplication.data.fcmtoken.FcmLogout
 import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.User
@@ -97,5 +98,7 @@ interface ApiService {
     @POST("fcm/token")
     suspend fun registerFcmToken(@Body tokenMap: Map<String, String>): Response<Unit>
 
+    @POST("fcm/logout")
+    suspend fun logoutFcmToken(@Body dto: FcmLogout): Response<Void>
 }
 
