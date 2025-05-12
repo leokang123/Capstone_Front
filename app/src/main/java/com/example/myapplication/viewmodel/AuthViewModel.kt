@@ -51,23 +51,6 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
-    // 로그아웃 기능 추가
-    fun logout() {
-        viewModelScope.launch {
-            val user = userDataStore.getUser()
-            val fcmToken = FirebaseTokenManager.getToken()
-
-            if (user != null && fcmToken != null) {
-                notificationRepository.removeFcmToken(user.uuid ?: "", fcmToken)
-                Log.d("FCM", "FCM 토큰 삭제 요청: $fcmToken")
-            }
-
-            userDataStore.clearUserData()
-            _authState.value = AuthState.NotLoggedIn
-            Log.d("AUTH", "로그아웃 완료, 상태 초기화")
-        }
-    }
 }
 
     sealed class AuthState {
