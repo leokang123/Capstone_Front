@@ -63,7 +63,7 @@ class AuthViewModel @Inject constructor(
                 Log.d("FCM", "FCM 토큰 삭제 요청: $fcmToken")
             }
 
-            userDataStore.clear()
+            userDataStore.clearUserData()
             _authState.value = AuthState.NotLoggedIn
             Log.d("AUTH", "로그아웃 완료, 상태 초기화")
         }
