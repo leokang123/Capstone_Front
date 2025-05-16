@@ -2,6 +2,7 @@ package com.example.myapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.example.myapplication.data.fcmtoken.FcmLogout
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.impl.MasterDataRepository
