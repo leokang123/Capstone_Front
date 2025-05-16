@@ -29,6 +29,7 @@ class SettingsViewModel @Inject constructor(
 
                 if (user != null && fcmToken != null) {
                     notificationRepository.removeFcmToken(user.uuid ?:"", fcmToken)
+                    Log.d("SettingsViewModel", "FCM 토큰 삭제 요청 전송: uuid=${user.uuid}, token=$fcmToken")
                 }
                 
                 
