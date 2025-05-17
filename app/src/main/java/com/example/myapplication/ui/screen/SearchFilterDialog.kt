@@ -40,6 +40,7 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.viewmodel.WasteListViewModel
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -76,7 +77,7 @@ fun SearchFilterDialog(
     var isDeviceChecked by remember { mutableStateOf(false) }
     var isDateChecked by remember { mutableStateOf(false) }
     var isStatusChecked by remember { mutableStateOf(false) }
-    val defaultDateTime = LocalDateTime.now()
+    val defaultDateTime = LocalDate.now()
     var selectedDateTime by remember { mutableStateOf(searchFilter.startDate ?: defaultDateTime) }
 
     val wasteStorageList = wasteListViewModel.wasteStorageList
@@ -272,25 +273,25 @@ fun SearchFilterDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text("날짜")
-                                Text(selectedDateTime.toLocalDate().toString())
+                                Text(selectedDateTime.toString())
                             }
                         }
 
-                        Button(
-                            onClick = { showTimePicker = true },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("시간")
-                                Text(
-                                    selectedDateTime.toLocalTime()
-                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
-                                )
-                            }
-                        }
+//                        Button(
+//                            onClick = { showTimePicker = true },
+//                            modifier = Modifier.weight(1f)
+//                        ) {
+//                            Column(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                horizontalAlignment = Alignment.CenterHorizontally
+//                            ) {
+//                                Text("시간")
+//                                Text(
+//                                    selectedDateTime.toLocalTime()
+//                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+//                                )
+//                            }
+//                        }
                     }
 
                     Spacer(Modifier.height(8.dp))
@@ -310,13 +311,12 @@ fun SearchFilterDialog(
                                 val pickedDate = Instant.ofEpochMilli(millis)
                                     .atZone(ZoneId.systemDefault()).toLocalDate()
 
-                                selectedDateTime =
-                                    LocalDateTime.of(pickedDate, selectedDateTime.toLocalTime())
+                                selectedDateTime = pickedDate
 
                                 onFilterChange(
                                     searchFilter.copy(
-                                        startDate = selectedDateTime,
-                                        endDate = selectedDateTime.plusDays(10)
+                                        startDate = pickedDate,
+                                        endDate = pickedDate.plusDays(10)
                                     )
                                 )
                             }
@@ -330,27 +330,27 @@ fun SearchFilterDialog(
                 }
             }
 
-            if (showTimePicker) {
-                val context = LocalContext.current
-                TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        val newTime = LocalTime.of(hourOfDay, minute)
-                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-
-                        onFilterChange(
-                            searchFilter.copy(
-                                startDate = selectedDateTime,
-                                endDate = selectedDateTime.plusDays(10)
-                            )
-                        )
-                        showTimePicker = false
-                    },
-                    selectedDateTime.hour,
-                    selectedDateTime.minute,
-                    true
-                ).show()
-            }
+//            if (showTimePicker) {
+//                val context = LocalContext.current
+//                TimePickerDialog(
+//                    context,
+//                    { _, hourOfDay, minute ->
+//                        val newTime = LocalTime.of(hourOfDay, minute)
+//                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
+//
+//                        onFilterChange(
+//                            searchFilter.copy(
+//                                startDate = selectedDateTime,
+//                                endDate = selectedDateTime.plusDays(10)
+//                            )
+//                        )
+//                        showTimePicker = false
+//                    },
+//                    selectedDateTime.hour,
+//                    selectedDateTime.minute,
+//                    true
+//                ).show()
+//            }
         },
         confirmButton = {
             Button(onClick = onApplyFilter) {

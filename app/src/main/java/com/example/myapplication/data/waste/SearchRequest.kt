@@ -1,6 +1,6 @@
 package com.example.myapplication.data.waste
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 data class SearchRequest(
     val wasteId: String? = null,
@@ -8,6 +8,6 @@ data class SearchRequest(
     val wasteTypeId: Int? = null,
     val wasteStatusId: Int? = null,
     val wasteStorageId: Int? = null,
-    val startDate: LocalDateTime? = null,
-    val endDate: LocalDateTime? = null,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
 )

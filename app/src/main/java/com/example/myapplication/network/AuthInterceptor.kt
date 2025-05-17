@@ -5,8 +5,12 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import com.example.myapplication.utils.AuthEventBus
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -24,7 +28,6 @@ import javax.inject.Inject
 class AuthInterceptor @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userDataStore: UserDataStore,
-    private val baseUrl: String,
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -42,9 +45,11 @@ class AuthInterceptor @Inject constructor(
         val response = chain.proceed(request)
         // accessToken 만료 등으로 401 Unauthorized 반환 시
         if (response.code == 401 || response.code == 403) {
-            response.close() // 이전 응답 닫기
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, "토큰 만료, 재 로그인 바람", Toast.LENGTH_LONG).show()
+//            response.close() // 리소스 반환
+            // UI 이벤트 발생
+            CoroutineScope(Dispatchers.IO).launch {
+                userDataStore.clearUserData()
+                AuthEventBus.notifyLoginRequired()
             }
         }
         return response

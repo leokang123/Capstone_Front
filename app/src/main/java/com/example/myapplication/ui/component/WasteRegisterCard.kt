@@ -123,7 +123,7 @@ fun WasteRegisterCard(
         val wasteType = wasteTypeList.find { it.id == selectedWasteTypeId }
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = wasteType?.typeName.toString(),
+                value = wasteType?.typeName?: "",
                 onValueChange = {},
                 label = { Text("폐기물 종류") },
                 readOnly = true,
@@ -186,87 +186,87 @@ fun WasteRegisterCard(
         )
 
         Spacer(modifier = Modifier.height(heightPadding))
+//
+//        // 날짜 & 시간 선택 버튼을 정렬
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Button(
+//                onClick = { showDatePicker = true },
+//                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
+//            ) {
+//                Column(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Text("등록날짜")
+//                    Text(selectedDateTime.toLocalDate().toString())
+//                }
+//            }
+//
+//            Button(
+//                onClick = { showTimePicker = true },
+//                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
+//            ) {
+//                Column(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Text("등록시간")
+//                    Text(
+//                        selectedDateTime.toLocalTime()
+//                            .format(DateTimeFormatter.ofPattern("HH:mm"))
+//                    )
+//                }
+//
+//            }
+//        }
+//
+//
+//        // 날짜 선택 다이얼로그
+//        if (showDatePicker) {
+//            val dateState = rememberDatePickerState()
+//
+//            DatePickerDialog(
+//                onDismissRequest = { showDatePicker = false },
+//                confirmButton = {
+//                    Button(onClick = {
+//                        dateState.selectedDateMillis?.let { millis ->
+//                            val pickedDate = Instant.ofEpochMilli(millis)
+//                                .atZone(ZoneId.systemDefault()).toLocalDate()
+//
+//                            selectedDateTime =
+//                                LocalDateTime.of(pickedDate, selectedDateTime.toLocalTime())
+//
+//                        }
+//                        showDatePicker = false
+//                    }) {
+//                        Text("확인")
+//                    }
+//                }
+//            ) {
+//                DatePicker(state = dateState)
+//            }
+//        }
+//
+//        if (showTimePicker) {
+//            val context = LocalContext.current
+//            TimePickerDialog(
+//                context,
+//                { _, hourOfDay, minute ->
+//                    val newTime = LocalTime.of(hourOfDay, minute)
+//                    selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
+//                    showTimePicker = false
+//                },
+//                selectedDateTime.hour,
+//                selectedDateTime.minute,
+//                true
+//            ).show()
+//        }
 
-        // 날짜 & 시간 선택 버튼을 정렬
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(
-                onClick = { showDatePicker = true },
-                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("등록날짜")
-                    Text(selectedDateTime.toLocalDate().toString())
-                }
-            }
 
-            Button(
-                onClick = { showTimePicker = true },
-                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("등록시간")
-                    Text(
-                        selectedDateTime.toLocalTime()
-                            .format(DateTimeFormatter.ofPattern("HH:mm"))
-                    )
-                }
-
-            }
-        }
-
-
-        // 날짜 선택 다이얼로그
-        if (showDatePicker) {
-            val dateState = rememberDatePickerState()
-
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    Button(onClick = {
-                        dateState.selectedDateMillis?.let { millis ->
-                            val pickedDate = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault()).toLocalDate()
-
-                            selectedDateTime =
-                                LocalDateTime.of(pickedDate, selectedDateTime.toLocalTime())
-
-                        }
-                        showDatePicker = false
-                    }) {
-                        Text("확인")
-                    }
-                }
-            ) {
-                DatePicker(state = dateState)
-            }
-        }
-
-        if (showTimePicker) {
-            val context = LocalContext.current
-            TimePickerDialog(
-                context,
-                { _, hourOfDay, minute ->
-                    val newTime = LocalTime.of(hourOfDay, minute)
-                    selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-                    showTimePicker = false
-                },
-                selectedDateTime.hour,
-                selectedDateTime.minute,
-                true
-            ).show()
-        }
-
-
-        Spacer(modifier = Modifier.height(heightPadding))
+//        Spacer(modifier = Modifier.height(heightPadding))
 
 
         // 블루투스 검색 버튼

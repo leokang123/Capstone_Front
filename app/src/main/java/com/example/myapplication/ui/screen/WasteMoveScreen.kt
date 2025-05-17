@@ -44,14 +44,27 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+
+suspend fun reloadWasteList(
+    blueToothViewModel: BlueToothViewModel,
+    wasteListViewModel: WasteListViewModel,
+) {
+    blueToothViewModel.startScan()
+    val beaconAddressList = blueToothViewModel.serverBeacons.value.map { it.deviceAddress }.toList()
+    Log.d("BEACONLIST", beaconAddressList.toString())
+    wasteListViewModel.fetchWasteList(mode = 2, beaconAddressList)
+}
 
 @Composable
 fun WasteMoveScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = hiltViewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel(),
+    blueToothViewModel: BlueToothViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val user by wasteListViewModel.user.collectAsState()
@@ -78,19 +91,34 @@ fun WasteMoveScreen(
     }
 
     // UI 로딩 시 폐기물 리스트 불러오기
-    LaunchedEffect(authChecked) {
+    LaunchedEffect(authChecked, Unit) {
         if (!authChecked) return@LaunchedEffect
         currentUserId = user?.uuid.toString()
-        wasteListViewModel.fetchWasteList(mode = 2)
+        reloadWasteList(blueToothViewModel, wasteListViewModel)
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("폐기물 이동", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
-
+// 새로고침 버튼
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    reloadWasteList(blueToothViewModel, wasteListViewModel)
+                    Toast.makeText(context, "폐기물 목록이 새로 고침되었습니다", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text("폐기물 목록 새로고침")
+        }
         // 체크리스트 UI
         LazyColumn(
             modifier = Modifier
@@ -167,7 +195,7 @@ fun WasteMoveScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests = selectedItems.values.toList()
+                    val moveRequests: List<MoveRequest> = selectedItems.map { MoveRequest(it.key, it.value)}
                     var responseMessage = ""
                     if (selectedItems.isNotEmpty()) {
                         try {
@@ -180,7 +208,7 @@ fun WasteMoveScreen(
                         } finally {
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            wasteListViewModel.fetchWasteList(mode = 2)
+                            reloadWasteList(blueToothViewModel, wasteListViewModel)
                         }
                     }
 
@@ -201,7 +229,7 @@ fun WasteMoveScreen(
                 val status = wasteStatusList.find { it.id == currentStatusId }
                 Column {
                     Text(
-                        text = "현재 상태: $status",
+                        text = "현재 상태: ${status?.description}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -229,7 +257,7 @@ fun WasteMoveScreen(
             },
             confirmButton = {
                 Button(onClick = {
-                    if (currentItemId != null && currentUserId?.isNotEmpty() == true) {
+                    if (currentItemId != null && currentUserId.isNotEmpty() == true) {
                         selectedItems[currentItemId!!] = currentDetails
                         currentStatusId = null
                         currentDetails = ""

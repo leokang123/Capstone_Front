@@ -7,4 +7,7 @@ interface LoginRepository {
     suspend fun loginUser(user: User): User?
 
     suspend fun registerUser(user: User): String?
+
+    suspend fun logoutUser(uuid: String): Boolean
+
 }

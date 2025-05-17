@@ -13,13 +13,11 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 /**
  * 엔드포인트랑 사용할 api 정의하는부분
@@ -46,17 +44,20 @@ interface ApiService {
     @POST("auth/signup")
     suspend fun signUp(@Body user: User): Response<User>
 
-    @POST("auth/signout")
-    suspend fun signOut(): Response<*>
+    @PUT("auth/logOut/{uuid}")
+    suspend fun logout(@Path("uuid") uuid: String): Response<Unit>
 
     @POST("waste/createWaste")
     suspend fun createWaste(@Body wasteItem: WasteItem): Response<WasteItem>
 
     @DELETE("waste/deleteWaste/{id}")
-    suspend fun deleteWaste(@Path("id") wasteItemId: String): Response<*>
+    suspend fun deleteWaste(@Path("id") wasteItemId: String): Response<Unit>
 
     @GET("waste/getAllWaste")
     suspend fun getAllWaste(): Response<List<WasteItem>>
+
+    @POST("waste/getByBeacon")
+    suspend fun getWasteByAddress(@Body beaconAddressList: List<String>): Response<List<WasteItem>>
 
     @GET("waste/allData/{id}")
     suspend fun getAllData(@Path("id") wasteItemId: String): Response<WasteItemDetails>
@@ -70,8 +71,8 @@ interface ApiService {
         @Query("wasteTypeId") wasteTypeId: Int? = null,
         @Query("wasteStatusId") wasteStatusId: Int? = null,
         @Query("storageId") storageId: Int? = null,
-        @Query("startDate") startDate: LocalDateTime? = null,
-        @Query("endDate") endDate: LocalDateTime? = null
+        @Query("startDate") startDate: LocalDate? = null,
+        @Query("endDate") endDate: LocalDate? = null
     ): Response<List<WasteItem>>
 
     @GET("waste")
@@ -86,10 +87,13 @@ interface ApiService {
     @GET("waste/log/{id}")
     suspend fun getWasteLog(@Path("id") wasteItemId: String): Response<List<WasteLog>>
 
-    @PATCH("waste/toNext/{id}")
-    suspend fun transportStatus(@Path("id") wasteItemId: String): Response<WasteItem>
+    @PUT("waste/toNext/{id}")
+    suspend fun transportStatus(
+        @Path("id") wasteItemId: String,
+        @Query("description") description: String
+    ): Response<WasteItem>
 
-    @GET("admin/wsStatus")
+    @GET("wsStatus")
     suspend fun getAllWasteStatus(): Response<List<WasteStatus>>
 
     @GET("wsType")

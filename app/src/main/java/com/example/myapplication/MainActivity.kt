@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,6 +49,7 @@ import com.example.myapplication.ui.screen.WasteMoveScreen
 import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.utils.AuthEventBus
 import com.example.myapplication.utils.DrawerContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -115,7 +117,14 @@ fun AppNavigation() {
     // 로그인/회원가입 화면에서는 TopBar 숨김
     val shouldShowTopBar = currentDestination !in listOf("login", "register")
     val shouldShowBackButton = currentDestination !in listOf("home")
-
+    LaunchedEffect(Unit) {
+        AuthEventBus.needLoginFlow.collect {
+            navController.navigate("login") {
+                popUpTo("auth_check") { inclusive = true } // 이전 화면 제거
+                launchSingleTop = true
+            }
+        }
+    }
     // 왼쪽 네비바 구현
     ModalNavigationDrawer(
         drawerContent = {

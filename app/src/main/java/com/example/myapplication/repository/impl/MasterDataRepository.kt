@@ -30,14 +30,19 @@ class MasterDataRepository @Inject constructor(
     val wasteStatusMap get() = wasteStatusList.associateBy { it.id }
 
     suspend fun getHospitalList() = etcRepository.getHospitalList()
+    suspend fun getBeaconList() = etcRepository.getBeaconList()
+    suspend fun getStorageList(hospitalId: Int) = etcRepository.getStorageList(hospitalId)
+    suspend fun getWasteTypeList() = etcRepository.getWasteTypeList()
+    suspend fun getWasteStatusList() = etcRepository.getWasteStatusList()
+
 
     suspend fun initAll(hospitalId: Int) = supervisorScope {
         try {
             val hospitalDeferred = async { getHospitalList() }
-            val storageDeferred = async { etcRepository.getStorageList(hospitalId) }
-            val beaconDeferred = async { etcRepository.getBeaconList() }
-            val typeDeferred = async { etcRepository.getWasteTypeList() }
-            val statusDeferred = async { etcRepository.getWasteStatusList() }
+            val storageDeferred = async { getStorageList(hospitalId) }
+            val beaconDeferred = async { getBeaconList() }
+            val typeDeferred = async { getWasteTypeList() }
+            val statusDeferred = async { getWasteStatusList() }
 
             hospitalList = hospitalDeferred.await() ?: emptyList()
             storageList = storageDeferred.await() ?: emptyList()

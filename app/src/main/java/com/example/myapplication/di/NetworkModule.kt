@@ -38,7 +38,7 @@ object NetworkModule {
         @ApplicationContext context: Context,
         userDataStore: UserDataStore
     ): AuthInterceptor {
-        return AuthInterceptor(context, userDataStore, BASE_URL)
+        return AuthInterceptor(context, userDataStore)
     }
 
     @Provides

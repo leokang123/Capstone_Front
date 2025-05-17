@@ -34,9 +34,9 @@ import javax.inject.Inject
 @HiltViewModel
 class BlueToothViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    masterDataRepository: MasterDataRepository
+    private val masterDataRepository: MasterDataRepository
 ) : ViewModel() {
-    private val beaconList = masterDataRepository.beaconList
+    private var beaconList: List<Beacon>? = masterDataRepository.beaconList
 
     private val bluetoothManager: BluetoothManager by lazy {
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -65,6 +65,10 @@ class BlueToothViewModel @Inject constructor(
         _selectedBeaconId.value = null
     }
 
+    suspend fun updateBeaconList() {
+        beaconList = masterDataRepository.getBeaconList()
+    }
+
     /** 🚀 블루투스 검색 시작 */
     fun startScan() {
         if (isEmulator()) {
@@ -74,7 +78,9 @@ class BlueToothViewModel @Inject constructor(
             Log.d(TAG, "Starting Bluetooth scan...")
             scanRealDevices()
         }
+        Log.d("MOCKBEACON", _mockDevices.value.toString())
         matchBeacons()
+        Log.d("SERVERBEACON", _serverBeacons.value.toString())
     }
 
     private fun matchBeacons() {
@@ -82,8 +88,8 @@ class BlueToothViewModel @Inject constructor(
         val scanned = _mockDevices.value.map { it.deviceAddress }
         // 실제 디바이스
 //        val scanned = _devices.value.map {it.address}
-        val serverBeacon = beaconList.filter {it.deviceAddress in scanned }
-        _serverBeacons.value = serverBeacon
+        val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
+        _serverBeacons.value = serverBeacon?: emptyList()
     }
 
     @SuppressLint("MissingPermission")
@@ -132,6 +138,12 @@ class BlueToothViewModel @Inject constructor(
         }
     }
 
+    fun updateBeacon(updateBeacon: Beacon) {
+        serverBeacons.value.map {
+            if (it.id == updateBeacon.id) updateBeacon else it
+        }
+    }
+
 
     private fun mockBluetoothDevices() {
         val beacon1 = RealBeacon(
@@ -168,6 +180,7 @@ class BlueToothViewModel @Inject constructor(
 
         _mockDevices.value = mockDevicesList
     }
+
 
     private fun hasScanPermission(): Boolean {
         return if (ActivityCompat.checkSelfPermission(

@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,10 @@ fun BluetoothDialog(
     viewModel: BlueToothViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.updateBeaconList()
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -111,6 +116,7 @@ fun BluetoothScreen(
                 DeviceItem(device) { selected ->
                     viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
+                    viewModel.updateBeacon(selected.copy(used=true))
                     onDismiss()
                 }
             }

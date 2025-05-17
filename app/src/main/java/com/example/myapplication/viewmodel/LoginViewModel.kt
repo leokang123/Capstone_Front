@@ -30,9 +30,14 @@ class LoginViewModel @Inject constructor(
     var password by mutableStateOf("")
     var errorMessage by mutableStateOf("")
     val hospitalList = MutableStateFlow<List<Hospital>?>(emptyList())
+
     init {
         viewModelScope.launch {
-            hospitalList.value = masterDataRepository.getHospitalList()
+            try {
+                hospitalList.value = masterDataRepository.getHospitalList()
+            } catch (e: Exception) {
+                Log.e("INIT_HOSPITAL", e.message.toString())
+            }
         }
     }
 
@@ -70,12 +75,17 @@ class LoginViewModel @Inject constructor(
 //                hospitalCall = "01012344321"
 //            )
             val loginUser =
-                loginRepository.loginUser(User(username = username.trim(), password = password))//?: mockUser
+                loginRepository.loginUser(
+                    User(
+                        username = username.trim(),
+                        password = password
+                    )
+                )//?: mockUser
             Log.d("LOGIN", loginUser.toString())
             if (loginUser != null) {
                 val hospital = hospitalList.value?.find { it.id == loginUser.hospitalId }
                 userDataStore.saveUser(loginUser, hospital)
-                initData(loginUser.hospitalId?: 0)
+                initData(loginUser.hospitalId ?: 0)
 
                 // 필요한 리스트 전부 masterDataRepository 로드
                 _loginSuccess.emit(true)

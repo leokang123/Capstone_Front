@@ -14,87 +14,76 @@ class EtcRepositoryImpl @Inject constructor(
     private val apiService: ApiService
 ) : EtcRepository {
     override suspend fun getHospitalList(): List<Hospital>? {
-        return try {
-            val response = apiService.getAllHospital() // API 호출
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                Log.e(
-                    "GET_HOSPITAL_LIST",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                )
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception(e.message)
+        val response = apiService.getAllHospital() // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_HOSPITAL_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
     }
 
     override suspend fun getStorageList(hospitalId: Int): List<WasteStorage>? {
-        return try {
-            val response = apiService.getAllStorage(hospitalId) // API 호출
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                Log.e(
-                    "GET_STORAGE_LIST",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                )
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception(e.message)
+        val response = apiService.getAllStorage(hospitalId) // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_STORAGE_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
+
+
     }
 
     override suspend fun getWasteTypeList(): List<WasteType>? {
-        return try {
-            val response = apiService.getAllWasteType() // API 호출
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                Log.e(
-                    "GET_WASTETYPE_LIST",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                )
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception(e.message)
+        val response = apiService.getAllWasteType() // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_WASTETYPE_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
     }
 
     override suspend fun getWasteStatusList(): List<WasteStatus>? {
-        return try {
-            val response = apiService.getAllWasteStatus() // API 호출
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                Log.e(
-                    "GET_WASTESTATUS_LIST",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                )
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception(e.message)
+        val response = apiService.getAllWasteStatus() // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_WASTESTATUS_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
+
     }
 
     override suspend fun getBeaconList(): List<Beacon>? {
-        return try {
-            val response = apiService.getAllBeacons() // API 호출
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                Log.e(
-                    "GET_BEACON_LIST",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                )
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception(e.message)
+        val response = apiService.getAllBeacons() // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_BEACON_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
+
     }
 }
