@@ -72,6 +72,7 @@ fun SearchFilterDialog(
     // DropdownMenu 상태
 
     // ✅ 체크박스로 입력 활성화 여부 관리
+    var isValidCheck by remember { mutableStateOf(false) }
     var isWasteTypeChecked by remember { mutableStateOf(false) }
     var isWasteStorageChecked by remember { mutableStateOf(false) }
     var isDeviceChecked by remember { mutableStateOf(false) }
@@ -90,6 +91,7 @@ fun SearchFilterDialog(
             selectedStorage = wasteStorageList.find { it.id == searchFilter.wasteStorageId }
             isWasteStorageChecked = true
         }
+        if (searchFilter.isValid != false) isValidCheck = true
         if (searchFilter.wasteStatusId != null) isStatusChecked = true
         if (searchFilter.wasteTypeId != null) isWasteTypeChecked = true
         if (searchFilter.beaconId != null) isDeviceChecked = true
@@ -104,6 +106,13 @@ fun SearchFilterDialog(
         text = {
             Column {
                 // 폐기물 유형
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isValidCheck, onCheckedChange = {
+                        isValidCheck = it
+                        onFilterChange(searchFilter.copy(isValid = it))
+                    })
+                    Text("현재 처리 중인 폐기물")
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isWasteTypeChecked, onCheckedChange = {
                         isWasteTypeChecked = it

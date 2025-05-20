@@ -49,6 +49,7 @@ import com.example.myapplication.viewmodel.SharedViewModel
 @Composable
 fun BluetoothDialog(
     viewModel: BlueToothViewModel = hiltViewModel(),
+    isRegister: Boolean = false,
     onDismiss: () -> Unit
 ) {
     LaunchedEffect(Unit) {
@@ -65,7 +66,7 @@ fun BluetoothDialog(
                 .padding(16.dp)
 
         ) {
-            BluetoothScreen(viewModel, onDismiss)
+            BluetoothScreen(viewModel,isRegister) { onDismiss }
         }
     }
 }
@@ -80,15 +81,15 @@ fun BluetoothDialog(
 @Composable
 fun BluetoothScreen(
     viewModel: BlueToothViewModel,
-
-    onDismiss: () -> Unit
+    isRegister: Boolean,
+    onDismiss: () -> Unit,
 ) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
 
     // 에뮬레이터 한정
-    val devices by viewModel.serverBeacons.collectAsState()
+    val devices by if (isRegister) viewModel.notUsedServerBeacon.collectAsState() else viewModel.serverBeacons.collectAsState()
     var selectedDevice by remember { mutableStateOf<Beacon?>(null) }
 
 
@@ -116,7 +117,7 @@ fun BluetoothScreen(
                 DeviceItem(device) { selected ->
                     viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
-                    viewModel.updateBeacon(selected.copy(used=true))
+                    viewModel.updateBeacon(selected.copy(used = true))
                     onDismiss()
                 }
             }

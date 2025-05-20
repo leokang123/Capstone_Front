@@ -1,13 +1,10 @@
 package com.example.myapplication.ui.component
 
-import android.app.TimePickerDialog
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,7 +29,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -46,11 +39,7 @@ import com.example.myapplication.ui.screen.BluetoothDialog
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,7 +112,7 @@ fun WasteRegisterCard(
         val wasteType = wasteTypeList.find { it.id == selectedWasteTypeId }
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = wasteType?.typeName?: "",
+                value = wasteType?.typeName ?: "",
                 onValueChange = {},
                 label = { Text("폐기물 종류") },
                 readOnly = true,
@@ -279,7 +268,7 @@ fun WasteRegisterCard(
 
         // 블루투스 검색 다이얼로그
         if (showDialog) {
-            BluetoothDialog(beaconViewModel, onDismiss = {
+            BluetoothDialog(beaconViewModel, isRegister = true, onDismiss = {
                 showDialog = false
             })
         }

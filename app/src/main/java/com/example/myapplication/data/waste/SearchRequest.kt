@@ -10,4 +10,5 @@ data class SearchRequest(
     val wasteStorageId: Int? = null,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
+    val isValid: Boolean? = false,
 )

@@ -130,6 +130,7 @@ class WasteRepositoryImpl @Inject constructor(
     override suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItem>? {
         return try {
             val response = apiService.getAllWasteHs(
+                valid = searchRequest.isValid,
                 wasteId = searchRequest.wasteId,
                 beaconId = searchRequest.beaconId,
                 wasteTypeId = searchRequest.wasteTypeId,

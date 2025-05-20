@@ -1,6 +1,7 @@
 package com.example.myapplication.repository.impl
 
 import android.util.Log
+import com.example.myapplication.data.user.AlarmData
 import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.waste.WasteStatus
@@ -84,6 +85,22 @@ class EtcRepositoryImpl @Inject constructor(
             )
             throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
         }
+
+    }
+
+    override suspend fun getAlarmList(): List<AlarmData>? {
+        val response = apiService.getAlarmList() // API 호출
+        return if (response.isSuccessful) {
+            val body = response.body()
+            body
+        } else {
+            Log.e(
+                "GET_ALARM_LIST",
+                "API 요청 실패: ${response.code()} - ${response.message()}"
+            )
+            throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+        }
+
 
     }
 }

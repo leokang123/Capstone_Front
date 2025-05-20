@@ -54,6 +54,9 @@ class BlueToothViewModel @Inject constructor(
     private val _serverBeacons = MutableStateFlow<List<Beacon>>(emptyList())
     val serverBeacons: StateFlow<List<Beacon>> = _serverBeacons
 
+    private val _notUsedServerBeacons = MutableStateFlow<List<Beacon>>(emptyList())
+    val notUsedServerBeacon: StateFlow<List<Beacon>> = _notUsedServerBeacons
+
     private val _selectedBeaconId = MutableStateFlow<Int?>(null)
     val selectedBeaconId: StateFlow<Int?> = _selectedBeaconId
 
@@ -90,6 +93,10 @@ class BlueToothViewModel @Inject constructor(
 //        val scanned = _devices.value.map {it.address}
         val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
         _serverBeacons.value = serverBeacon?: emptyList()
+
+        val notUsedServerBeacon = serverBeacon?.filter { it.used == false }
+        _notUsedServerBeacons.value = notUsedServerBeacon?: emptyList()
+
     }
 
     @SuppressLint("MissingPermission")

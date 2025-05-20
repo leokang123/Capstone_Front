@@ -1,6 +1,7 @@
 package com.example.myapplication.repository.impl
 
 import android.util.Log
+import com.example.myapplication.data.user.AlarmData
 import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.waste.WasteStatus
@@ -21,6 +22,8 @@ class MasterDataRepository @Inject constructor(
     var beaconList: List<Beacon> = emptyList()
     var wasteTypeList: List<WasteType> = emptyList()
     var wasteStatusList: List<WasteStatus> = emptyList()
+    var alarmList: List<AlarmData> = emptyList()
+
 
     // 빠른 조회용 Map
     val hospitalMap get() = hospitalList.associateBy { it.id }
@@ -34,6 +37,7 @@ class MasterDataRepository @Inject constructor(
     suspend fun getStorageList(hospitalId: Int) = etcRepository.getStorageList(hospitalId)
     suspend fun getWasteTypeList() = etcRepository.getWasteTypeList()
     suspend fun getWasteStatusList() = etcRepository.getWasteStatusList()
+    suspend fun getAlarmList() = etcRepository.getAlarmList()
 
 
     suspend fun initAll(hospitalId: Int) = supervisorScope {
@@ -43,12 +47,15 @@ class MasterDataRepository @Inject constructor(
             val beaconDeferred = async { getBeaconList() }
             val typeDeferred = async { getWasteTypeList() }
             val statusDeferred = async { getWasteStatusList() }
+            val alarmDeferred = async { getAlarmList() }
 
+            alarmList = alarmDeferred.await() ?: emptyList()
             hospitalList = hospitalDeferred.await() ?: emptyList()
             storageList = storageDeferred.await() ?: emptyList()
             beaconList = beaconDeferred.await() ?: emptyList()
             wasteTypeList = typeDeferred.await() ?: emptyList()
             wasteStatusList = statusDeferred.await() ?: emptyList()
+
         } catch (e: Exception) {
             Log.e("INIT_DATA_ERROR", e.message.toString())
         }

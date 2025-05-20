@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,7 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.user.AlarmData
+import com.example.myapplication.viewmodel.AlarmViewModel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 
 /**
  * 알림 화면
@@ -35,7 +43,11 @@ import androidx.navigation.NavController
  */
 
 @Composable
-fun NotificationDialog(navController: NavController) {
+fun NotificationDialog(
+    navController: NavController,
+    alarmViewModel: AlarmViewModel = hiltViewModel()
+) {
+
     Dialog(onDismissRequest = { navController.popBackStack() }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -44,20 +56,29 @@ fun NotificationDialog(navController: NavController) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            NotificationScreen(navController)
+            NotificationScreen(navController, alarmViewModel)
         }
     }
 }
 
 @Composable
-fun NotificationScreen(navController: NavController) {
-    val notifications = listOf(
-        "긴 공지 예제입니다. 이 공지는 너무 길어서 일부만 표시됩니다. 클릭하면 전체 내용을 볼 수 있습니다.",
-        "두 번째 예제 공지입니다. 공지가 짧으면 그대로 표시됩니다.",
-        "세 번째 공지 예제입니다. 공지의 길이가 50자를 넘어가면 잘립니다."
-    )
+fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) {
+//    val notifications = listOf(
+//        AlarmData(
+//            title = "예시알림제목",
+//            message = "이건 예시 알림 메시지입니다1. 이건 예시 알림 메시지입니다2. 이건 예시 알림 메시지입니다3.",
+//            sendAt = LocalDateTime.now(),
+//            receiveAt = LocalDateTime.now()
+//        )
+//    )
+    val notifications: List<AlarmData> by viewModel.alarmList.collectAsState()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-    var selectedNotification by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        viewModel.getAlarmList()
+    }
+
+    var selectedNotification by remember { mutableStateOf<AlarmData?>(null) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notification", style = MaterialTheme.typography.headlineMedium)
@@ -68,11 +89,21 @@ fun NotificationScreen(navController: NavController) {
         }
 
         // 공지를 클릭하면 팝업으로 전체 내용 표시
-        if (selectedNotification != null) {
+        selectedNotification?.let {
             AlertDialog(
                 onDismissRequest = { selectedNotification = null },
-                title = { Text("공지사항") },
-                text = { Text(selectedNotification ?: "") },
+                title = { Text(selectedNotification?.title ?: "") },
+                text = {
+                    Column {
+                        Text(selectedNotification?.message ?: "")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = selectedNotification?.sendAt?.format(formatter) ?: "날짜정보 없음",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                },
                 confirmButton = {
                     Button(onClick = { selectedNotification = null }) {
                         Text("닫기")
@@ -95,24 +126,43 @@ fun NotificationScreen(navController: NavController) {
  * 긴 공지는 50자로 제한하고, 클릭하면 전체 내용을 볼 수 있도록 설정
  */
 @Composable
-fun NotificationItem(notification: String, onClick: (String) -> Unit) {
-    val maxLength = 30
-    val isLongText = notification.length > maxLength
-    val displayText = if (isLongText) notification.take(maxLength) + "..." else notification
+fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+
+    val maxLength = 15
+    val isLongText = notification.message.length > maxLength
+    val displayTitle = notification.title
+    val displayText = if (isLongText) {
+        notification.message.take(maxLength) + "..."
+    } else {
+        notification.message
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp) // 공지 간격 추가
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp)) // 보더라인 추가
-            .clickable { onClick(notification) }, // 클릭 가능
+            .padding(vertical = 4.dp)
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+            .clickable { onClick(notification) },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp) // 카드 그림자 효과
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Text(
-            text = displayText,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(16.dp) // 내부 여백 추가
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = displayTitle,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = notification.sendAt.format(formatter),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
+        }
     }
 }

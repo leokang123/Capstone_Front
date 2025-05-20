@@ -1,5 +1,6 @@
 package com.example.myapplication.network
 
+import com.example.myapplication.data.user.AlarmData
 import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.user.User
@@ -92,6 +93,9 @@ interface ApiService {
         @Path("id") wasteItemId: String,
         @Query("description") description: String
     ): Response<WasteItem>
+
+    @GET("notifications/me")
+    suspend fun getAlarmList(): Response<List<AlarmData>>
 
     @GET("wsStatus")
     suspend fun getAllWasteStatus(): Response<List<WasteStatus>>

@@ -85,8 +85,11 @@ class LoginViewModel @Inject constructor(
             if (loginUser != null) {
                 val hospital = hospitalList.value?.find { it.id == loginUser.hospitalId }
                 userDataStore.saveUser(loginUser, hospital)
-                initData(loginUser.hospitalId ?: 0)
 
+                // initData가 완료될 때까지 기다림
+                loginUser.hospitalId?.let {
+                    initData(it)
+                }
                 // 필요한 리스트 전부 masterDataRepository 로드
                 _loginSuccess.emit(true)
             } else {
