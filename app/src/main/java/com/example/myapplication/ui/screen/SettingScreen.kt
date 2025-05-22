@@ -1,5 +1,7 @@
 package com.example.myapplication.ui.screen
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,8 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.utils.logout
+import com.example.myapplication.viewmodel.SettingsViewModel
 
 /**
  * 설정창
@@ -23,18 +26,21 @@ import com.example.myapplication.utils.logout
  */
 @Composable
 fun SettingsDialog(navController: NavController) {
-    Dialog(onDismissRequest = {navController.popBackStack()}) {
+    Dialog(onDismissRequest = { navController.popBackStack() }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             SettingsScreen(navController)
         }
     }
 }
+
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel = hiltViewModel()) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -43,9 +49,14 @@ fun SettingsScreen(navController: NavController) {
 
         Button(
             onClick = {
-                logout(context)  //  토큰 삭제 후 로그아웃
-                navController.navigate("login") { //  로그인 화면으로 이동
-                    popUpTo("home") { inclusive = true } // 뒤로 가기 방지
+                viewModel.logout { success ->
+                    if (success) {
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, "로그아웃 실패", Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
             modifier = Modifier.padding(top = 16.dp)

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
@@ -28,32 +27,34 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.utils.DrawerContent
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.screen.AuthCheckScreen
 import com.example.myapplication.ui.screen.HomeScreen
 import com.example.myapplication.ui.screen.LoginScreen
-import com.example.myapplication.ui.screen.RegisterScreen
-import com.example.myapplication.viewmodel.DetailViewModel
-import kotlinx.coroutines.launch
 import com.example.myapplication.ui.screen.NotificationDialog
+import com.example.myapplication.ui.screen.RegisterScreen
 import com.example.myapplication.ui.screen.SettingsDialog
 import com.example.myapplication.ui.screen.WasteListScreen
 import com.example.myapplication.ui.screen.WasteMoveScreen
 import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.utils.AuthEventBus
+import com.example.myapplication.utils.DrawerContent
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     // 앱 처음 생성될때 실행
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,20 +67,23 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     // 폰에서 앱에 다시 돌아올떄 실행됨 (비교적 자주실행)
     override fun onResume() {
         super.onResume()
         // finish app if the BLE is not supported
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "BLE 미지원",Toast.LENGTH_SHORT).show()
-            Log.d(TAG,"BLE 미지원")
+            Toast.makeText(this, "BLE 미지원", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "BLE 미지원")
         }
     }
+
     private fun requestBluetoothPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12(API 31) 이상에서만 필요
             val permissions = arrayOf(
                 Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION,
             )
 
             val permissionsToRequest = permissions.filter {
@@ -114,7 +118,14 @@ fun AppNavigation() {
     // 로그인/회원가입 화면에서는 TopBar 숨김
     val shouldShowTopBar = currentDestination !in listOf("login", "register")
     val shouldShowBackButton = currentDestination !in listOf("home")
-
+    LaunchedEffect(Unit) {
+        AuthEventBus.needLoginFlow.collect {
+            navController.navigate("login") {
+                popUpTo("auth_check") { inclusive = true } // 이전 화면 제거
+                launchSingleTop = true
+            }
+        }
+    }
     // 왼쪽 네비바 구현
     ModalNavigationDrawer(
         drawerContent = {
@@ -135,8 +146,7 @@ fun AppNavigation() {
                                         contentDescription = "뒤로 가기"
                                     )
                                 }
-                            }
-                            else {
+                            } else {
                                 IconButton(onClick = { scope.launch { drawerState.open() } }) { // 햄버거 메뉴 클릭 시 Drawer 열기
                                     Icon(
                                         imageVector = Icons.Filled.Menu,
@@ -173,9 +183,12 @@ fun AppNavigation() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "login",
+                startDestination = "auth_check",
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable("auth_check") {
+                    AuthCheckScreen(navController)
+                }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("home") { HomeScreen(navController) }

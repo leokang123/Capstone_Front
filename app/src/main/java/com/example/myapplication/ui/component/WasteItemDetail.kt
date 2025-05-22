@@ -37,17 +37,26 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.waste.WasteDetailResponse
 import com.example.myapplication.data.waste.WasteItemDetailResponse
+import com.example.myapplication.data.waste.WasteItemDetails
+import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.ui.screen.WasteEditDialog
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListViewModel: WasteListViewModel) {
+fun WasteItemDetailComponent(
+    selectedItem: WasteItemDetails,
+    viewModel: WasteListViewModel
+) {
     val scope = rememberCoroutineScope()
     var showModDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val wasteTypeList = viewModel.wasteTypeList
+    val wasteStatusList = viewModel.wasteStatusList
+    val wasteStorageList = viewModel.wasteStorageList
+    val beaconList = viewModel.beaconList
 
     Card(
         modifier = Modifier
@@ -60,18 +69,24 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
         Column(modifier = Modifier.padding(16.dp)) {
             // 폐기물 기본 정보
             Text(
-                text = "🗑 ${selectedItem.wasteType}",
+                text = "🗑 ${selectedItem.id}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+            Log.d("DETAILS", selectedItem.toString())
+            val collectingStatusId = wasteStatusList.find { it.statusLevel == 1 }?.id
+            val selectedItemStorage = wasteStorageList.find { it.id == selectedItem.storage }
+            val selectedItemType = wasteTypeList.find { it.id == selectedItem.wasteType }
+            val selectedBeacon = beaconList.find { it.id == selectedItem.beacon }
+            val collectingLog = selectedItem.logs.find { it.statusId == collectingStatusId }
+            InfoRow("👤 등록자", collectingLog?.userId.toString(), Color.Blue)
+            InfoRow("📦 저장위치", selectedItemStorage?.storageName.toString(), Color(0xFFD2B48C))
+            InfoRow("📅 발생일", collectingLog?.createdAt.toString(), Color.Red)
+            InfoRow("⚙ 사용 기기", selectedBeacon?.label ?: "없음", Color.Green)
+            InfoRow("🧪 폐기물 종류", selectedItemType?.typeName ?: "알 수 없음", Color.Magenta)
 
-            InfoRow("👤 등록자", selectedItem.registrantName, Color.Blue)
-            InfoRow("📍 위치", selectedItem.location, Color.DarkGray)
-            InfoRow("📦 저장위치", selectedItem.wasteStorage?.storageName.toString(), Color(0xFFD2B48C))
-            InfoRow("📅 발생일", selectedItem.selectedDate, Color.Red)
-            InfoRow("⚙ 사용 기기", selectedItem.selectedDevice ?: "없음", Color.Green)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -85,14 +100,14 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
-                modifier = Modifier.
-                fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .fillMaxHeight(0.8f),
             ) {
-                val detailsList = selectedItem.wasteDetails.sortedByDescending { it.date }
+                val detailsList = selectedItem.logs.sortedByDescending { it.createdAt }
 
                 itemsIndexed(detailsList) { index, detail ->
-                    WasteDetailCard(detail, detail.status == selectedItem.status)
+                    WasteDetailCard(detail, viewModel, detail.statusId == selectedItem.wasteStatus)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -104,7 +119,7 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
                 Button(
                     onClick = {
                         scope.launch {
-                            showModDialog =  true
+                            showModDialog = true
 
                         }
                     }
@@ -114,9 +129,10 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
                 Button(
                     onClick = {
                         scope.launch {
-                            showDeleteDialog =  wasteListViewModel.checkItemStatus(selectedItem.id)
+                            showDeleteDialog = viewModel.checkItemStatus(selectedItem.id)
                             if (!showDeleteDialog) {
-                                Toast.makeText(context, "삭제할 수 없는 STATUS", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "삭제할 수 없는 STATUS", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     }
@@ -129,8 +145,8 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
 
     // 정정 다이얼로그 (예제 코드, 원하는 Composable로 변경 가능)
     if (showModDialog) {
-        WasteEditDialog(wasteListViewModel, selectedItem = selectedItem) {
-            wasteListViewModel.getWasteItemDetails(selectedItem.id)
+        WasteEditDialog(viewModel, selectedItem = selectedItem) {
+            viewModel.getWasteItemDetails(selectedItem.id)
             showModDialog = false
         }
     }
@@ -146,13 +162,13 @@ fun WasteItemDetailComponent(selectedItem: WasteItemDetailResponse, wasteListVie
                     onClick = {
                         scope.launch {
                             try {
-                                wasteListViewModel.deleteItem(selectedItem.id) // 삭제 처리
+                                viewModel.deleteItem(selectedItem.id) // 삭제 처리
                                 Toast.makeText(context, "삭제 성공", Toast.LENGTH_SHORT).show()
                             } catch (e: Exception) {
                                 Log.e(TAG, e.message.toString())
                                 Toast.makeText(context, "에러 발생", Toast.LENGTH_SHORT).show()
                             } finally {
-                                wasteListViewModel.resetWasteList()
+                                viewModel.resetWasteList()
                             }
                             showDeleteDialog = false
                         }
@@ -190,7 +206,7 @@ fun InfoRow(label: String, value: String, color: Color) {
 
 
 @Composable
-fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
+fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,16 +220,16 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
         Column(modifier = Modifier.padding(12.dp)) {
             // 등록한 사용자 정보 추가
             Text(
-                text = "👤 처리자: ${detail.user.name}",
+                text = "👤 처리자: ${detail.userId}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color.Blue
             )
 
             Spacer(modifier = Modifier.height(4.dp))
-
             // 상태 정보
+            val status = viewModel.wasteStatusList.find { it.id == detail.statusId }
             Text(
-                text = "📌 상태: ${detail.status}",
+                text = "📌 상태: ${status?.description}",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = if (isLatest) Color.Red else Color.Black
             )
@@ -222,7 +238,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             // 상세 내용
             Text(
-                text = "📝 내용: ${detail.wasteDetails}",
+                text = "📝 내용: ${detail.description}",
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -230,7 +246,7 @@ fun WasteDetailCard(detail: WasteDetailResponse, isLatest: Boolean) {
 
             // 기록 시간
             Text(
-                text = "📅 기록 시간: ${detail.date}",
+                text = "📅 기록 시간: ${detail.createdAt}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )

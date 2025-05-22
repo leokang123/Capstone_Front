@@ -1,8 +1,6 @@
 package com.example.myapplication.ui.screen
 
 import android.app.TimePickerDialog
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -24,8 +20,6 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -43,9 +37,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.viewmodel.WasteListViewModel
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
@@ -54,6 +53,7 @@ import java.util.Locale
 fun SearchFilterDialog(
     searchFilter: SearchRequest,
     onFilterChange: (SearchRequest) -> Unit,
+    wasteListViewModel: WasteListViewModel,
     onDismiss: () -> Unit,
     onApplyFilter: () -> Unit
 ) {
@@ -68,67 +68,36 @@ fun SearchFilterDialog(
     val defaultDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
     val defaultTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
 
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
 
     // ✅ 체크박스로 입력 활성화 여부 관리
+    var isValidCheck by remember { mutableStateOf(false) }
     var isWasteTypeChecked by remember { mutableStateOf(false) }
-    var isRegistrantChecked by remember { mutableStateOf(false) }
     var isWasteStorageChecked by remember { mutableStateOf(false) }
     var isDeviceChecked by remember { mutableStateOf(false) }
     var isDateChecked by remember { mutableStateOf(false) }
     var isStatusChecked by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf(searchFilter.selectedDate ?: defaultDate) }
-    var selectedTime by remember { mutableStateOf(searchFilter.selectedTime ?: defaultTime) }
+    val defaultDateTime = LocalDate.now()
+    var selectedDateTime by remember { mutableStateOf(searchFilter.startDate ?: defaultDateTime) }
 
-    val context = LocalContext.current;
-    val wasteRepository = WasteRepository(context)
-    // ✅ 선택 가능한 폐기물 유형 목록
-    val wasteTypes = listOf(
-        "격리 의료 폐기물",
-        "위해 의료 폐기물 / 조직물류 폐기물",
-        "위해 의료 폐기물 / 병리계 폐기물",
-        "위해 의료 폐기물 / 손상성 폐기물",
-        "위해 의료 폐기물 / 생물·화학 폐기물",
-        "위해 의료 폐기물 / 혈액오염 폐기물",
-        "일반 의료 폐기물"
-    )
-
-    // ✅ 선택 가능한 폐기물 유형 목록
-    val statusTypes = listOf(
-        "COLLECTING",
-        "MOVING",
-        "STORED",
-        "DISPOSED"
-    )
-
-    val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
+    val wasteStorageList = wasteListViewModel.wasteStorageList
+    val wasteTypeList = wasteListViewModel.wasteTypeList
+    val wasteStatusList = wasteListViewModel.wasteStatusList
 
     LaunchedEffect(Unit) {
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
 
         if (searchFilter.wasteStorageId != null) {
-            selectedStorage = wasteStorageList.find {it.id == searchFilter.wasteStorageId}
+            selectedStorage = wasteStorageList.find { it.id == searchFilter.wasteStorageId }
             isWasteStorageChecked = true
         }
-        if (searchFilter.wasteStatus != null) isStatusChecked = true
-        if (searchFilter.wasteType != null) isWasteTypeChecked = true
-        if (searchFilter.registrantName != null) isRegistrantChecked = true
-        if (searchFilter.selectedDevice != null) isDeviceChecked = true
-        if (searchFilter.combineDate != null) isDateChecked = true
-        if (searchFilter.selectedDate == null) onFilterChange(searchFilter.copy(selectedDate = defaultDate))
-        if (searchFilter.selectedTime == null) onFilterChange(searchFilter.copy(selectedTime = defaultTime))
+        if (searchFilter.isValid != false) isValidCheck = true
+        if (searchFilter.wasteStatusId != null) isStatusChecked = true
+        if (searchFilter.wasteTypeId != null) isWasteTypeChecked = true
+        if (searchFilter.beaconId != null) isDeviceChecked = true
+        if (searchFilter.startDate != null) isDateChecked = true
+//        if (searchFilter.start == null) onFilterChange(searchFilter.copy(selectedDate = defaultDate))
+//        if (searchFilter.selectedTime == null) onFilterChange(searchFilter.copy(selectedTime = defaultTime))
 
     }
     AlertDialog(
@@ -138,9 +107,16 @@ fun SearchFilterDialog(
             Column {
                 // 폐기물 유형
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isValidCheck, onCheckedChange = {
+                        isValidCheck = it
+                        onFilterChange(searchFilter.copy(isValid = it))
+                    })
+                    Text("현재 처리 중인 폐기물")
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isWasteTypeChecked, onCheckedChange = {
                         isWasteTypeChecked = it
-                        if (!isWasteTypeChecked) onFilterChange(searchFilter.copy(wasteType = null))
+                        if (!isWasteTypeChecked) onFilterChange(searchFilter.copy(wasteTypeId = null))
                     })
                     Text("폐기물 유형 선택")
                 }
@@ -153,20 +129,23 @@ fun SearchFilterDialog(
                                 .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                                 .padding(16.dp)
                         ) {
+                            val wasteType = wasteTypeList.find { it.id == searchFilter.wasteTypeId }
+
                             Text(
-                                text = searchFilter.wasteType ?: "폐기물 유형 선택",
-                                color = if (searchFilter.wasteType == null) Color.Gray else Color.Black
+
+                                text = wasteType?.typeName ?: "폐기물 유형 선택",
+                                color = if (wasteType?.typeName == null) Color.Gray else Color.Black
                             )
                         }
                         DropdownMenu(
                             expanded = expandedWasteType,
                             onDismissRequest = { expandedWasteType = false }
                         ) {
-                            wasteTypes.forEach { type ->
+                            wasteTypeList.forEach { type ->
                                 DropdownMenuItem(
-                                    text = { Text(type) },
+                                    text = { Text(type.typeName) },
                                     onClick = {
-                                        onFilterChange(searchFilter.copy(wasteType = type))
+                                        onFilterChange(searchFilter.copy(wasteTypeId = type.id))
                                         expandedWasteType = false
                                     }
                                 )
@@ -175,23 +154,6 @@ fun SearchFilterDialog(
                     }
                 }
 
-                // 처리자 입력
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = isRegistrantChecked, onCheckedChange = {
-                        isRegistrantChecked = it
-                        if (!isRegistrantChecked) onFilterChange(searchFilter.copy(registrantName = null))
-                    })
-                    Text("처리자 입력")
-                }
-                if (isRegistrantChecked) {
-                    OutlinedTextField(
-                        value = searchFilter.registrantName ?: "",
-                        onValueChange = { onFilterChange(searchFilter.copy(registrantName = it)) },
-                        label = { Text("처리자") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = isRegistrantChecked
-                    )
-                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isWasteStorageChecked, onCheckedChange = {
@@ -236,7 +198,7 @@ fun SearchFilterDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isStatusChecked, onCheckedChange = {
                         isStatusChecked = it
-                        if (!isStatusChecked) onFilterChange(searchFilter.copy(wasteStatus = null))
+                        if (!isStatusChecked) onFilterChange(searchFilter.copy(wasteStatusId = null))
                     })
                     Text("상태 선택")
                 }
@@ -249,20 +211,22 @@ fun SearchFilterDialog(
                                 .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                                 .padding(16.dp)
                         ) {
+                            val wasteStatus =
+                                wasteStatusList.find { it.id == searchFilter.wasteStatusId }
                             Text(
-                                text = searchFilter.wasteStatus ?: "상태 선택",
-                                color = if (searchFilter.wasteStatus == null) Color.Gray else Color.Black
+                                text = wasteStatus?.description ?: "상태 선택",
+                                color = if (wasteStatus?.description == null) Color.Gray else Color.Black
                             )
                         }
                         DropdownMenu(
                             expanded = expandedStatusType,
                             onDismissRequest = { expandedStatusType = false }
                         ) {
-                            statusTypes.forEach { status ->
+                            wasteStatusList.forEach { status ->
                                 DropdownMenuItem(
-                                    text = { Text(status) },
+                                    text = { Text(status.description) },
                                     onClick = {
-                                        onFilterChange(searchFilter.copy(wasteStatus = status))
+                                        onFilterChange(searchFilter.copy(wasteStatusId = status.id))
                                         expandedStatusType = false
                                     }
                                 )
@@ -274,14 +238,17 @@ fun SearchFilterDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isDeviceChecked, onCheckedChange = {
                         isDeviceChecked = it
-                        if (!isDeviceChecked) onFilterChange(searchFilter.copy(selectedDevice = null))
+                        if (!isDeviceChecked) onFilterChange(searchFilter.copy(beaconId = null))
                     })
                     Text("기기 입력")
                 }
                 if (isDeviceChecked) {
                     OutlinedTextField(
-                        value = searchFilter.selectedDevice ?: "",
-                        onValueChange = { onFilterChange(searchFilter.copy(selectedDevice = it)) },
+                        value = searchFilter.beaconId.toString(),
+                        onValueChange = {
+                            val newValue = it.toIntOrNull()
+                            onFilterChange(searchFilter.copy(beaconId = newValue))
+                        },
                         label = { Text("기기 ID") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = isDeviceChecked
@@ -294,98 +261,108 @@ fun SearchFilterDialog(
                     Checkbox(checked = isDateChecked, onCheckedChange = {
                         isDateChecked = it
                         if (!isDateChecked) {
-                            onFilterChange(searchFilter.copy(combineDate = null))
+                            onFilterChange(searchFilter.copy(startDate = null, endDate = null))
                         }
-
                     })
                     Text("시간 선택")
                 }
-
                 if (isDateChecked) {
                     Spacer(Modifier.height(12.dp))
-                    // 날짜 & 시간 선택 버튼
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
                             onClick = { showDatePicker = true },
-                            modifier = Modifier.weight(1f),
-                            enabled = isDateChecked
+                            modifier = Modifier.weight(1f)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text("날짜")
-                                Text(selectedDate)
+                                Text(selectedDateTime.toString())
                             }
                         }
 
-                        Button(
-                            onClick = { showTimePicker = true },
-                            modifier = Modifier.weight(1f),
-                            enabled = isDateChecked
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("시간")
-                                Text(selectedTime)
-                            }
-                        }
+//                        Button(
+//                            onClick = { showTimePicker = true },
+//                            modifier = Modifier.weight(1f)
+//                        ) {
+//                            Column(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                horizontalAlignment = Alignment.CenterHorizontally
+//                            ) {
+//                                Text("시간")
+//                                Text(
+//                                    selectedDateTime.toLocalTime()
+//                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+//                                )
+//                            }
+//                        }
                     }
+
                     Spacer(Modifier.height(8.dp))
                     Text("입력한 시간 기준 10일을 검색합니다", color = MaterialTheme.colorScheme.secondary)
                 }
 
-                // 날짜 선택 다이얼로그
-                if (showDatePicker) {
-                    DatePickerDialog(
-                        onDismissRequest = { showDatePicker = false },
-                        confirmButton = {
-                            Button(onClick = {
-                                showDatePicker = false
-                            }) {
-                                Text("확인")
+            }
+
+            if (showDatePicker) {
+                val dateState = rememberDatePickerState()
+
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        Button(onClick = {
+                            dateState.selectedDateMillis?.let { millis ->
+                                val pickedDate = Instant.ofEpochMilli(millis)
+                                    .atZone(ZoneId.systemDefault()).toLocalDate()
+
+                                selectedDateTime = pickedDate
+
+                                onFilterChange(
+                                    searchFilter.copy(
+                                        startDate = pickedDate,
+                                        endDate = pickedDate.plusDays(10)
+                                    )
+                                )
                             }
+                            showDatePicker = false
+                        }) {
+                            Text("확인")
                         }
-                    ) {
-                        val dateState = rememberDatePickerState()
-                        val newDate = dateState.selectedDateMillis?.let { millis ->
-                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(millis)
-                        } ?: selectedDate
-
-                        DatePicker(state = dateState)
-                        selectedDate = newDate
-                        onFilterChange(searchFilter.copy(selectedDate = newDate, combineDate = "$newDate $selectedTime"))
                     }
-                }
-
-                // 시간 선택 다이얼로그
-                if (showTimePicker) {
-                    val context = LocalContext.current
-                    TimePickerDialog(
-                        context,
-                        { _, hourOfDay, minute ->
-                            val newTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
-                            selectedTime = newTime
-                            onFilterChange(searchFilter.copy(selectedTime = newTime, combineDate = "$selectedDate $newTime"))
-                            showTimePicker = false
-                        },
-                        calendar.get(Calendar.HOUR_OF_DAY),
-                        calendar.get(Calendar.MINUTE),
-                        true // 24시간 형식
-                    ).show()
+                ) {
+                    DatePicker(state = dateState)
                 }
             }
+
+//            if (showTimePicker) {
+//                val context = LocalContext.current
+//                TimePickerDialog(
+//                    context,
+//                    { _, hourOfDay, minute ->
+//                        val newTime = LocalTime.of(hourOfDay, minute)
+//                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
+//
+//                        onFilterChange(
+//                            searchFilter.copy(
+//                                startDate = selectedDateTime,
+//                                endDate = selectedDateTime.plusDays(10)
+//                            )
+//                        )
+//                        showTimePicker = false
+//                    },
+//                    selectedDateTime.hour,
+//                    selectedDateTime.minute,
+//                    true
+//                ).show()
+//            }
         },
         confirmButton = {
-            Button(onClick = {
-                if (isDateChecked) onFilterChange(searchFilter.copy(combineDate = "${searchFilter.selectedDate} ${searchFilter.selectedTime}"))
-                onApplyFilter()
-            }) {
+            Button(onClick = onApplyFilter) {
                 Text("검색")
             }
         },

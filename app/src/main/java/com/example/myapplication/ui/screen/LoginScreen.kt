@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,16 +35,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.auth.LoginRequest
 import com.example.myapplication.data.auth.LoginResponse
 import com.example.myapplication.data.user.User
-import kotlinx.coroutines.launch
-import com.example.myapplication.repository.LoginRepository
+import com.example.myapplication.repository.impl.LoginRepositoryImpl
 import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.viewmodel.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * 로그인 화면
@@ -52,23 +55,23 @@ import kotlinx.coroutines.Dispatchers
  */
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    val username by remember { derivedStateOf { viewModel.username } }
+    val password by remember { derivedStateOf { viewModel.password } }
+    val errorMessage = viewModel.errorMessage
+
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-    val loginRepository = LoginRepository(context)
-    val scope = rememberCoroutineScope()
-
-    val userDataStore = UserDataStore(context)
-
     LaunchedEffect(Unit) {
-        val token = userDataStore.getAccessToken()
-        if (token != null) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+        viewModel.loginSuccess.collect { success ->
+            if (success) {
+                Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
+            } else {
+                Toast.makeText(context, "Login Failed", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -86,7 +89,7 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = { viewModel.username = it },
             label = { Text("UserName") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // password가 아니면 이상하게 키보드가 안뜸
             modifier = Modifier.fillMaxWidth()// 포커스 가능하도록 설정
@@ -95,7 +98,7 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.password = it },
             label = { Text("Password *") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
@@ -114,26 +117,7 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = {
-                scope.launch {
-                    // 서버 돌아갈시
-                    val loginRequest = LoginRequest(username.trim(), password)
-                    val response: LoginResponse? = loginRepository.loginUser(loginRequest)
-                    if (response != null) {
-                        navController.navigate("home") // 로그인 성공 시 홈 화면으로 이동
-                        Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()
-                    } else {
-                        errorMessage = "Invalid username or password"
-
-                        // 서버없이 테스트
-                        val user = User(userName = "test", password = "test", name = "test")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            userDataStore.saveUser(user = user, accessToken = "token123", refreshToken = "token123")
-                        }
-                        navController.navigate("home")
-                    }
-                }
-            },
+            onClick = { viewModel.login() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Login")
@@ -151,9 +135,6 @@ fun LoginScreen(navController: NavController) {
         }
     }
 }
-
-
-
 
 
 @Preview(showBackground = true)

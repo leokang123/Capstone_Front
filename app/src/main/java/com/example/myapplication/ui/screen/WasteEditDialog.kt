@@ -10,24 +10,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,65 +28,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.data.waste.WasteItemDetailResponse
-import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.WasteRepository
-import com.example.myapplication.viewmodel.SharedViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.data.waste.WasteItem
+import com.example.myapplication.data.waste.WasteItemDetails
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteEditDialog(
     wasteListViewModel: WasteListViewModel,
-    sharedViewModel: SharedViewModel = viewModel(),
-    selectedItem: WasteItemDetailResponse,
+    beaconViewModel: BlueToothViewModel = hiltViewModel(),
+    selectedItem: WasteItemDetails,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val wasteRepository = WasteRepository(context)
+    val wasteStorageList = wasteListViewModel.wasteStorageList
+    val wasteTypeList = wasteListViewModel.wasteTypeList
+    val beaconList = wasteListViewModel.beaconList
 
     // 상태 관리 (선택된 값)
-    var wasteType by remember { mutableStateOf(selectedItem.wasteType) }
-    var location by remember { mutableStateOf(selectedItem.location) }
-    var selectedDevice by remember { mutableStateOf(selectedItem.selectedDevice) }
-    var wasteStorage by remember { mutableStateOf(selectedItem.wasteStorage) }
+    var selectedWasteTypeId by remember { mutableIntStateOf(selectedItem.wasteType) }
+    var selectedDeviceId by remember { mutableIntStateOf(selectedItem.beacon) }
+    var selectedWasteStorageId: Int? by remember { mutableStateOf(selectedItem.storage) }
 
     // DropdownMenu 상태 (하단부에서 펼쳐지도록)
     var expandedType by remember { mutableStateOf(false) }
     var expandedStorage by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색 다이얼로그
-    // 선택 가능한 목록
-    val wasteTypes = listOf(
-        "격리 의료 폐기물",
-        "위해 의료 폐기물 / 조직물류 폐기물",
-        "위해 의료 폐기물 / 병리계 폐기물",
-        "위해 의료 폐기물 / 손상성 폐기물",
-        "위해 의료 폐기물 / 생물·화학 폐기물",
-        "위해 의료 폐기물 / 혈액오염 폐기물",
-        "일반 의료 폐기물"
-    )
-    var wasteStorageList by remember { mutableStateOf<List<WasteStorage>>(emptyList()) }
 
-    val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
-    var wasteDetailsList = remember {
-        mutableStateListOf(*selectedItem.wasteDetails.toTypedArray())
-    }
+//    var wasteDetailsList = remember {
+//        mutableStateListOf(*selectedItem.logs.toTypedArray())
+//    }
 
-    LaunchedEffect(Unit) {
-        try {
-            val storageList = wasteRepository.getWasteStorage()
-            wasteStorageList = storageList.takeIf { !it.isNullOrEmpty() } ?: mockList
-
-        } catch (e: Exception) {
-            Log.e("WasteRegisterScreen", e.message.toString())
-            Toast.makeText(context, "창고 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -110,17 +78,20 @@ fun WasteEditDialog(
                             .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                             .padding(16.dp)
                     ) {
+                        val wasteType = wasteTypeList.find { selectedWasteTypeId == it.id }
                         Text(
-                            text = wasteType,
+                            text = wasteType?.typeName.toString(),
                             color = if (expandedType) Color.Gray else Color.Black
                         )
                     }
-                    DropdownMenu(expanded = expandedType, onDismissRequest = { expandedType = false }) {
-                        wasteTypes.forEach { type ->
+                    DropdownMenu(
+                        expanded = expandedType,
+                        onDismissRequest = { expandedType = false }) {
+                        wasteTypeList.forEach { type ->
                             DropdownMenuItem(
-                                text = { Text(type) },
+                                text = { Text(type.typeName) },
                                 onClick = {
-                                    wasteType = type
+                                    selectedWasteTypeId = type.id
                                     expandedType = false
                                 }
                             )
@@ -139,17 +110,20 @@ fun WasteEditDialog(
                             .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
                             .padding(16.dp)
                     ) {
+                        val wasteStorage = wasteStorageList.find { selectedWasteStorageId == it.id }
                         Text(
                             text = wasteStorage?.storageName.toString(),
                             color = if (expandedStorage) Color.Gray else Color.Black
                         )
                     }
-                    DropdownMenu(expanded = expandedStorage, onDismissRequest = { expandedStorage = false }) {
+                    DropdownMenu(
+                        expanded = expandedStorage,
+                        onDismissRequest = { expandedStorage = false }) {
                         wasteStorageList.forEach { storage ->
                             DropdownMenuItem(
                                 text = { Text(storage.storageName.toString()) },
                                 onClick = {
-                                    wasteStorage = storage
+                                    selectedWasteStorageId = storage.id
                                     expandedStorage = false
                                 }
                             )
@@ -164,55 +138,50 @@ fun WasteEditDialog(
                     onClick = { showDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("블루투스 선택: $selectedDevice")
+                    val selectedDevice = beaconList.find { selectedDeviceId == it.id }
+                    Text("블루투스 선택: ${selectedDevice?.label}")
                 }
 
                 // 블루투스 검색 다이얼로그
                 if (showDialog) {
-                    BluetoothDialog(sharedViewModel, onDismiss = {
+                    BluetoothDialog(beaconViewModel, onDismiss = {
                         showDialog = false
-                        selectedDevice = sharedViewModel.selectedBluetoothDevice ?: "기기 없음"
+                        selectedDeviceId = beaconViewModel.selectedBeaconId.value ?: 0
                     })
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 위치 입력
-                OutlinedTextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    label = { Text("위치") },
-                    modifier = Modifier.fillMaxWidth()
-                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 세부 내용 수정
-                Text("세부 내용 수정")
-                LazyColumn {
-                    itemsIndexed(wasteDetailsList) { index, detail ->
-                        OutlinedTextField(
-                            value = detail.wasteDetails,
-                            onValueChange = { newText ->
-                                wasteDetailsList[index] = detail.copy(wasteDetails = newText)
-                            },
-                            label = { Text("${detail.status} 상세내용") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
+//                // 세부 내용 수정
+//                Text("세부 내용 수정")
+//                LazyColumn {
+//                    itemsIndexed(wasteDetailsList) { index, detail ->
+//                        val status = wasteStatusList.find{ detail.statusId == it.id}
+//                        OutlinedTextField(
+//                            value = status?.description ?: "",
+//                            onValueChange = { newText ->
+//                                wasteDetailsList[index] = detail.copy(wasteDetails = newText)
+//                            },
+//                            label = { Text("${detail.status} 상세내용") },
+//                            modifier = Modifier.fillMaxWidth()
+//                        )
+//                    }
+//                }
             }
         },
         confirmButton = {
             Button(onClick = {
                 scope.launch {
                     try {
-                        val updatedItem = selectedItem.copy(
-                            wasteType = wasteType,
-                            location = location,
-                            selectedDevice = selectedDevice,
-                            wasteStorage = wasteStorage,
-                            wasteDetails = wasteDetailsList
+                        val updatedItem = WasteItem(
+                            id = selectedItem.id,
+                            hospitalId = selectedItem.hospital,
+                            storageId = selectedWasteStorageId,
+                            beaconId = selectedDeviceId,
+                            wasteTypeId = selectedWasteTypeId,
+                            wasteStatusId = selectedItem.wasteStatus,
+                            description = selectedItem.description,
                         )
                         wasteListViewModel.updateItem(updatedItem)
                         Toast.makeText(context, "정정 성공", Toast.LENGTH_SHORT).show()

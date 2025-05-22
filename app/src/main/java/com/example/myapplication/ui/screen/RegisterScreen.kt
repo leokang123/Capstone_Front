@@ -1,94 +1,96 @@
 package com.example.myapplication.ui.screen
 
-import android.content.ContentValues.TAG
-import android.content.Context
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.data.auth.RegisterRequest
-import com.example.myapplication.data.user.Hospital
-import com.example.myapplication.data.user.Role
-import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.repository.LoginRepository
-import kotlinx.coroutines.launch
+import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.viewmodel.RegisterViewModel
+
+// RegisterScreen.kt
 
 @Composable
-fun RegisterScreen(navController: NavController) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var selectedHospital by remember { mutableStateOf<Hospital?>(null) }
-    var selectedRoleName by remember { mutableStateOf("") }
+fun RegisterScreen(
+    navController: NavController,
+    registerViewModel: RegisterViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val hospitalList by registerViewModel.hospitalList.collectAsState()
 
-    var selectedRoleId by remember { mutableLongStateOf(1L) }
+    val username = registerViewModel.username
+    val password = registerViewModel.password
+    val confirmPassword = registerViewModel.confirmPassword
+    val email = registerViewModel.email
+    val phoneNumber = registerViewModel.phoneNumber
+    val name = registerViewModel.name
+    val selectedHospital = registerViewModel.selectedHospital
+    val selectedRoles = registerViewModel.selectedRoles // SnapshotStateList<Roles>
+    val selectedPrimaryRole = registerViewModel.selectedPrimaryRole // MutableState<Roles?>
 
-    val scope = rememberCoroutineScope()
-    val context: Context = LocalContext.current
-    val loginRepository = LoginRepository(context)
+    val passwordVisible = remember { mutableStateOf(false) }
+    val confirmPasswordVisible = remember { mutableStateOf(false) }
+    val showHospitalDropdown = remember { mutableStateOf(false) }
+    var showRoleDropdown = remember { mutableStateOf(false) }
 
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var showHospitalDropdown by remember { mutableStateOf(false) }
-    var showRoleDropdown by remember { mutableStateOf(false) }
-    var hospitalList by remember { mutableStateOf<List<Hospital>>(emptyList()) }
 
-    val mockHospitalList = listOf(
-        Hospital(id = 1, hospitalName = "서울병원"),
-        Hospital(id = 2, hospitalName = "강남병원"),
-        Hospital(id = 3, hospitalName = "구로병원"),
-        Hospital(id = 4, hospitalName = "성모병원")
-        )
-    val roles = listOf(
-        Role(id = 1, roleName = "일반 사용자"),
-        Role(id = 2, roleName = "중간 관리직"),
-        Role(id = 3, roleName = "최종 관리직")
-    )
-    val isPasswordValid by remember(password) {
-        derivedStateOf {
-            password.length >= 8 && password.any { it.isDigit() } && password.any { !it.isLetterOrDigit() }
-        }
+    val isPasswordValid = registerViewModel.isPasswordValid()
+    val isPasswordMatch = registerViewModel.isPasswordMatch()
+    val isEmailValid = registerViewModel.isEmailValid()
+    val isFormValid = registerViewModel.isFormValid()
+// 병원 검색용 상태
+    var searchHospitalQuery by remember { mutableStateOf("") }
+
+// 병원 리스트 필터링
+    val filteredHospitalList = hospitalList.filter {
+        it.hospitalName.contains(searchHospitalQuery, ignoreCase = true)
     }
 
-    val isPasswordMatch by remember(password, confirmPassword) {
-        derivedStateOf { password == confirmPassword }
-    }
-    val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-
-    val isEmailValid by remember(email) {
-        derivedStateOf { email.matches(emailPattern) }
-    }
-
-    val isFormValid by remember(username, password, selectedHospital) {
-        derivedStateOf { username.isNotBlank() && password.isNotBlank() && selectedHospital != null }
-    }
     LaunchedEffect(Unit) {
-        try {
-            val hosList = loginRepository.getHospitalList()
-            hospitalList = hosList.takeIf { !it.isNullOrEmpty() } ?: mockHospitalList
-
-        } catch (e: Exception) {
-            Log.e("RegisterScreen", e.message.toString())
-            Toast.makeText(context, "병원 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        registerViewModel.toastMessage.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -101,22 +103,22 @@ fun RegisterScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
+            value = username.value,
+            onValueChange = { username.value = it },
             label = { Text("UserName *") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = password.value,
+            onValueChange = { password.value = it },
             label = { Text("Password *") },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (passwordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -130,14 +132,16 @@ fun RegisterScreen(navController: NavController) {
         }
 
         OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
+            value = confirmPassword.value,
+            onValueChange = { confirmPassword.value = it },
             label = { Text("Confirm Password *") },
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                IconButton(onClick = {
+                    confirmPasswordVisible.value = !confirmPasswordVisible.value
+                }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (confirmPasswordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -151,92 +155,149 @@ fun RegisterScreen(navController: NavController) {
         }
 
         OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
+            value = name.value,
+            onValueChange = { name.value = it },
             label = { Text("Name") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = email.value,
+            onValueChange = { email.value = it },
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (email.isNotEmpty() && !isEmailValid) {
+        if (email.value.isNotEmpty() && !isEmailValid) {
             Text("유효한 이메일 주소를 입력하세요.", color = MaterialTheme.colorScheme.error)
         }
 
         OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
+            value = phoneNumber.value,
+            onValueChange = { phoneNumber.value = it },
             label = { Text("Phone Number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 병원 선택 Dropdown
+        // 역할 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = selectedRoleName,
+                value = if (selectedRoles.isEmpty()) "선택 안됨" else "선택한 역할: ${selectedRoles.size}개",
                 onValueChange = {},
-                label = { Text("Select Role *") },
+                label = { Text("Select Roles *") },
                 readOnly = true,
                 trailingIcon = {
-                    IconButton(onClick = { showRoleDropdown = true }) {
-                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
+                    IconButton(onClick = { showRoleDropdown.value = true }) {
+                        Icon(
+                            imageVector = if (showRoleDropdown.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             )
+
             DropdownMenu(
-                expanded = showRoleDropdown,
-                onDismissRequest = { showRoleDropdown = false }
+                expanded = showRoleDropdown.value,
+                onDismissRequest = { showRoleDropdown.value = false },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopStart) // 기준 위치 맞추기
             ) {
-                roles.forEach { role ->
+                Roles.entries.forEach { role ->
                     DropdownMenuItem(
-                        text = { Text(role.roleName) },
-                        onClick = {
-                            selectedRoleName = role.roleName
-                            selectedRoleId = role.id
-                            showRoleDropdown = false
-                        }
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = selectedRoles.contains(role),
+                                    onCheckedChange = {
+                                        if (it) selectedRoles.add(role)
+                                        else {
+                                            selectedRoles.remove(role)
+                                            if (selectedPrimaryRole.value == role)
+                                                selectedPrimaryRole.value = null
+                                        }
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(role.name, modifier = Modifier.weight(1f))
+                                RadioButton(
+                                    selected = selectedPrimaryRole.value == role,
+                                    onClick = {
+                                        if (selectedRoles.contains(role)) {
+                                            selectedPrimaryRole.value = role
+                                        }
+                                    },
+                                    enabled = selectedRoles.contains(role)
+                                )
+                            }
+                        },
+                        onClick = {} // 무시
                     )
                 }
             }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 병원 선택 Dropdown
+        // 병원 Dropdown
+
+// 병원 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = selectedHospital?.hospitalName ?: "",
+                value = selectedHospital.value?.hospitalName ?: "",
                 onValueChange = {},
                 label = { Text("Select Hospital *") },
                 readOnly = true,
                 trailingIcon = {
-                    IconButton(onClick = { showHospitalDropdown = true }) {
-                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Dropdown")
+                    IconButton(onClick = { showHospitalDropdown.value = true }) {
+                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
             DropdownMenu(
-                expanded = showHospitalDropdown,
-                onDismissRequest = { showHospitalDropdown = false }
+                expanded = showHospitalDropdown.value,
+                onDismissRequest = {
+                    showHospitalDropdown.value = false
+                    searchHospitalQuery = ""
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                hospitalList.forEach { hospital ->
+                // 검색창 추가
+                OutlinedTextField(
+                    value = searchHospitalQuery,
+                    onValueChange = { searchHospitalQuery = it },
+                    label = { Text("병원 검색") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+
+                // 필터링된 병원 목록
+                if (filteredHospitalList.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text(hospital.hospitalName) },
-                        onClick = {
-                            selectedHospital = hospital
-                            showHospitalDropdown = false
-                        }
+                        text = { Text("검색 결과 없음") },
+                        onClick = {},
+                        enabled = false
                     )
+                } else {
+                    filteredHospitalList.forEach { hospital ->
+                        DropdownMenuItem(
+                            text = { Text(hospital.hospitalName) },
+                            onClick = {
+                                selectedHospital.value = hospital
+                                showHospitalDropdown.value = false
+                                searchHospitalQuery = ""
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -245,45 +306,18 @@ fun RegisterScreen(navController: NavController) {
 
         Button(
             onClick = {
-                /* 회원가입 로직 추가 */
-                // 일단 예시 로그 (서버로 전송할 데이터)
-                Log.d(TAG, "회원가입 정보:")
-                Log.d(TAG, "아이디: $username")
-                Log.d(TAG, "비밀번호: $password")
-                Log.d(TAG, "비밀번호 확인: $confirmPassword")
-                Log.d(TAG, "이메일: $email")
-                Log.d(TAG, "전화번호: $phoneNumber")
-                Log.d(TAG, "이름: $name")
-                Log.d(TAG, "선택한 병원: $selectedHospital")
-                val registerRequest = RegisterRequest(
-                    username = username.trim(),
-                    password = password,
-                    email = email.trim(),
-                    phoneNumber = phoneNumber.trim(),
-                    name = name.trim(),
-                    selectedHospitalId = selectedHospital?.id!!,
-                    roleId = selectedRoleId,
-                )
-                scope.launch {
-                    try {
-                        val response = loginRepository.registerUser(registerRequest)
-                        Toast.makeText(context,response,Toast.LENGTH_SHORT).show()
-
-                    } catch (e: Exception) {
-                        Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
-                    } finally {
-                        navController.popBackStack()
-                    }
+                registerViewModel.register {
+                    navController.popBackStack()
                 }
-
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isFormValid
                     && isPasswordValid
                     && isPasswordMatch
-                    && name.isNotBlank()
-                    && selectedHospital != null
-                    && selectedRoleName.isNotBlank()
+                    && name.value.isNotBlank()
+                    && selectedHospital.value != null
+                    && selectedRoles.isNotEmpty()
+                    && selectedPrimaryRole.value != null
         ) {
             Text("Sign Up")
         }

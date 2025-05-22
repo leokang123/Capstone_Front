@@ -27,15 +27,6 @@ fun isEmulator(): Boolean {
             || Build.HARDWARE.contains("vbox86"))
 }
 
-/**
- * 로그아웃
- */
-fun logout(context: Context) {
-    val userDataStore = UserDataStore(context)
-    CoroutineScope(Dispatchers.IO).launch {  // 비동기 처리 (IO 작업에 적합)
-        userDataStore.clearUserData()
-    }
-}
 
 /**
  * 현재 시각 가져오는 함수

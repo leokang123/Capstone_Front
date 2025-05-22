@@ -3,20 +3,31 @@ package com.example.myapplication.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.user.AppUser
+import com.example.myapplication.utils.UserDataStore
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
 /**
  * 초안을 홈화면에 뭔가 넣지 말자고 해서 따로 쓸일이 없을거같긴 하지만
  * 일단 만들어만 놨음
  */
-class HomeViewModel : ViewModel() {
-    private val initNumber = 0;
-    private val _number = mutableIntStateOf(initNumber)
-    val number: State<Int> = _number;
 
-    fun updateNumber() {
-        _number.intValue += 1;
-    }
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val userDataStore: UserDataStore
+) : ViewModel() {
 
-    fun reset() {
-        _number.intValue = initNumber;
+    private val _user = MutableStateFlow<AppUser?>(null)
+    val user: StateFlow<AppUser?> = _user
+
+    init {
+        viewModelScope.launch {
+            _user.value = userDataStore.getUser()
+        }
     }
 }

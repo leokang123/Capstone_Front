@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -40,11 +41,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.SearchRequest
-import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.ui.component.WasteItemDetailComponent
+import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,7 +63,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WasteListScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = viewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel()
 ) {
     val selectedItem by wasteListViewModel.selectedItem.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
@@ -75,16 +77,30 @@ fun WasteListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    var authChecked by remember { mutableStateOf(false) }
+    val wasteTypeList = wasteListViewModel.wasteTypeList
+    val wasteStatusList = wasteListViewModel.wasteStatusList
+    val wasteStorageList = wasteListViewModel.wasteStorageList
+    val beaconList = wasteListViewModel.beaconList
 
-    CheckAuth(navController, roleId = 1) {
+    var authChecked by remember { mutableStateOf(false) }
+    var wasteIdText by remember { mutableStateOf<String>("") }
+
+    CheckAuth(navController,  role = Roles.USER) {
         authChecked = true
     }
+// 최초 1회만 실행되는 로직
+    LaunchedEffect(authChecked) {
+        if (authChecked) {
+            wasteListViewModel.resetWasteList()
+            delay(500)
+            wasteListViewModel.searchWasteItems(searchFilter)
+        }
+    }
 
-    LaunchedEffect(searchFilter.wasteType, authChecked) {
+    LaunchedEffect(wasteIdText, authChecked) {
         if (!authChecked) return@LaunchedEffect
 
-        if (searchFilter.wasteType?.isBlank() == true) {
+        if (searchFilter.wasteId == null) {
             showDropdown = false
             return@LaunchedEffect
         }
@@ -111,19 +127,20 @@ fun WasteListScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = searchFilter.wasteType ?: "",
-                onValueChange = { newValue ->
-                    searchFilter = searchFilter.copy(wasteType = newValue)
+                value = wasteIdText,
+                onValueChange = {
+                    wasteIdText = it
+                    searchFilter = searchFilter.copy(wasteId = wasteIdText)
                     wasteListViewModel.resetWasteList()
                     isSelected = false
-                                },
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search"
                     )
                 },
-                label = { Text("검색어를 입력하세요") },
+                label = { Text("폐기물 ID를 입력하세요") },
                 modifier = Modifier.weight(1f) // 검색창이 대부분을 차지하게 함
             )
 
@@ -144,6 +161,7 @@ fun WasteListScreen(
             SearchFilterDialog(
                 searchFilter = searchFilter,
                 onFilterChange = { searchFilter = it },
+                wasteListViewModel,
                 onDismiss = {
                     isSelected = false
                     showFilterDialog = false
@@ -162,13 +180,17 @@ fun WasteListScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 itemsIndexed(filteredItems) { index, item ->  // itemsIndexed 사용
+                    val dropBarWasteType = wasteTypeList.find { it.id == item.wasteTypeId }
+                    val dropBarWasteStatus = wasteStatusList.find { it.id == item.wasteStatusId }
+                    val dropBarWasteStorage = wasteStorageList.find { it.id == item.storageId }
+                    val dropBarBeacon = beaconList.find { it.id == item.beaconId }
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
                             .clickable {
                                 scope.launch {
-                                    wasteListViewModel.getWasteItemDetails(item.id)
+                                    wasteListViewModel.getWasteItemDetails(item.id ?: "")
                                 }
                                 keyboardController?.hide()  // 키보드 내리기
                                 focusManager.clearFocus()  // 입력 포커스 해제
@@ -180,35 +202,56 @@ fun WasteListScreen(
                     ) {
                         Text(
                             text = buildAnnotatedString {
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                ) {
+                                    append("폐기물 아이디: ")
+                                }
+                                append("${item.id}\n")
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                ) {
                                     append("🗑 폐기물 유형: ")
                                 }
-                                append(item.wasteType + "\n")
+                                append("${dropBarWasteType?.typeName}\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                                    append("👤 처리자: ")
-                                }
-                                append(item.registrantName + "\n")
-
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.DarkGray)) {
-                                    append("📍 발생위치: ")
-                                }
-                                append(item.location + "\n")
-
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color(0xFFD2B48C))) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFD2B48C)
+                                    )
+                                ) {
                                     append("📦 저장위치: ")
                                 }
-                                append(item.storageName + "\n")
+                                append("${dropBarWasteStorage?.storageName}\n")
 
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Red)) {
-                                    append("📅 날짜: ")
-                                }
-                                append(item.selectedDate + "\n")
-
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Gray)) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.Gray
+                                    )
+                                ) {
                                     append("➡️ 현재 상태: ")
                                 }
-                                append(item.status)
+                                append("${dropBarWasteStatus?.description}\n")
+
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.DarkGray
+                                    )
+                                ) {
+                                    append("📍 비콘: ")
+                                }
+                                Log.d("BEACON", dropBarBeacon.toString())
+                                append("${dropBarBeacon?.label}\n")
+
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
