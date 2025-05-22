@@ -1,6 +1,7 @@
 package com.example.myapplication.repository.impl
 
 import android.util.Log
+import com.example.myapplication.data.user.AlarmData
 import com.example.myapplication.data.user.Beacon
 import com.example.myapplication.data.user.Hospital
 import com.example.myapplication.data.waste.WasteStatus
@@ -8,7 +9,6 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
 import com.example.myapplication.repository.EtcRepository
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +22,8 @@ class MasterDataRepository @Inject constructor(
     var beaconList: List<Beacon> = emptyList()
     var wasteTypeList: List<WasteType> = emptyList()
     var wasteStatusList: List<WasteStatus> = emptyList()
+    var alarmList: List<AlarmData> = emptyList()
+
 
     // 빠른 조회용 Map
     val hospitalMap get() = hospitalList.associateBy { it.id }
@@ -30,19 +32,30 @@ class MasterDataRepository @Inject constructor(
     val wasteTypeMap get() = wasteTypeList.associateBy { it.id }
     val wasteStatusMap get() = wasteStatusList.associateBy { it.id }
 
+    suspend fun getHospitalList() = etcRepository.getHospitalList()
+    suspend fun getBeaconList() = etcRepository.getBeaconList()
+    suspend fun getStorageList(hospitalId: Int) = etcRepository.getStorageList(hospitalId)
+    suspend fun getWasteTypeList() = etcRepository.getWasteTypeList()
+    suspend fun getWasteStatusList() = etcRepository.getWasteStatusList()
+    suspend fun getAlarmList() = etcRepository.getAlarmList()
+
+
     suspend fun initAll(hospitalId: Int) = supervisorScope {
         try {
-            val hospitalDeferred = async { etcRepository.getHospitalList() }
-            val storageDeferred = async { etcRepository.getStorageList(hospitalId) }
-            val beaconDeferred = async { etcRepository.getBeaconList() }
-            val typeDeferred = async { etcRepository.getWasteTypeList() }
-            val statusDeferred = async { etcRepository.getWasteStatusList() }
+            val hospitalDeferred = async { getHospitalList() }
+            val storageDeferred = async { getStorageList(hospitalId) }
+            val beaconDeferred = async { getBeaconList() }
+            val typeDeferred = async { getWasteTypeList() }
+            val statusDeferred = async { getWasteStatusList() }
+            val alarmDeferred = async { getAlarmList() }
 
+            alarmList = alarmDeferred.await() ?: emptyList()
             hospitalList = hospitalDeferred.await() ?: emptyList()
             storageList = storageDeferred.await() ?: emptyList()
             beaconList = beaconDeferred.await() ?: emptyList()
             wasteTypeList = typeDeferred.await() ?: emptyList()
             wasteStatusList = statusDeferred.await() ?: emptyList()
+
         } catch (e: Exception) {
             Log.e("INIT_DATA_ERROR", e.message.toString())
         }

@@ -59,7 +59,7 @@ class RegisterViewModel @Inject constructor(
 
     fun register(onSuccess: () -> Unit) {
         val request = User(
-            userName = username.value.trim(),
+            username = username.value.trim(),
             password = password.value,
             email = email.value.trim(),
             phoneNumber = phoneNumber.value.trim(),

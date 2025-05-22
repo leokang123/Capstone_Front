@@ -40,6 +40,7 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.viewmodel.WasteListViewModel
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -71,12 +72,13 @@ fun SearchFilterDialog(
     // DropdownMenu 상태
 
     // ✅ 체크박스로 입력 활성화 여부 관리
+    var isValidCheck by remember { mutableStateOf(false) }
     var isWasteTypeChecked by remember { mutableStateOf(false) }
     var isWasteStorageChecked by remember { mutableStateOf(false) }
     var isDeviceChecked by remember { mutableStateOf(false) }
     var isDateChecked by remember { mutableStateOf(false) }
     var isStatusChecked by remember { mutableStateOf(false) }
-    val defaultDateTime = LocalDateTime.now()
+    val defaultDateTime = LocalDate.now()
     var selectedDateTime by remember { mutableStateOf(searchFilter.startDate ?: defaultDateTime) }
 
     val wasteStorageList = wasteListViewModel.wasteStorageList
@@ -89,6 +91,7 @@ fun SearchFilterDialog(
             selectedStorage = wasteStorageList.find { it.id == searchFilter.wasteStorageId }
             isWasteStorageChecked = true
         }
+        if (searchFilter.isValid != false) isValidCheck = true
         if (searchFilter.wasteStatusId != null) isStatusChecked = true
         if (searchFilter.wasteTypeId != null) isWasteTypeChecked = true
         if (searchFilter.beaconId != null) isDeviceChecked = true
@@ -103,6 +106,13 @@ fun SearchFilterDialog(
         text = {
             Column {
                 // 폐기물 유형
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isValidCheck, onCheckedChange = {
+                        isValidCheck = it
+                        onFilterChange(searchFilter.copy(isValid = it))
+                    })
+                    Text("현재 처리 중인 폐기물")
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isWasteTypeChecked, onCheckedChange = {
                         isWasteTypeChecked = it
@@ -272,25 +282,25 @@ fun SearchFilterDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text("날짜")
-                                Text(selectedDateTime.toLocalDate().toString())
+                                Text(selectedDateTime.toString())
                             }
                         }
 
-                        Button(
-                            onClick = { showTimePicker = true },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("시간")
-                                Text(
-                                    selectedDateTime.toLocalTime()
-                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
-                                )
-                            }
-                        }
+//                        Button(
+//                            onClick = { showTimePicker = true },
+//                            modifier = Modifier.weight(1f)
+//                        ) {
+//                            Column(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                horizontalAlignment = Alignment.CenterHorizontally
+//                            ) {
+//                                Text("시간")
+//                                Text(
+//                                    selectedDateTime.toLocalTime()
+//                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+//                                )
+//                            }
+//                        }
                     }
 
                     Spacer(Modifier.height(8.dp))
@@ -310,13 +320,12 @@ fun SearchFilterDialog(
                                 val pickedDate = Instant.ofEpochMilli(millis)
                                     .atZone(ZoneId.systemDefault()).toLocalDate()
 
-                                selectedDateTime =
-                                    LocalDateTime.of(pickedDate, selectedDateTime.toLocalTime())
+                                selectedDateTime = pickedDate
 
                                 onFilterChange(
                                     searchFilter.copy(
-                                        startDate = selectedDateTime,
-                                        endDate = selectedDateTime.plusDays(10)
+                                        startDate = pickedDate,
+                                        endDate = pickedDate.plusDays(10)
                                     )
                                 )
                             }
@@ -330,27 +339,27 @@ fun SearchFilterDialog(
                 }
             }
 
-            if (showTimePicker) {
-                val context = LocalContext.current
-                TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        val newTime = LocalTime.of(hourOfDay, minute)
-                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-
-                        onFilterChange(
-                            searchFilter.copy(
-                                startDate = selectedDateTime,
-                                endDate = selectedDateTime.plusDays(10)
-                            )
-                        )
-                        showTimePicker = false
-                    },
-                    selectedDateTime.hour,
-                    selectedDateTime.minute,
-                    true
-                ).show()
-            }
+//            if (showTimePicker) {
+//                val context = LocalContext.current
+//                TimePickerDialog(
+//                    context,
+//                    { _, hourOfDay, minute ->
+//                        val newTime = LocalTime.of(hourOfDay, minute)
+//                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
+//
+//                        onFilterChange(
+//                            searchFilter.copy(
+//                                startDate = selectedDateTime,
+//                                endDate = selectedDateTime.plusDays(10)
+//                            )
+//                        )
+//                        showTimePicker = false
+//                    },
+//                    selectedDateTime.hour,
+//                    selectedDateTime.minute,
+//                    true
+//                ).show()
+//            }
         },
         confirmButton = {
             Button(onClick = onApplyFilter) {

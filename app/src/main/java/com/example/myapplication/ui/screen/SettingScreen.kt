@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

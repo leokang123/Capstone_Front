@@ -69,13 +69,13 @@ fun WasteItemDetailComponent(
         Column(modifier = Modifier.padding(16.dp)) {
             // 폐기물 기본 정보
             Text(
-                text = "🗑 ${selectedItem.wasteType}",
+                text = "🗑 ${selectedItem.id}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
+            Log.d("DETAILS", selectedItem.toString())
             val collectingStatusId = wasteStatusList.find { it.statusLevel == 1 }?.id
             val selectedItemStorage = wasteStorageList.find { it.id == selectedItem.storage }
             val selectedItemType = wasteTypeList.find { it.id == selectedItem.wasteType }

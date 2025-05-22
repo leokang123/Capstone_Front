@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -82,15 +83,24 @@ fun WasteListScreen(
     val beaconList = wasteListViewModel.beaconList
 
     var authChecked by remember { mutableStateOf(false) }
+    var wasteIdText by remember { mutableStateOf<String>("") }
 
     CheckAuth(navController,  role = Roles.USER) {
         authChecked = true
     }
+// 최초 1회만 실행되는 로직
+    LaunchedEffect(authChecked) {
+        if (authChecked) {
+            wasteListViewModel.resetWasteList()
+            delay(500)
+            wasteListViewModel.searchWasteItems(searchFilter)
+        }
+    }
 
-    LaunchedEffect(searchFilter.wasteTypeId, authChecked) {
+    LaunchedEffect(wasteIdText, authChecked) {
         if (!authChecked) return@LaunchedEffect
 
-        if (searchFilter.wasteTypeId == null) {
+        if (searchFilter.wasteId == null) {
             showDropdown = false
             return@LaunchedEffect
         }
@@ -116,12 +126,11 @@ fun WasteListScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val wasteType = wasteTypeList.find { it.id == searchFilter.wasteTypeId }
             OutlinedTextField(
-                value = wasteType?.typeName.toString(),
+                value = wasteIdText,
                 onValueChange = {
-                    val newValue = wasteType?.id
-                    searchFilter = searchFilter.copy(wasteTypeId = newValue)
+                    wasteIdText = it
+                    searchFilter = searchFilter.copy(wasteId = wasteIdText)
                     wasteListViewModel.resetWasteList()
                     isSelected = false
                 },
@@ -131,7 +140,7 @@ fun WasteListScreen(
                         contentDescription = "Search"
                     )
                 },
-                label = { Text("검색어를 입력하세요") },
+                label = { Text("폐기물 ID를 입력하세요") },
                 modifier = Modifier.weight(1f) // 검색창이 대부분을 차지하게 함
             )
 
@@ -199,6 +208,15 @@ fun WasteListScreen(
                                         color = Color.Black
                                     )
                                 ) {
+                                    append("폐기물 아이디: ")
+                                }
+                                append("${item.id}\n")
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
+                                    )
+                                ) {
                                     append("🗑 폐기물 유형: ")
                                 }
                                 append("${dropBarWasteType?.typeName}\n")
@@ -231,6 +249,7 @@ fun WasteListScreen(
                                 ) {
                                     append("📍 비콘: ")
                                 }
+                                Log.d("BEACON", dropBarBeacon.toString())
                                 append("${dropBarBeacon?.label}\n")
 
                             },

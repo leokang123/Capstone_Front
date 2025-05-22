@@ -6,10 +6,10 @@ data class AppUser(
     val uuid: String = "",
     val email: String = "",
     val name: String = "",
-    val phoneNumber: String = "",
+    val phoneNumber: String? = null,
     val hospital: Hospital? = null,
     val roles: List<Roles>? = null,
     val primaryRoles: Roles? = null,
-    val token: String = "",
-    val fcmToken: String = ""
+    val token: String? = null,
+    val fcmToken: String? = null
 )

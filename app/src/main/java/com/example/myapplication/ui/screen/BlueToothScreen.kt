@@ -3,12 +3,15 @@ package com.example.myapplication.ui.screen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,8 +52,13 @@ import com.example.myapplication.viewmodel.SharedViewModel
 @Composable
 fun BluetoothDialog(
     viewModel: BlueToothViewModel = hiltViewModel(),
+    isRegister: Boolean = false,
     onDismiss: () -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.updateBeaconList()
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -60,7 +69,7 @@ fun BluetoothDialog(
                 .padding(16.dp)
 
         ) {
-            BluetoothScreen(viewModel, onDismiss)
+            BluetoothScreen(viewModel, isRegister, onDismiss)
         }
     }
 }
@@ -75,14 +84,15 @@ fun BluetoothDialog(
 @Composable
 fun BluetoothScreen(
     viewModel: BlueToothViewModel,
-    onDismiss: () -> Unit
+    isRegister: Boolean,
+    onDismiss: () -> Unit,
 ) {
     // 실제 폰
     // val devices by viewModel.devices.collectAsState()
     // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
 
     // 에뮬레이터 한정
-    val devices by viewModel.mockDevices.collectAsState()
+    val devices by if (isRegister) viewModel.notUsedServerBeacon.collectAsState() else viewModel.serverBeacons.collectAsState()
     var selectedDevice by remember { mutableStateOf<Beacon?>(null) }
 
 
@@ -96,7 +106,6 @@ fun BluetoothScreen(
         // 블루투스 스캔 버튼
         Button(
             onClick = {
-
                 viewModel.startScan()
             },
             modifier = Modifier.padding(vertical = 8.dp)
@@ -110,16 +119,17 @@ fun BluetoothScreen(
                 DeviceItem(device) { selected ->
                     viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
+                    Log.d("DISMISSS", "왜 안되지1")
+//                    viewModel.updateBeacon(selected.copy(used = true))
                     onDismiss()
+                    Log.d("DISMISSS", "왜 안되지2")
                 }
             }
         }
-        Button(
-            onClick = { viewModel.stopScan() },
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            Text("Stop Scanning")
-        }
+        Spacer(Modifier.height(8.dp))
+
+        Text("10초간 검색합니다", color = MaterialTheme.colorScheme.secondary)
+
     }
 }
 // 실제 폰

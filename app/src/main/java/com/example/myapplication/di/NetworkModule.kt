@@ -14,12 +14,15 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+//    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://medicap.kro.kr:1313/"
+    private const val TIME_OUT = 5L // 5초
 
     @Provides
     @Singleton
@@ -43,6 +46,9 @@ object NetworkModule {
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor) // 인증 Interceptor 추가
+            .connectTimeout(TIME_OUT, TimeUnit.SECONDS) // 연결 시도 제한
+//            .readTimeout(TIME_OUT, TimeUnit.SECONDS)    // 응답 데이터 수신 제한
+//            .writeTimeout(TIME_OUT, TimeUnit.SECONDS)   // 요청 데이터 전송 제한
             .build()
     }
 

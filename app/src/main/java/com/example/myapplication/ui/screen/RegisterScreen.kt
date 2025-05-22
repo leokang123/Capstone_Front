@@ -80,6 +80,13 @@ fun RegisterScreen(
     val isPasswordMatch = registerViewModel.isPasswordMatch()
     val isEmailValid = registerViewModel.isEmailValid()
     val isFormValid = registerViewModel.isFormValid()
+// 병원 검색용 상태
+    var searchHospitalQuery by remember { mutableStateOf("") }
+
+// 병원 리스트 필터링
+    val filteredHospitalList = hospitalList.filter {
+        it.hospitalName.contains(searchHospitalQuery, ignoreCase = true)
+    }
 
     LaunchedEffect(Unit) {
         registerViewModel.toastMessage.collect {
@@ -235,37 +242,12 @@ fun RegisterScreen(
             }
         }
 
-//            OutlinedTextField(
-//                value = selectedRoleName.value,
-//                onValueChange = {},
-//                label = { Text("Select Role *") },
-//                readOnly = true,
-//                trailingIcon = {
-//                    IconButton(onClick = { showRoleDropdown.value = true }) {
-//                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            DropdownMenu(
-//                expanded = showRoleDropdown.value,
-//                onDismissRequest = { showRoleDropdown.value = false }
-//            ) {
-//                registerViewModel.roles.forEach { role ->
-//                    DropdownMenuItem(
-//                        text = { Text(role.roleName) },
-//                        onClick = {
-//                            selectedRoleName.value = role.roleName
-//                            selectedRoleId.longValue = role.id
-//                            showRoleDropdown.value = false
-//                        }
-//                    )
-//                }
-//            }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // 병원 Dropdown
+
+// 병원 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = selectedHospital.value?.hospitalName ?: "",
@@ -274,23 +256,48 @@ fun RegisterScreen(
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showHospitalDropdown.value = true }) {
-                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Dropdown")
+                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
             DropdownMenu(
                 expanded = showHospitalDropdown.value,
-                onDismissRequest = { showHospitalDropdown.value = false }
+                onDismissRequest = {
+                    showHospitalDropdown.value = false
+                    searchHospitalQuery = ""
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                hospitalList.forEach { hospital ->
+                // 검색창 추가
+                OutlinedTextField(
+                    value = searchHospitalQuery,
+                    onValueChange = { searchHospitalQuery = it },
+                    label = { Text("병원 검색") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+
+                // 필터링된 병원 목록
+                if (filteredHospitalList.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text(hospital.hospitalName) },
-                        onClick = {
-                            selectedHospital.value = hospital
-                            showHospitalDropdown.value = false
-                        }
+                        text = { Text("검색 결과 없음") },
+                        onClick = {},
+                        enabled = false
                     )
+                } else {
+                    filteredHospitalList.forEach { hospital ->
+                        DropdownMenuItem(
+                            text = { Text(hospital.hospitalName) },
+                            onClick = {
+                                selectedHospital.value = hospital
+                                showHospitalDropdown.value = false
+                                searchHospitalQuery = ""
+                            }
+                        )
+                    }
                 }
             }
         }
