@@ -50,7 +50,7 @@ import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 
-suspend fun reloadWasteList(
+fun reloadWasteList(
     blueToothViewModel: BlueToothViewModel,
     wasteListViewModel: WasteListViewModel,
 ) {
@@ -68,6 +68,7 @@ fun WasteMoveScreen(
 ) {
     val context = LocalContext.current
     val user by wasteListViewModel.user.collectAsState()
+    val serverBeacons by blueToothViewModel.serverBeacons.collectAsState()
     val wasteTypeList = wasteListViewModel.wasteTypeList
     val wasteStatusList = wasteListViewModel.wasteStatusList
     val wasteStorageList = wasteListViewModel.wasteStorageList
@@ -86,16 +87,18 @@ fun WasteMoveScreen(
     var wasteItemDetails by remember { mutableStateOf("") }
     var authChecked by remember { mutableStateOf(false) }
 
+
     CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 
     // UI 로딩 시 폐기물 리스트 불러오기
-    LaunchedEffect(authChecked, Unit) {
+    LaunchedEffect(authChecked, serverBeacons) {
         if (!authChecked) return@LaunchedEffect
         currentUserId = user?.uuid.toString()
         reloadWasteList(blueToothViewModel, wasteListViewModel)
     }
+
 
     Column(
         modifier = Modifier

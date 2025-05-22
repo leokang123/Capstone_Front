@@ -69,6 +69,10 @@ class BlueToothViewModel @Inject constructor(
         _selectedBeaconId.value = null
     }
 
+    fun clearServerBeacons() {
+        _serverBeacons.value = emptyList()
+    }
+
     suspend fun updateBeaconList() {
         beaconList = masterDataRepository.getBeaconList()
     }
@@ -82,16 +86,19 @@ class BlueToothViewModel @Inject constructor(
             Log.d(TAG, "Starting Bluetooth scan...")
             scanRealDevices()
         }
-        Log.d("MOCKBEACON", _mockDevices.value.toString())
-        matchBeacons()
-        Log.d("SERVERBEACON", _serverBeacons.value.toString())
+//        Log.d("BEACON", _mockDevices.value.toString())
+//        matchBeacons()
+//        Log.d("SERVERBEACON", _serverBeacons.value.toString())
     }
 
     private fun matchBeacons() {
         // 일단 목 디바이스
-        val scanned = _mockDevices.value.map { it.deviceAddress }
+//        val scanned = _mockDevices.value.map { it.deviceAddress }
         // 실제 디바이스
-//        val scanned = _devices.value.map {it.address}
+        val scanned = _devices.value.map {it.address}
+        val isTrue = "00:C0:B1:C0:29:E8" in scanned
+//        Log.d("ADDRESS",isTrue.toString())
+//        Log.d("SERVER", beaconList.toString())
         val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
         _serverBeacons.value = serverBeacon?: emptyList()
 
@@ -106,25 +113,28 @@ class BlueToothViewModel @Inject constructor(
             Log.w(TAG, "Bluetooth is disabled or scanner is null.")
             return
         }
-        Log.d(TAG, "hasScanPermission(): ${hasScanPermission()}")
+
+//        Log.d(TAG, "hasScanPermission(): ${hasScanPermission()}")
 
         if (!hasScanPermission()) return
-        Log.d(TAG, "HERE1")
+
         if (scanCallback == null) {
-            Log.d(TAG, "HERE2")
             scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                    Log.d("HERE3", result.toString())
+//                    Log.d("HERE3", result.toString())
                     result?.device?.let { device ->
                         val currentDevices = _devices.value.toMutableList()
-                        Log.d("DEVICE", currentDevices.toString())
                         if (!currentDevices.contains(device)) {
+                            val scanRecord = result.scanRecord
+                            val serviceUuids = scanRecord?.serviceUuids
                             currentDevices.add(device)
                             _devices.value = currentDevices
-                            Log.d(
-                                TAG,
-                                "Device Found: ${device.name ?: "Unknown"} - ${device.address}"
-                            )
+//                            Log.d(
+//                                TAG,
+//                                "Device Found: ${device.name ?: "Unknown"} - ${device.address} - ${serviceUuids}"
+//                            )
+                            matchBeacons()
+
                         }
                     }
                 }
@@ -139,7 +149,11 @@ class BlueToothViewModel @Inject constructor(
             .build()
 
         scanner?.startScan(null, settings, scanCallback)
-        Log.d("BEACON_SCAN", "씨작")
+
+        android.os.Handler(context.mainLooper).postDelayed({
+            stopScan()
+            Log.d("BEACON_SCAN", "스캔 자동 종료됨")
+        }, 10_000) // 10초 = 10,000ms
     }
 
     /** 🚀 블루투스 검색 중지 */
@@ -163,31 +177,19 @@ class BlueToothViewModel @Inject constructor(
 
     private fun mockBluetoothDevices() {
         val beacon1 = RealBeacon(
-            uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+            name="123",
             deviceAddress = "asdfawef",
-            major = 1001,
-            minor = 2001,
-            interval = 1000,
-            battery = 85,
-            nearField = true
+
         )
         val beacon2 = RealBeacon(
-            uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647826",
+            name="asddsa",
             deviceAddress = "55",
-            major = 1002,
-            minor = 2002,
-            interval = 900,
-            battery = 76,
-            nearField = false
+
         )
         val beacon3 = RealBeacon(
-            uuid = "fda50693-a4e2-4fb1-afcf-c6eb07647827",
+            name="asd123",
             deviceAddress = "2346",
-            major = 1003,
-            minor = 2003,
-            interval = 1200,
-            battery = 92,
-            nearField = true
+
         )
 
         val mockDevicesList = listOf(

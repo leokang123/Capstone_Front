@@ -3,12 +3,15 @@ package com.example.myapplication.ui.screen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -66,7 +69,7 @@ fun BluetoothDialog(
                 .padding(16.dp)
 
         ) {
-            BluetoothScreen(viewModel,isRegister) { onDismiss }
+            BluetoothScreen(viewModel, isRegister, onDismiss)
         }
     }
 }
@@ -103,7 +106,6 @@ fun BluetoothScreen(
         // 블루투스 스캔 버튼
         Button(
             onClick = {
-
                 viewModel.startScan()
             },
             modifier = Modifier.padding(vertical = 8.dp)
@@ -117,17 +119,17 @@ fun BluetoothScreen(
                 DeviceItem(device) { selected ->
                     viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
-                    viewModel.updateBeacon(selected.copy(used = true))
+                    Log.d("DISMISSS", "왜 안되지1")
+//                    viewModel.updateBeacon(selected.copy(used = true))
                     onDismiss()
+                    Log.d("DISMISSS", "왜 안되지2")
                 }
             }
         }
-        Button(
-            onClick = { viewModel.stopScan() },
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            Text("Stop Scanning")
-        }
+        Spacer(Modifier.height(8.dp))
+
+        Text("10초간 검색합니다", color = MaterialTheme.colorScheme.secondary)
+
     }
 }
 // 실제 폰

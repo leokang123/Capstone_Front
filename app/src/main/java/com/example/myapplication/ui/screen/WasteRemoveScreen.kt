@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -53,8 +56,10 @@ import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 data class SelectedWasteItem(
     val details: String,
@@ -64,7 +69,8 @@ data class SelectedWasteItem(
 @Composable
 fun WasteRemoveScreen(
     navController: NavController,
-    wasteListViewModel: WasteListViewModel = hiltViewModel()
+    wasteListViewModel: WasteListViewModel = hiltViewModel(),
+    blueToothViewModel: BlueToothViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val user by wasteListViewModel.user.collectAsState()
@@ -89,6 +95,7 @@ fun WasteRemoveScreen(
     val wasteStatusList = wasteListViewModel.wasteStatusList
     val wasteTypeList = wasteListViewModel.wasteTypeList
     val beaconList = wasteListViewModel.beaconList
+    var isScanning by remember { mutableStateOf(false) }
 
     var authChecked by remember { mutableStateOf(false) }
     CheckAuth(navController, role = Roles.WAREHOUSE_MANAGER) {
@@ -135,6 +142,7 @@ fun WasteRemoveScreen(
                 }
             }
         }
+
         // 체크리스트 UI
         LazyColumn(
             modifier = Modifier
@@ -204,6 +212,21 @@ fun WasteRemoveScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.width(12.dp))
+
+                if (isScanning) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("비콘 검색 중...", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
             }
         }
 
@@ -214,19 +237,37 @@ fun WasteRemoveScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests: List<MoveRequest> =
-                        selectedItems.filter { !it.value.beaconAddress.isNullOrBlank() }
-                            .map { MoveRequest(it.key, it.value.details) }
-                    val leftRequest =
-                        moveRequests.filterNot { it.uuid in selectedItems.keys }.map { it.uuid }
-                    if (leftRequest.isNotEmpty()) Toast.makeText(
-                        context,
-                        "${leftRequest}은 인식 범위 밖에 있습니다",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    isScanning = true
+
+                    blueToothViewModel.clearServerBeacons()
+                    blueToothViewModel.startScan()
+                    delay(2000)
+                    isScanning = false
+
+                    val scannedAddresses = blueToothViewModel.serverBeacons.value.map { it.deviceAddress }
+
+                    val moveRequests = selectedItems
+                        .filter { it.value.beaconAddress in scannedAddresses }
+                        .map { MoveRequest(it.key, it.value.details) }
+
+                    val matchedUuids = moveRequests.map { it.uuid }.toSet()
+
+                    val leftRequest = selectedItems
+                        .filterNot { it.key in matchedUuids }
+                        .map { it.key } // 또는 .map { it.value.details } 등 원하는 정보
+
+                    if (leftRequest.isNotEmpty()) {
+                        Toast.makeText(
+                            context,
+                            "${leftRequest}은 인식 범위 밖에 있습니다",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        selectedItems.clear()
+                    }
 
                     var responseMessage = ""
-                    if (selectedItems.isNotEmpty()) {
+                    Log.d("SELECTED_ITEM", scannedAddresses.toString())
+                    if (moveRequests.isNotEmpty()) {
                         try {
                             wasteListViewModel.moveWasteItems(moveRequests)
                             responseMessage = "처리 완료"
@@ -246,7 +287,10 @@ fun WasteRemoveScreen(
         ) {
             Text("선택한 폐기물 배출")
         }
+
     }
+
+
 
     // 팝업창 (다이얼로그)
     if (showDialog && currentItemId != null) {
@@ -282,6 +326,7 @@ fun WasteRemoveScreen(
                         label = { Text("상세 내용") }
                     )
                 }
+
             },
             confirmButton = {
                 Button(onClick = {
@@ -312,3 +357,5 @@ fun WasteRemoveScreen(
         )
     }
 }
+
+
