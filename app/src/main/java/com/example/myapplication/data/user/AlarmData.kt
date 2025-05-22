@@ -5,6 +5,6 @@ import java.time.LocalDateTime
 data class AlarmData(
     val title: String,
     val message: String,
-    val sendAt: LocalDateTime,
-    val receiveAt: LocalDateTime
+    val sendAt: String? = null,
+    val receivedAt: String? = null,
 )

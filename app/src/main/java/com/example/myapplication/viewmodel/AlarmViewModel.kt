@@ -1,5 +1,6 @@
 package com.example.myapplication.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
@@ -30,5 +31,6 @@ class AlarmViewModel @Inject constructor(
     suspend fun getAlarmList() {
         val response = masterDataRepository.getAlarmList()
         _alarmList.value = response ?: emptyList()
+        Log.d("ALARM", _alarmList.value.toString())
     }
 }

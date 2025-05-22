@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -54,6 +56,7 @@ fun NotificationDialog(
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
+                .height(500.dp) // ✅ 높이 고정
                 .padding(16.dp)
         ) {
             NotificationScreen(navController, alarmViewModel)
@@ -67,7 +70,7 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
 //        AlarmData(
 //            title = "예시알림제목",
 //            message = "이건 예시 알림 메시지입니다1. 이건 예시 알림 메시지입니다2. 이건 예시 알림 메시지입니다3.",
-//            sendAt = LocalDateTime.now(),
+//            receiveAt = LocalDateTime.now(),
 //            receiveAt = LocalDateTime.now()
 //        )
 //    )
@@ -79,13 +82,20 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
     }
 
     var selectedNotification by remember { mutableStateOf<AlarmData?>(null) }
+    val parsedTime = selectedNotification?.receivedAt?.let { LocalDateTime.parse(it) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notification", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        notifications.forEach { notification ->
-            NotificationItem(notification) { selectedNotification = it }
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f) // 남은 영역 전부 차지
+                .fillMaxWidth()
+        ) {
+            items(notifications) { notification ->
+                NotificationItem(notification) { selectedNotification = it }
+            }
         }
 
         // 공지를 클릭하면 팝업으로 전체 내용 표시
@@ -98,7 +108,7 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
                         Text(selectedNotification?.message ?: "")
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = selectedNotification?.sendAt?.format(formatter) ?: "날짜정보 없음",
+                            text = parsedTime?.format(formatter) ?: "날짜정보 없음",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.Gray
                         )
@@ -132,6 +142,8 @@ fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
     val maxLength = 15
     val isLongText = notification.message.length > maxLength
     val displayTitle = notification.title
+    val parsedTime = LocalDateTime.parse(notification.receivedAt)
+
     val displayText = if (isLongText) {
         notification.message.take(maxLength) + "..."
     } else {
@@ -159,7 +171,7 @@ fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = notification.sendAt.format(formatter),
+                text = parsedTime?.format(formatter) ?: "날짜정보 없음",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray
             )
