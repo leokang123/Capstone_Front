@@ -4,7 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.kotlin.kapt)
-
+    
+    //알림을 위한 Firebase 관련
+    id("com.google.gms.google-services")
 }
 hilt {
     enableAggregatingTask = false
@@ -93,4 +95,7 @@ dependencies {
 
     implementation(libs.lifecycle.viewmodel.ktx)
 
+    //알림을 위한 Firebase 관련
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }
