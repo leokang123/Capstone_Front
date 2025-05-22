@@ -50,7 +50,7 @@ class WasteRepositoryImpl @Inject constructor(
 
     override suspend fun getStorageWasteItems(storageId: Int): List<WasteItem>? {
         return try {
-            val response = apiService.getAllWasteHs(storageId = storageId)
+            val response = apiService.getAllWasteHs(valid = true, storageId = storageId)
             if (response.isSuccessful) {
                 response.body()
             } else {

@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
@@ -105,14 +106,18 @@ class BlueToothViewModel @Inject constructor(
             Log.w(TAG, "Bluetooth is disabled or scanner is null.")
             return
         }
+        Log.d(TAG, "hasScanPermission(): ${hasScanPermission()}")
 
         if (!hasScanPermission()) return
-
+        Log.d(TAG, "HERE1")
         if (scanCallback == null) {
+            Log.d(TAG, "HERE2")
             scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
+                    Log.d("HERE3", result.toString())
                     result?.device?.let { device ->
                         val currentDevices = _devices.value.toMutableList()
+                        Log.d("DEVICE", currentDevices.toString())
                         if (!currentDevices.contains(device)) {
                             currentDevices.add(device)
                             _devices.value = currentDevices
@@ -129,8 +134,12 @@ class BlueToothViewModel @Inject constructor(
                 }
             }
         }
+        val settings = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .build()
 
-        scanner?.startScan(scanCallback)
+        scanner?.startScan(null, settings, scanCallback)
+        Log.d("BEACON_SCAN", "씨작")
     }
 
     /** 🚀 블루투스 검색 중지 */

@@ -88,6 +88,14 @@ fun WasteListScreen(
     CheckAuth(navController,  role = Roles.USER) {
         authChecked = true
     }
+// 최초 1회만 실행되는 로직
+    LaunchedEffect(authChecked) {
+        if (authChecked) {
+            wasteListViewModel.resetWasteList()
+            delay(500)
+            wasteListViewModel.searchWasteItems(searchFilter)
+        }
+    }
 
     LaunchedEffect(wasteIdText, authChecked) {
         if (!authChecked) return@LaunchedEffect
