@@ -2,10 +2,9 @@ package com.example.myapplication.repository.impl
 
 import android.content.ContentValues.TAG
 import android.util.Log
-import com.example.myapplication.data.user.User
+import com.example.myapplication.data.entity.User
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.LoginRepository
-import com.example.myapplication.utils.UserDataStore
 import org.json.JSONObject
 import javax.inject.Inject
 

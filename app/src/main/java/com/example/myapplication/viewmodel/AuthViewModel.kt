@@ -4,9 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.AppUser
-import com.example.myapplication.network.ApiService
 import com.example.myapplication.repository.impl.NotificationRepository
+import com.example.myapplication.states.AuthState
 import com.example.myapplication.utils.FirebaseTokenManager
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,14 +35,12 @@ class AuthViewModel @Inject constructor(
 
                 else -> {
                     _authState.value = AuthState.Authorized(user)
-                    if (user != null) {
-                        user.uuid?.let { userId ->
-                            FirebaseTokenManager.getToken()?.let { fcmToken ->
-                                viewModelScope.launch {
-                                    notificationRepository.sendFcmToken(userId, fcmToken)
-                                    //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
-                                    Log.d("FCM", "Sending token to server: $fcmToken")
-                                }
+                    user?.uuid?.let { userId ->
+                        FirebaseTokenManager.getToken()?.let { fcmToken ->
+                            viewModelScope.launch {
+                                notificationRepository.sendFcmToken(userId, fcmToken)
+                                //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
+                                Log.d("FCM", "Sending token to server: $fcmToken")
                             }
                         }
                     }
@@ -52,11 +49,4 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
-
-    sealed class AuthState {
-        object Loading : AuthState()
-        object NotLoggedIn : AuthState()
-        data class Unauthorized(val actualRole: Roles?) : AuthState()
-        data class Authorized(val user: AppUser?) : AuthState()
-    }
 

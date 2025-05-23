@@ -1,9 +1,9 @@
 package com.example.myapplication.repository.impl
 
 import android.util.Log
-import com.example.myapplication.data.user.AlarmData
-import com.example.myapplication.data.user.Beacon
-import com.example.myapplication.data.user.Hospital
+import com.example.myapplication.data.entity.AlarmData
+import com.example.myapplication.data.entity.Beacon
+import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.waste.WasteStatus
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType

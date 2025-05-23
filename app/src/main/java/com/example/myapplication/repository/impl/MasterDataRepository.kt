@@ -1,9 +1,9 @@
 package com.example.myapplication.repository.impl
 
 import android.util.Log
-import com.example.myapplication.data.user.AlarmData
-import com.example.myapplication.data.user.Beacon
-import com.example.myapplication.data.user.Hospital
+import com.example.myapplication.data.entity.AlarmData
+import com.example.myapplication.data.entity.Beacon
+import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.waste.WasteStatus
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
@@ -32,12 +32,41 @@ class MasterDataRepository @Inject constructor(
     val wasteTypeMap get() = wasteTypeList.associateBy { it.id }
     val wasteStatusMap get() = wasteStatusList.associateBy { it.id }
 
-    suspend fun getHospitalList() = etcRepository.getHospitalList()
-    suspend fun getBeaconList() = etcRepository.getBeaconList()
-    suspend fun getStorageList(hospitalId: Int) = etcRepository.getStorageList(hospitalId)
-    suspend fun getWasteTypeList() = etcRepository.getWasteTypeList()
-    suspend fun getWasteStatusList() = etcRepository.getWasteStatusList()
-    suspend fun getAlarmList() = etcRepository.getAlarmList()
+    suspend fun getHospitalList() = try {
+        etcRepository.getHospitalList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    suspend fun getBeaconList() = try {
+        etcRepository.getBeaconList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    suspend fun getStorageList(hospitalId: Int) = try {
+        etcRepository.getStorageList(hospitalId)
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    suspend fun getWasteTypeList() = try {
+        etcRepository.getWasteTypeList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    suspend fun getWasteStatusList() = try {
+        etcRepository.getWasteStatusList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    suspend fun getAlarmList() = try {
+        etcRepository.getAlarmList()
+    } catch (e: Exception) {
+        emptyList()
+    }
 
 
     suspend fun initAll(hospitalId: Int) = supervisorScope {

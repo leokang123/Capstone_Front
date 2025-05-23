@@ -1,6 +1,4 @@
-package com.example.myapplication.data.user
-
-import java.time.LocalDateTime
+package com.example.myapplication.data.entity
 
 data class AlarmData(
     val title: String,

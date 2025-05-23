@@ -198,7 +198,8 @@ fun WasteMoveScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val moveRequests: List<MoveRequest> = selectedItems.map { MoveRequest(it.key, it.value)}
+                    val moveRequests: List<MoveRequest> =
+                        selectedItems.map { MoveRequest(it.key, it.value) }
                     var responseMessage = ""
                     if (selectedItems.isNotEmpty()) {
                         try {

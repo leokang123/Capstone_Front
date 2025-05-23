@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.user.AlarmData
+import com.example.myapplication.data.entity.AlarmData
 import com.example.myapplication.viewmodel.AlarmViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

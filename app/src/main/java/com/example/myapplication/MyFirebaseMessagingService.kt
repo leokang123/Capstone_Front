@@ -32,7 +32,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         ).apply {
             description = "서버에서 오는 일반 알림"
         }
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
 

@@ -1,10 +1,7 @@
 package com.example.myapplication.network
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import com.example.myapplication.utils.AuthEventBus
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,11 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import org.json.JSONObject
 import javax.inject.Inject
 
 /**

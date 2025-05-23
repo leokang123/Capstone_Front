@@ -6,9 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.user.AppUser
-import com.example.myapplication.data.user.Hospital
-import com.example.myapplication.data.user.User
+import com.example.myapplication.data.entity.AppUser
+import com.example.myapplication.data.entity.Hospital
+import com.example.myapplication.data.entity.User
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
@@ -56,46 +56,38 @@ class LoginViewModel @Inject constructor(
 
     fun login() {
         viewModelScope.launch {
-//            val mockUser = User(
-//                uuid = "123",
-//                username = username,
-//                password = password,
-//                email = "$username@naver.com",
-//                name = username,
-//                phoneNumber = "01012341234",
-//                hospitalId = 1,
-//                roles = listOf(Roles.USER, Roles.WAREHOUSE_MANAGER),
-//                primaryRoles = Roles.USER,
-//                token = "123",
-//                fcmToken = "123"
-//            )
-//            val mockHospital = Hospital(
-//                id = 1,
-//                hospitalName = "서울병원",
-//                hospitalCall = "01012344321"
-//            )
-            val loginUser =
-                loginRepository.loginUser(
+            try {
+                val loginUser = loginRepository.loginUser(
                     User(
                         username = username.trim(),
                         password = password
                     )
-                )//?: mockUser
-            Log.d("LOGIN", loginUser.toString())
-            if (loginUser != null) {
+                )
+
+                if (loginUser == null) {
+                    errorMessage = "Invalid username or password"
+                    _loginSuccess.emit(false)
+                    return@launch
+                }
+
+                // 병원 정보 찾기
                 val hospital = hospitalList.value?.find { it.id == loginUser.hospitalId }
+
+                // 사용자 저장
                 userDataStore.saveUser(loginUser, hospital)
 
-                // initData가 완료될 때까지 기다림
-                loginUser.hospitalId?.let {
-                    initData(it)
-                }
-                // 필요한 리스트 전부 masterDataRepository 로드
+                // 초기 데이터 로딩
+                loginUser.hospitalId?.let { initData(it) }
+
+                // 성공 알림
                 _loginSuccess.emit(true)
-            } else {
-                errorMessage = "Invalid username or password"
+
+            } catch (e: Exception) {
+                Log.e("LOGIN", "Login error", e)
+                errorMessage = e.message ?: "로그인 중 문제가 발생했습니다."
                 _loginSuccess.emit(false)
             }
         }
     }
+
 }

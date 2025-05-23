@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.SearchRequest
+import com.example.myapplication.ui.component.SearchFilterDialog
 import com.example.myapplication.ui.component.WasteItemDetailComponent
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.WasteListViewModel
@@ -85,7 +86,7 @@ fun WasteListScreen(
     var authChecked by remember { mutableStateOf(false) }
     var wasteIdText by remember { mutableStateOf<String>("") }
 
-    CheckAuth(navController,  role = Roles.USER) {
+    CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 // 최초 1회만 실행되는 로직

@@ -3,8 +3,6 @@ package com.example.myapplication.di
 import android.content.Context
 import com.example.myapplication.network.ApiService
 import com.example.myapplication.network.AuthInterceptor
-import com.example.myapplication.repository.EtcRepository
-import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
 import dagger.Module
 import dagger.Provides
@@ -20,7 +18,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-//    private const val BASE_URL = "http://10.0.2.2:8080/"
+    //    private const val BASE_URL = "http://10.0.2.2:8080/"
     private const val BASE_URL = "http://medicap.kro.kr:1313/"
     private const val TIME_OUT = 5L // 5초
 
