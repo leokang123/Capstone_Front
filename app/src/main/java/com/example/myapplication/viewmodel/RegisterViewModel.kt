@@ -39,12 +39,6 @@ class RegisterViewModel @Inject constructor(
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
-    val roles = listOf(
-        Role(id = 1, roleName = "일반 사용자"),
-        Role(id = 2, roleName = "중간 관리직"),
-        Role(id = 3, roleName = "최종 관리직")
-    )
-
     init {
         viewModelScope.launch {
             try {
