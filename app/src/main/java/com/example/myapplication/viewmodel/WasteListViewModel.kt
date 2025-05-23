@@ -9,7 +9,6 @@ import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemDetails
-import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
@@ -49,12 +48,6 @@ class WasteListViewModel @Inject constructor(
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
-
-    private val mockList = listOf(
-        WasteStorage(id = 1, storageName = "기본 창고 A"),
-        WasteStorage(id = 2, storageName = "기본 창고 B")
-    )
-
 
     init {
         viewModelScope.launch {
@@ -114,7 +107,11 @@ class WasteListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = wasteRepository.searchWasteItems(searchRequest)
-                _wasteItems.value = result ?: emptyList()
+                // valid가 false나 null이면 배출완료인거랑 삭제된 수집중이 같이 나오는데 수집중인거 없앰
+                _wasteItems.value = result?.let {
+                    if (searchRequest.isValid != true) it.filterNot { item -> item.wasteStatusId == 1 } else it
+                } ?: emptyList()
+
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 빈 리스트 반환
                 Log.e("WasteListViewModel", "검색 API 요청 실패", e)

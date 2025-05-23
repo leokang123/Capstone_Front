@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.entity.Hospital
-import com.example.myapplication.data.entity.Role
 import com.example.myapplication.data.entity.User
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.repository.EtcRepository
@@ -44,7 +43,7 @@ class RegisterViewModel @Inject constructor(
             try {
                 val hosList = etcRepository.getHospitalList()
                 hospitalList.value = hosList?.ifEmpty { mockList() } ?: mockList()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 hospitalList.value = mockList()
                 _toastMessage.emit("병원 목록을 불러오는데 실패했습니다.")
             }
