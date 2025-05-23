@@ -4,10 +4,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.entity.Hospital
+import com.example.myapplication.data.entity.Role
+import com.example.myapplication.data.entity.User
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.Hospital
-import com.example.myapplication.data.user.Role
-import com.example.myapplication.data.user.User
 import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
-    private val  etcRepository: EtcRepository
+    private val etcRepository: EtcRepository
 ) : ViewModel() {
 
     val username = mutableStateOf("")

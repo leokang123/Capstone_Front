@@ -33,11 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.data.mock.MockBluetoothDevice
-import com.example.myapplication.data.user.Beacon
+import com.example.myapplication.data.entity.Beacon
 import com.example.myapplication.viewmodel.BlueToothViewModel
-import com.example.myapplication.viewmodel.SharedViewModel
 
 /**
  * 블루투스 모달창
@@ -55,6 +52,7 @@ fun BluetoothDialog(
     isRegister: Boolean = false,
     onDismiss: () -> Unit
 ) {
+
     LaunchedEffect(Unit) {
         viewModel.updateBeaconList()
     }
@@ -87,9 +85,6 @@ fun BluetoothScreen(
     isRegister: Boolean,
     onDismiss: () -> Unit,
 ) {
-    // 실제 폰
-    // val devices by viewModel.devices.collectAsState()
-    // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
 
     // 에뮬레이터 한정
     val devices by if (isRegister) viewModel.notUsedServerBeacon.collectAsState() else viewModel.serverBeacons.collectAsState()

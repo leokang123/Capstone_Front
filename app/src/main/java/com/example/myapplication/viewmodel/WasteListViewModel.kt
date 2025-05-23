@@ -1,11 +1,10 @@
 package com.example.myapplication.viewmodel
 
 import android.content.ContentValues.TAG
-import android.health.connect.datatypes.BodyWaterMassRecord
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.user.AppUser
+import com.example.myapplication.data.entity.AppUser
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
@@ -81,6 +80,7 @@ class WasteListViewModel @Inject constructor(
                     1 -> response?.filterNot { it.wasteStatusId == statusMap[5]?.id } ?: emptyList()
                     2 -> response?.filter { it.wasteStatusId == statusMap[1]?.id || it.wasteStatusId == statusMap[2]?.id }
                         ?: emptyList()
+
                     3 -> response?.filter { it.wasteStatusId == statusMap[3]?.id || it.wasteStatusId == statusMap[4]?.id }
                         ?: emptyList() // API 결과 저장
                     else -> emptyList()

@@ -58,8 +58,8 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 data class SelectedWasteItem(
     val details: String,
@@ -244,7 +244,8 @@ fun WasteRemoveScreen(
                     delay(2000)
                     isScanning = false
 
-                    val scannedAddresses = blueToothViewModel.serverBeacons.value.map { it.deviceAddress }
+                    val scannedAddresses =
+                        blueToothViewModel.serverBeacons.value.map { it.deviceAddress }
 
                     val moveRequests = selectedItems
                         .filter { it.value.beaconAddress in scannedAddresses }
@@ -289,7 +290,6 @@ fun WasteRemoveScreen(
         }
 
     }
-
 
 
     // 팝업창 (다이얼로그)

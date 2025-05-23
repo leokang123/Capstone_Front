@@ -1,7 +1,5 @@
 package com.example.myapplication.data.waste
 
-import kotlinx.coroutines.flow.StateFlow
-
 /** 수정 완료 **/
 
 data class  WasteItem(

@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.screen
 
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,10 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.data.user.AppUser
-import com.example.myapplication.data.user.User
 import com.example.myapplication.utils.CheckAuth
-import com.example.myapplication.utils.UserDataStore
+import com.example.myapplication.utils.requestAllPermissions
 import com.example.myapplication.viewmodel.HomeViewModel
 
 /**
@@ -55,16 +54,20 @@ fun HomeScreen(
 ) {
     val user by viewModel.user.collectAsState()
     var authChecked by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     // 토큰 검증
     CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 
-    // UI 로딩 시 폐기물 리스트 불러오기
+//    // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
+        activity?.let { requestAllPermissions(it) }
     }
+
 
     Column(
         modifier = Modifier

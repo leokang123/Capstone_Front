@@ -1,4 +1,4 @@
-package com.example.myapplication.data.user
+package com.example.myapplication.data.entity
 import com.example.myapplication.data.enums.Roles
 
 /** 수정 완료 **/

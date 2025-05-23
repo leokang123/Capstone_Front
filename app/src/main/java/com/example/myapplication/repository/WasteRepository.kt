@@ -1,15 +1,9 @@
 package com.example.myapplication.repository
 
 import com.example.myapplication.data.waste.MoveRequest
-import com.example.myapplication.data.waste.MoveRequests
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
-import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemDetails
-import com.example.myapplication.data.waste.WasteItemRequest
-import com.example.myapplication.data.waste.WasteItemResponse
-import com.example.myapplication.data.waste.WasteLog
-import com.example.myapplication.data.waste.WasteStorage
 
 interface WasteRepository {
     suspend fun registerWaste(wasteItem: WasteItem): Boolean
@@ -26,9 +20,7 @@ interface WasteRepository {
 
     suspend fun moveWasteItems(moveRequestList: List<MoveRequest>)
 
-//    suspend fun getDetailWasteItem(itemId: String): List<WasteLog>?
     suspend fun getDetailWasteItem(itemId: String): WasteItemDetails?
-
 
     suspend fun checkItemStatus(itemId: Long): Boolean
 

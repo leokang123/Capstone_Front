@@ -33,7 +33,8 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
             .width(250.dp) // Drawer 크기 조절 (전체 화면을 덮지 않도록)
             .fillMaxHeight()
             .background(colorResource(id = R.color.black).copy(alpha = 0.7f))
-            .padding(16.dp)) {
+            .padding(16.dp)
+    ) {
         Text(text = "", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -47,7 +48,12 @@ fun DrawerContent(navController: NavController, drawerState: DrawerState) {
 }
 
 @Composable
-fun NavigationItem(title: String, navController: NavController, drawerState: DrawerState, route: String) {
+fun NavigationItem(
+    title: String,
+    navController: NavController,
+    drawerState: DrawerState,
+    route: String
+) {
     val scope = rememberCoroutineScope()
 
     Button(
@@ -55,7 +61,9 @@ fun NavigationItem(title: String, navController: NavController, drawerState: Dra
             scope.launch { drawerState.close() } // Drawer 닫기
             navController.navigate(route) // 네비게이션 이동
         },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Text(text = title)
     }
@@ -74,7 +82,9 @@ fun BackNavigationItem(title: String, navController: NavController, drawerState:
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Text(text = title)
     }

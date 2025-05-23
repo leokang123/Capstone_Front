@@ -1,10 +1,10 @@
 package com.example.myapplication.network
 
+import com.example.myapplication.data.entity.AlarmData
+import com.example.myapplication.data.entity.Beacon
+import com.example.myapplication.data.entity.Hospital
+import com.example.myapplication.data.entity.User
 import com.example.myapplication.data.fcmtoken.FcmLogout
-import com.example.myapplication.data.user.AlarmData
-import com.example.myapplication.data.user.Beacon
-import com.example.myapplication.data.user.Hospital
-import com.example.myapplication.data.user.User
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemDetails
 import com.example.myapplication.data.waste.WasteLog

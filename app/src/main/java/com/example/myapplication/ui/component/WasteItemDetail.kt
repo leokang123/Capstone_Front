@@ -35,8 +35,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.data.waste.WasteDetailResponse
-import com.example.myapplication.data.waste.WasteItemDetailResponse
 import com.example.myapplication.data.waste.WasteItemDetails
 import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.ui.screen.WasteEditDialog

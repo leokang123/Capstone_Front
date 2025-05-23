@@ -278,7 +278,7 @@ fun WasteRegisterCard(
         // 선택한 블루투스 기기 표시
         val selectedBeacon = beaconList.find { it.id == selectedDeviceId }
         Text(
-            text = "선택된 기기: ${selectedBeacon?.label?: "없음"}",
+            text = "선택된 기기: ${selectedBeacon?.label ?: "없음"}",
             style = MaterialTheme.typography.bodyLarge
         )
 

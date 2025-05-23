@@ -15,9 +15,8 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
-import com.example.myapplication.data.mock.MockBluetoothDevice
-import com.example.myapplication.data.user.Beacon
-import com.example.myapplication.data.user.RealBeacon
+import com.example.myapplication.data.entity.Beacon
+import com.example.myapplication.data.entity.RealBeacon
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.isEmulator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -95,15 +94,15 @@ class BlueToothViewModel @Inject constructor(
         // 일단 목 디바이스
 //        val scanned = _mockDevices.value.map { it.deviceAddress }
         // 실제 디바이스
-        val scanned = _devices.value.map {it.address}
+        val scanned = _devices.value.map { it.address }
         val isTrue = "00:C0:B1:C0:29:E8" in scanned
 //        Log.d("ADDRESS",isTrue.toString())
 //        Log.d("SERVER", beaconList.toString())
         val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
-        _serverBeacons.value = serverBeacon?: emptyList()
+        _serverBeacons.value = serverBeacon ?: emptyList()
 
         val notUsedServerBeacon = serverBeacon?.filter { it.used == false }
-        _notUsedServerBeacons.value = notUsedServerBeacon?: emptyList()
+        _notUsedServerBeacons.value = notUsedServerBeacon ?: emptyList()
 
     }
 
@@ -177,20 +176,20 @@ class BlueToothViewModel @Inject constructor(
 
     private fun mockBluetoothDevices() {
         val beacon1 = RealBeacon(
-            name="123",
+            name = "123",
             deviceAddress = "asdfawef",
 
-        )
+            )
         val beacon2 = RealBeacon(
-            name="asddsa",
+            name = "asddsa",
             deviceAddress = "55",
 
-        )
+            )
         val beacon3 = RealBeacon(
-            name="asd123",
+            name = "asd123",
             deviceAddress = "2346",
 
-        )
+            )
 
         val mockDevicesList = listOf(
             beacon1, beacon2, beacon3
