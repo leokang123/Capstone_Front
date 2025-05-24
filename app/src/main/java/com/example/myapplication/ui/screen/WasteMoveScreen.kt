@@ -238,7 +238,7 @@ fun WasteMoveScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "이전 상세내역: $wasteItemDetails",
+                        text = "상세내역: $wasteItemDetails",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

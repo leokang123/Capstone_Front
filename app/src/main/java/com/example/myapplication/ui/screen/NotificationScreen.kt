@@ -66,14 +66,7 @@ fun NotificationDialog(
 
 @Composable
 fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) {
-//    val notifications = listOf(
-//        AlarmData(
-//            title = "예시알림제목",
-//            message = "이건 예시 알림 메시지입니다1. 이건 예시 알림 메시지입니다2. 이건 예시 알림 메시지입니다3.",
-//            receiveAt = LocalDateTime.now(),
-//            receiveAt = LocalDateTime.now()
-//        )
-//    )
+
     val notifications: List<AlarmData> by viewModel.alarmList.collectAsState()
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 

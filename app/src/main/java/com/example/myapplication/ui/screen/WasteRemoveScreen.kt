@@ -249,7 +249,7 @@ fun WasteRemoveScreen(
 
                     val moveRequests = selectedItems
                         .filter { it.value.beaconAddress in scannedAddresses }
-                        .map { MoveRequest(it.key, it.value.details) }
+                        .map { MoveRequest(uuid = it.key, wasteDetails = it.value.details) }
 
                     val matchedUuids = moveRequests.map { it.uuid }.toSet()
 
@@ -257,6 +257,7 @@ fun WasteRemoveScreen(
                         .filterNot { it.key in matchedUuids }
                         .map { it.key } // 또는 .map { it.value.details } 등 원하는 정보
 
+                    Log.d("REMOVE_BEACONTEST", "남은거: $leftRequest 이동할거: $moveRequests")
                     if (leftRequest.isNotEmpty()) {
                         Toast.makeText(
                             context,
@@ -306,7 +307,7 @@ fun WasteRemoveScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "이전 상세내역: $wasteItemDetails",
+                        text = "상세내역: $wasteItemDetails",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

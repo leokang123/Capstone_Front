@@ -122,7 +122,7 @@ fun WasteRegisterScreen(
                     val storage = wasteStorageList.find { it.id == waste?.storageId }
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("종류: ${wasteType?.typeName}")
-                        Text("부가 정보: ${waste?.description}")
+                        Text("폐기물 정보: ${waste?.description}")
                         Text("저장장소: ${storage?.storageName}")
                         Text("기기: ${beacon?.label ?: "없음"}")
                         Text("상태: ${wasteStatus?.description ?: "없음"}")

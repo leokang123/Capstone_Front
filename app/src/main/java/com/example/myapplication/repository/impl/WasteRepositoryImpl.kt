@@ -21,7 +21,7 @@ class WasteRepositoryImpl @Inject constructor(
             response.isSuccessful
 
         } catch (e: Exception) {
-            Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            Log.e("REGISTER_ERROR", "API 요청 실패: ${e.message}", e)
             false
         }
     }
@@ -34,12 +34,13 @@ class WasteRepositoryImpl @Inject constructor(
                 val body = response.body()
                 body
             } else {
-                Log.e("GET_WASTE_LIST_ERROR", "응답 실패: ${response.code()} - ${response.message()}")
+                val errorBody = response.errorBody()?.string()
+                Log.e("GET_WASTE_LIST_ERROR", "응답 실패: ${response.code()} - $errorBody")
                 null
             }
 
         } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e)
             null
         }
     }
@@ -50,14 +51,16 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "GET_STORAGE_WASTE_LIST_ERROR",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
                 null
             }
         } catch (e: Exception) {
-            Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            Log.e("GET_STORAGE_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e)
             null
         }
     }
@@ -77,11 +80,13 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "GET_DETAIL_WASTE_ITEM",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: ${response.code()} - $errorBody")
             }
         } catch (e: Exception) {
             throw e
@@ -95,11 +100,12 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
                 Log.e(
                     "UPDATE_ITEM",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: $errorBody")
             }
         } catch (e: Exception) {
             throw e
@@ -112,11 +118,13 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 true
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "DELETE_ITEM",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: ${response.code()} - $errorBody")
             }
         } catch (e: Exception) {
             throw e
@@ -138,14 +146,16 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "GET_WASTE_LIST_ERROR",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
                 null
             }
         } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            Log.e("GET_WASTE_LIST_ERROR", "API 요청 실패: ${e.message}", e)
             null
         }
     }
@@ -156,11 +166,12 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
                 Log.e(
                     "GET_WASTE_ITEM",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: $errorBody")
             }
         } catch (e: Exception) {
             throw e
@@ -173,11 +184,12 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
                 Log.e(
                     "GET_WASTE_ITEMS_BY_ADDRESS",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: $errorBody")
             }
         } catch (e: Exception) {
             throw e
@@ -201,14 +213,16 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "GET_WASTE_LIST_BY_NAME_ERROR",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: $errorBody")
             }
         } catch (e: Exception) {
-            Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e) // ✅ 로그 추가
+            Log.e("GET_WASTE_LIST_BY_NAME_ERROR", "API 요청 실패: ${e.message}", e)
             null
         }
     }
@@ -219,11 +233,13 @@ class WasteRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()
             } else {
+                val errorBody = response.errorBody()?.string()
+
                 Log.e(
                     "MOVE_WASTE_ITEM",
-                    "API 요청 실패: ${response.code()} - ${response.message()}"
-                ) // ✅ 로그 추가
-                throw Exception("API요청 실패: ${response.code()} - ${response.message()}")
+                    "API 요청 실패: ${response.code()} - $errorBody"
+                )
+                throw Exception("API요청 실패: $errorBody")
             }
         } catch (e: Exception) {
             throw e

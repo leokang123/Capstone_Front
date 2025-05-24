@@ -229,27 +229,6 @@ fun SearchFilterDialog(
                         }
                     }
                 }
-                // 기기 입력
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = isDeviceChecked, onCheckedChange = {
-                        isDeviceChecked = it
-                        if (!isDeviceChecked) onFilterChange(searchFilter.copy(beaconId = null))
-                    })
-                    Text("기기 입력")
-                }
-                if (isDeviceChecked) {
-                    OutlinedTextField(
-                        value = searchFilter.beaconId.toString(),
-                        onValueChange = {
-                            val newValue = it.toIntOrNull()
-                            onFilterChange(searchFilter.copy(beaconId = newValue))
-                        },
-                        label = { Text("기기 ID") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = isDeviceChecked
-                    )
-                }
-
 
                 // 날짜 & 시간 선택 체크박스
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -281,21 +260,6 @@ fun SearchFilterDialog(
                             }
                         }
 
-//                        Button(
-//                            onClick = { showTimePicker = true },
-//                            modifier = Modifier.weight(1f)
-//                        ) {
-//                            Column(
-//                                modifier = Modifier.fillMaxWidth(),
-//                                horizontalAlignment = Alignment.CenterHorizontally
-//                            ) {
-//                                Text("시간")
-//                                Text(
-//                                    selectedDateTime.toLocalTime()
-//                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
-//                                )
-//                            }
-//                        }
                     }
 
                     Spacer(Modifier.height(8.dp))
@@ -334,27 +298,6 @@ fun SearchFilterDialog(
                 }
             }
 
-//            if (showTimePicker) {
-//                val context = LocalContext.current
-//                TimePickerDialog(
-//                    context,
-//                    { _, hourOfDay, minute ->
-//                        val newTime = LocalTime.of(hourOfDay, minute)
-//                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-//
-//                        onFilterChange(
-//                            searchFilter.copy(
-//                                startDate = selectedDateTime,
-//                                endDate = selectedDateTime.plusDays(10)
-//                            )
-//                        )
-//                        showTimePicker = false
-//                    },
-//                    selectedDateTime.hour,
-//                    selectedDateTime.minute,
-//                    true
-//                ).show()
-//            }
         },
         confirmButton = {
             Button(onClick = onApplyFilter) {

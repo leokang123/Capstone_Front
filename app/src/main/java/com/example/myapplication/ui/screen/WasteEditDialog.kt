@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +54,8 @@ fun WasteEditDialog(
     var selectedWasteTypeId by remember { mutableIntStateOf(selectedItem.wasteType) }
     var selectedDeviceId by remember { mutableIntStateOf(selectedItem.beacon) }
     var selectedWasteStorageId: Int? by remember { mutableStateOf(selectedItem.storage) }
+    var wasteDetails by remember { mutableStateOf(selectedItem.description) }
+
 
     // DropdownMenu 상태 (하단부에서 펼쳐지도록)
     var expandedType by remember { mutableStateOf(false) }
@@ -130,6 +133,15 @@ fun WasteEditDialog(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 폐기물 부가이력 등록
+                OutlinedTextField(
+                    value = wasteDetails,
+                    onValueChange = { wasteDetails = it },
+                    label = { Text("수정할 폐기물 정보") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -152,22 +164,6 @@ fun WasteEditDialog(
 
 
                 Spacer(modifier = Modifier.height(12.dp))
-
-//                // 세부 내용 수정
-//                Text("세부 내용 수정")
-//                LazyColumn {
-//                    itemsIndexed(wasteDetailsList) { index, detail ->
-//                        val status = wasteStatusList.find{ detail.statusId == it.id}
-//                        OutlinedTextField(
-//                            value = status?.description ?: "",
-//                            onValueChange = { newText ->
-//                                wasteDetailsList[index] = detail.copy(wasteDetails = newText)
-//                            },
-//                            label = { Text("${detail.status} 상세내용") },
-//                            modifier = Modifier.fillMaxWidth()
-//                        )
-//                    }
-//                }
             }
         },
         confirmButton = {
@@ -181,13 +177,13 @@ fun WasteEditDialog(
                             beaconId = selectedDeviceId,
                             wasteTypeId = selectedWasteTypeId,
                             wasteStatusId = selectedItem.wasteStatus,
-                            description = selectedItem.description,
+                            description = wasteDetails,
                         )
                         wasteListViewModel.updateItem(updatedItem)
                         Toast.makeText(context, "정정 성공", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         Log.e("WasteEditDialog", e.message.toString())
-                        Toast.makeText(context, "에러 발생", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "${e.message}", Toast.LENGTH_SHORT).show()
                     } finally {
                         onDismiss()
                     }

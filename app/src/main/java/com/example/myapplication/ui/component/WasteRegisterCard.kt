@@ -39,7 +39,6 @@ import com.example.myapplication.ui.screen.BluetoothDialog
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,13 +67,6 @@ fun WasteRegisterCard(
     val selectedDeviceId by beaconViewModel.selectedBeaconId.collectAsState()
 
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색창
-    var showDatePicker by remember { mutableStateOf(false) } // 날짜 선택창
-
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    val defaultDateTime = LocalDateTime.now()
-    var selectedDateTime by remember { mutableStateOf(defaultDateTime) }
-
 
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
@@ -170,93 +162,11 @@ fun WasteRegisterCard(
         OutlinedTextField(
             value = wasteDetails,
             onValueChange = { wasteDetails = it },
-            label = { Text("부가 정보") },
+            label = { Text("폐기물 정보") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(heightPadding))
-//
-//        // 날짜 & 시간 선택 버튼을 정렬
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp)
-//        ) {
-//            Button(
-//                onClick = { showDatePicker = true },
-//                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
-//            ) {
-//                Column(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text("등록날짜")
-//                    Text(selectedDateTime.toLocalDate().toString())
-//                }
-//            }
-//
-//            Button(
-//                onClick = { showTimePicker = true },
-//                modifier = Modifier.weight(1f) // ✅ 버튼 크기 균등 분배
-//            ) {
-//                Column(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text("등록시간")
-//                    Text(
-//                        selectedDateTime.toLocalTime()
-//                            .format(DateTimeFormatter.ofPattern("HH:mm"))
-//                    )
-//                }
-//
-//            }
-//        }
-//
-//
-//        // 날짜 선택 다이얼로그
-//        if (showDatePicker) {
-//            val dateState = rememberDatePickerState()
-//
-//            DatePickerDialog(
-//                onDismissRequest = { showDatePicker = false },
-//                confirmButton = {
-//                    Button(onClick = {
-//                        dateState.selectedDateMillis?.let { millis ->
-//                            val pickedDate = Instant.ofEpochMilli(millis)
-//                                .atZone(ZoneId.systemDefault()).toLocalDate()
-//
-//                            selectedDateTime =
-//                                LocalDateTime.of(pickedDate, selectedDateTime.toLocalTime())
-//
-//                        }
-//                        showDatePicker = false
-//                    }) {
-//                        Text("확인")
-//                    }
-//                }
-//            ) {
-//                DatePicker(state = dateState)
-//            }
-//        }
-//
-//        if (showTimePicker) {
-//            val context = LocalContext.current
-//            TimePickerDialog(
-//                context,
-//                { _, hourOfDay, minute ->
-//                    val newTime = LocalTime.of(hourOfDay, minute)
-//                    selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-//                    showTimePicker = false
-//                },
-//                selectedDateTime.hour,
-//                selectedDateTime.minute,
-//                true
-//            ).show()
-//        }
-
-
-//        Spacer(modifier = Modifier.height(heightPadding))
-
 
         // 블루투스 검색 버튼
         Button(
@@ -289,7 +199,7 @@ fun WasteRegisterCard(
             onClick = {
                 Log.d(
                     "WasteRegisterCard",
-                    "등록자ID: ${user?.uuid} 등록자: $registrantName, 종류: ${wasteType?.typeName}, 날짜: $selectedDateTime, 기기: $selectedDeviceId"
+                    "등록자ID: ${user?.uuid} 등록자: $registrantName, 종류: ${wasteType?.typeName}, 기기: $selectedDeviceId"
                 )
                 // 여기서 서버로 데이터 보내고 처리완료 응답받으면 onDismiss
 
@@ -321,7 +231,6 @@ fun WasteRegisterCard(
             modifier = Modifier.fillMaxWidth(),
             enabled = registrantName.isNotBlank()
                     && selectedStorage != null
-                    && selectedDateTime != null
                     && selectedDeviceId != null
 
         ) {

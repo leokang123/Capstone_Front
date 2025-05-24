@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -268,8 +270,20 @@ fun WasteListScreen(
         // 선택된 폐기물 상세 정보 표시
         selectedItem?.let {
             isSelected = true
-            WasteItemDetailComponent(it, wasteListViewModel)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
+                WasteItemDetailComponent(it, wasteListViewModel)
+            }
         }
+        // 기존
+//        selectedItem?.let {
+//            isSelected = true
+//            WasteItemDetailComponent(it, wasteListViewModel)
+//        }
     }
 }
 
