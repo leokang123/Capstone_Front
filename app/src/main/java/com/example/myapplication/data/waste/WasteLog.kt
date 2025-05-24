@@ -7,6 +7,8 @@ data class WasteLog(
     val description: String,
     val statusId: Int,
     val wasteId: String,
+    val userName: String,
+    val name: String,
     val userId: String,
     val createdAt: String,
     val updatedAt: String,

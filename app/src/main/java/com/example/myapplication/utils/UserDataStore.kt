@@ -8,8 +8,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.data.entity.AppUser
+import com.example.myapplication.data.entity.Beacon
 import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.entity.User
+import com.example.myapplication.data.waste.WasteStatus
+import com.example.myapplication.data.waste.WasteStorage
+import com.example.myapplication.data.waste.WasteType
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -45,6 +49,38 @@ class UserDataStore @Inject constructor(
         Log.d("USER", user.toString())
     }
 
+    suspend fun saveHospitalList(hospitalList: List<Hospital>) {
+        val json = gson.toJson(hospitalList)
+        dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("hospitalList")] = json
+        }
+    }
+
+    suspend fun saveStorageList(storageList: List<WasteStorage>) {
+        val json = gson.toJson(storageList)
+        dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("wasteStorageList")] = json
+        }
+    }
+    suspend fun saveWasteTypeList(wasteTypeList: List<WasteType>) {
+        val json = gson.toJson(wasteTypeList)
+        dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("wasteTypeList")] = json
+        }
+    }
+    suspend fun saveWasteStatusList(wasteStatusList: List<WasteStatus>) {
+        val json = gson.toJson(wasteStatusList)
+        dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("wasteStatusList")] = json
+        }
+    }
+    suspend fun saveBeaconList(beaconList: List<Beacon>) {
+        val json = gson.toJson(beaconList)
+        dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("beaconList")] = json
+        }
+    }
+
     suspend fun getUser(): AppUser? {
         val userJson = dataStore.data.first()[stringPreferencesKey("user")]
         return userJson?.let { gson.fromJson(it, AppUser::class.java) }
@@ -53,6 +89,73 @@ class UserDataStore @Inject constructor(
     suspend fun getAccessToken(): String? {
         return dataStore.data.first()[stringPreferencesKey("accessToken")]
     }
+    suspend fun getHospitalList(): List<Hospital> {
+        val json = dataStore.data.first()[stringPreferencesKey("hospitalList")]
+        return if (json != null) {
+            try {
+                gson.fromJson(json, Array<Hospital>::class.java).toList()
+            } catch (e: Exception) {
+                Log.e("UserDataStore", "병원 리스트 파싱 실패: ${e.message}")
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+    suspend fun getWasteTypeList(): List<WasteType> {
+        val json = dataStore.data.first()[stringPreferencesKey("wasteTypeList")]
+        return if (json != null) {
+            try {
+                gson.fromJson(json, Array<WasteType>::class.java).toList()
+            } catch (e: Exception) {
+                Log.e("UserDataStore", "WasteType 파싱 실패: ${e.message}")
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+    suspend fun getWasteStatusList(): List<WasteStatus> {
+        val json = dataStore.data.first()[stringPreferencesKey("wasteStatusList")]
+        return if (json != null) {
+            try {
+                gson.fromJson(json, Array<WasteStatus>::class.java).toList()
+            } catch (e: Exception) {
+                Log.e("UserDataStore", "WasteStatus 파싱 실패: ${e.message}")
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+    suspend fun getWasteStorageList(): List<WasteStorage> {
+        val json = dataStore.data.first()[stringPreferencesKey("wasteStorageList")]
+        return if (json != null) {
+            try {
+                gson.fromJson(json, Array<WasteStorage>::class.java).toList()
+            } catch (e: Exception) {
+                Log.e("UserDataStore", "WasteStorage 파싱 실패: ${e.message}")
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+    suspend fun getBeaconList(): List<Beacon> {
+        val json = dataStore.data.first()[stringPreferencesKey("beaconList")]
+        return if (json != null) {
+            try {
+                gson.fromJson(json, Array<Beacon>::class.java).toList()
+            } catch (e: Exception) {
+                Log.e("UserDataStore", "BeaconList 파싱 실패: ${e.message}")
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+
 
 
     suspend fun clearUserData() {

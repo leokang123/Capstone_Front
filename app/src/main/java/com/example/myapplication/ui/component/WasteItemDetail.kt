@@ -40,6 +40,7 @@ import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.ui.screen.WasteEditDialog
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -47,6 +48,8 @@ fun WasteItemDetailComponent(
     selectedItem: WasteItemDetails,
     viewModel: WasteListViewModel
 ) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+
     val scope = rememberCoroutineScope()
     var showModDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -79,9 +82,9 @@ fun WasteItemDetailComponent(
             val selectedItemType = wasteTypeList.find { it.id == selectedItem.wasteType }
             val selectedBeacon = beaconList.find { it.id == selectedItem.beacon }
             val collectingLog = selectedItem.logs.find { it.statusId == collectingStatusId }
-            InfoRow("👤 등록자", collectingLog?.userId.toString(), Color.Blue)
+            InfoRow("👤 등록자", collectingLog?.name.toString(), Color.Blue)
             InfoRow("📦 저장위치", selectedItemStorage?.storageName.toString(), Color(0xFFD2B48C))
-            InfoRow("📅 발생일", collectingLog?.createdAt.toString(), Color.Red)
+            InfoRow("📅 발생일", collectingLog?.createdAt?.format(formatter) ?: "날짜 정보 없음", Color.Red)
             InfoRow("⚙ 사용 기기", selectedBeacon?.label ?: "없음", Color.Green)
             InfoRow("🧪 폐기물 종류", selectedItemType?.typeName ?: "알 수 없음", Color.Magenta)
 
@@ -205,6 +208,8 @@ fun InfoRow(label: String, value: String, color: Color) {
 
 @Composable
 fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: Boolean) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +223,7 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: B
         Column(modifier = Modifier.padding(12.dp)) {
             // 등록한 사용자 정보 추가
             Text(
-                text = "👤 처리자: ${detail.userId}",
+                text = "👤 처리자: ${detail.userName}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color.Blue
             )
@@ -244,7 +249,7 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: B
 
             // 기록 시간
             Text(
-                text = "📅 기록 시간: ${detail.createdAt}",
+                text = "📅 기록 시간: ${detail.createdAt.format(formatter)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )

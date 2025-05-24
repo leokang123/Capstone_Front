@@ -71,7 +71,6 @@ fun WasteMoveScreen(
     val serverBeacons by blueToothViewModel.serverBeacons.collectAsState()
     val wasteTypeList = wasteListViewModel.wasteTypeList
     val wasteStatusList = wasteListViewModel.wasteStatusList
-    val wasteStorageList = wasteListViewModel.wasteStorageList
     val beaconList = wasteListViewModel.beaconList
 
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
@@ -238,7 +237,7 @@ fun WasteMoveScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "이전 상세내역: $wasteItemDetails",
+                        text = "상세내역: $wasteItemDetails",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

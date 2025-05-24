@@ -20,7 +20,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -36,12 +35,9 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.viewmodel.WasteListViewModel
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Calendar
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,11 +53,6 @@ fun SearchFilterDialog(
     var expandedStorageType by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    val calendar = Calendar.getInstance()
-    val defaultDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
-    val defaultTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
 
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
@@ -229,27 +220,6 @@ fun SearchFilterDialog(
                         }
                     }
                 }
-                // 기기 입력
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = isDeviceChecked, onCheckedChange = {
-                        isDeviceChecked = it
-                        if (!isDeviceChecked) onFilterChange(searchFilter.copy(beaconId = null))
-                    })
-                    Text("기기 입력")
-                }
-                if (isDeviceChecked) {
-                    OutlinedTextField(
-                        value = searchFilter.beaconId.toString(),
-                        onValueChange = {
-                            val newValue = it.toIntOrNull()
-                            onFilterChange(searchFilter.copy(beaconId = newValue))
-                        },
-                        label = { Text("기기 ID") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = isDeviceChecked
-                    )
-                }
-
 
                 // 날짜 & 시간 선택 체크박스
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -281,21 +251,6 @@ fun SearchFilterDialog(
                             }
                         }
 
-//                        Button(
-//                            onClick = { showTimePicker = true },
-//                            modifier = Modifier.weight(1f)
-//                        ) {
-//                            Column(
-//                                modifier = Modifier.fillMaxWidth(),
-//                                horizontalAlignment = Alignment.CenterHorizontally
-//                            ) {
-//                                Text("시간")
-//                                Text(
-//                                    selectedDateTime.toLocalTime()
-//                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
-//                                )
-//                            }
-//                        }
                     }
 
                     Spacer(Modifier.height(8.dp))
@@ -334,27 +289,6 @@ fun SearchFilterDialog(
                 }
             }
 
-//            if (showTimePicker) {
-//                val context = LocalContext.current
-//                TimePickerDialog(
-//                    context,
-//                    { _, hourOfDay, minute ->
-//                        val newTime = LocalTime.of(hourOfDay, minute)
-//                        selectedDateTime = LocalDateTime.of(selectedDateTime.toLocalDate(), newTime)
-//
-//                        onFilterChange(
-//                            searchFilter.copy(
-//                                startDate = selectedDateTime,
-//                                endDate = selectedDateTime.plusDays(10)
-//                            )
-//                        )
-//                        showTimePicker = false
-//                    },
-//                    selectedDateTime.hour,
-//                    selectedDateTime.minute,
-//                    true
-//                ).show()
-//            }
         },
         confirmButton = {
             Button(onClick = onApplyFilter) {
