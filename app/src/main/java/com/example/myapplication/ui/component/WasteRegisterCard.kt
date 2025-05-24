@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.ui.screen.BluetoothDialog
@@ -40,6 +43,25 @@ import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
 
+@Composable
+fun WasteRegisterCardDialog(
+    wasteListViewModel: WasteListViewModel,
+    beaconViewModel: BlueToothViewModel,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+//        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            WasteRegisterCard(wasteListViewModel, beaconViewModel) { onDismiss() }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,8 +208,11 @@ fun WasteRegisterCard(
 
         // 선택한 블루투스 기기 표시
         val selectedBeacon = beaconList.find { it.id == selectedDeviceId }
+        val beaconName =
+            if (selectedBeacon?.deviceAddress?.isNotEmpty() == true) "${selectedBeacon.label ?: "None"}(${selectedBeacon.deviceAddress})"
+            else "없음"
         Text(
-            text = "선택된 기기: ${selectedBeacon?.label ?: "없음"}",
+            text = "선택된 기기\n$beaconName",
             style = MaterialTheme.typography.bodyLarge
         )
 
@@ -221,7 +246,7 @@ fun WasteRegisterCard(
                         Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                     } finally {
                         beaconViewModel.resetSelectedBeacon() // 뷰모델 데이터 초기화
-                        wasteListViewModel.fetchWasteList(mode = 1)
+                        wasteListViewModel.searchWasteItems(SearchRequest(isValid = true))
                         onDismiss()
                     }
                 }

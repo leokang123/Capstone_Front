@@ -66,19 +66,17 @@ fun RegisterScreen(
     val phoneNumber = registerViewModel.phoneNumber
     val name = registerViewModel.name
     val selectedHospital = registerViewModel.selectedHospital
-    val selectedRoles = registerViewModel.selectedRoles // SnapshotStateList<Roles>
-    val selectedPrimaryRole = registerViewModel.selectedPrimaryRole // MutableState<Roles?>
 
     val passwordVisible = remember { mutableStateOf(false) }
     val confirmPasswordVisible = remember { mutableStateOf(false) }
     val showHospitalDropdown = remember { mutableStateOf(false) }
-    var showRoleDropdown = remember { mutableStateOf(false) }
-
 
     val isPasswordValid = registerViewModel.isPasswordValid()
     val isPasswordMatch = registerViewModel.isPasswordMatch()
     val isEmailValid = registerViewModel.isEmailValid()
+    val isPhoneValid = registerViewModel.isPhoneNumberValid()
     val isFormValid = registerViewModel.isFormValid()
+
 // 병원 검색용 상태
     var searchHospitalQuery by remember { mutableStateOf("") }
 
@@ -183,73 +181,14 @@ fun RegisterScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.fillMaxWidth()
         )
-
-        // 역할 Dropdown
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = if (selectedRoles.isEmpty()) "선택 안됨" else "선택한 역할: ${selectedRoles.size}개",
-                onValueChange = {},
-                label = { Text("Select Roles *") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showRoleDropdown.value = true }) {
-                        Icon(
-                            imageVector = if (showRoleDropdown.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = null
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-
-            DropdownMenu(
-                expanded = showRoleDropdown.value,
-                onDismissRequest = { showRoleDropdown.value = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopStart) // 기준 위치 맞추기
-            ) {
-                Roles.entries.forEach { role ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = selectedRoles.contains(role),
-                                    onCheckedChange = {
-                                        if (it) selectedRoles.add(role)
-                                        else {
-                                            selectedRoles.remove(role)
-                                            if (selectedPrimaryRole.value == role)
-                                                selectedPrimaryRole.value = null
-                                        }
-                                    }
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(role.name, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = selectedPrimaryRole.value == role,
-                                    onClick = {
-                                        if (selectedRoles.contains(role)) {
-                                            selectedPrimaryRole.value = role
-                                        }
-                                    },
-                                    enabled = selectedRoles.contains(role)
-                                )
-                            }
-                        },
-                        onClick = {} // 무시
-                    )
-                }
-            }
+        if (phoneNumber.value.isNotEmpty() && !isPhoneValid) {
+            Text("유효한 휴대폰번호를 입력하세요. (XXX-XXXX-XXXX)", color = MaterialTheme.colorScheme.error)
         }
-
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // 병원 Dropdown
 
-// 병원 Dropdown
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = selectedHospital.value?.hospitalName ?: "",
@@ -316,10 +255,10 @@ fun RegisterScreen(
             enabled = isFormValid
                     && isPasswordValid
                     && isPasswordMatch
+                    && isPhoneValid
+                    && isEmailValid
                     && name.value.isNotBlank()
                     && selectedHospital.value != null
-                    && selectedRoles.isNotEmpty()
-                    && selectedPrimaryRole.value != null
         ) {
             Text("Sign Up")
         }

@@ -8,12 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -40,6 +39,7 @@ import com.example.myapplication.data.waste.WasteLog
 import com.example.myapplication.ui.screen.WasteEditDialog
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 
@@ -67,7 +67,12 @@ fun WasteItemDetailComponent(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color.Gray)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
             // 폐기물 기본 정보
             Text(
                 text = "🗑 ${selectedItem.id}",
@@ -82,13 +87,17 @@ fun WasteItemDetailComponent(
             val selectedItemType = wasteTypeList.find { it.id == selectedItem.wasteType }
             val selectedBeacon = beaconList.find { it.id == selectedItem.beacon }
             val collectingLog = selectedItem.logs.find { it.statusId == collectingStatusId }
+            val zonedDateTime = collectingLog?.createdAt.let { ZonedDateTime.parse(it) }
+            val customDate = zonedDateTime?.format(formatter) ?: "날짜 정보 없음"
+
+
             InfoRow("👤 등록자", collectingLog?.name.toString(), Color.Blue)
             InfoRow("📦 저장위치", selectedItemStorage?.storageName.toString(), Color(0xFFD2B48C))
-            InfoRow("📅 발생일", collectingLog?.createdAt?.format(formatter) ?: "날짜 정보 없음", Color.Red)
+            InfoRow("📅 발생일", customDate, Color.Red)
             InfoRow("⚙ 사용 기기", selectedBeacon?.label ?: "없음", Color.Green)
             InfoRow("🧪 폐기물 종류", selectedItemType?.typeName ?: "알 수 없음", Color.Magenta)
 
-
+            Log.d("DATE", customDate)
             Spacer(modifier = Modifier.height(16.dp))
 
             // 상세 내역 목록 표시
@@ -100,18 +109,17 @@ fun WasteItemDetailComponent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.8f),
-            ) {
-                val detailsList = selectedItem.logs.sortedByDescending { it.createdAt }
+            val detailsList = selectedItem.logs.sortedByDescending { it.createdAt }
 
-                itemsIndexed(detailsList) { index, detail ->
-                    WasteDetailCard(detail, viewModel, detail.statusId == selectedItem.wasteStatus)
-                }
+            detailsList.forEachIndexed { index, detail ->
+                WasteDetailCard(
+                    detail = detail,
+                    viewModel = viewModel,
+                    isLatest = detail.statusId == selectedItem.wasteStatus
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
+
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -209,7 +217,8 @@ fun InfoRow(label: String, value: String, color: Color) {
 @Composable
 fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: Boolean) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
+    val zonedDateTime = detail.createdAt.let { ZonedDateTime.parse(it) }
+    val customDate = zonedDateTime?.format(formatter) ?: "날짜 정보 없음"
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,7 +229,10 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: B
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(1.dp, if (isLatest) Color.Red else Color.Gray) // 최신 상태 강조
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+        ) {
             // 등록한 사용자 정보 추가
             Text(
                 text = "👤 처리자: ${detail.userName}",
@@ -249,7 +261,7 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel, isLatest: B
 
             // 기록 시간
             Text(
-                text = "📅 기록 시간: ${detail.createdAt.format(formatter)}",
+                text = "📅 기록 시간: $customDate",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )

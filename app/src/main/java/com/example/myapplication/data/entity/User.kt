@@ -12,7 +12,7 @@ data class User(
     val phoneNumber: String = "",
     val hospitalId: Int? = null,
     val roles: List<Roles>? = null,
-    val primaryRoles: Roles? = null,
+    val primaryRole: Roles? = null,
     val token: String? = null,
     val fcmToken: String? = null
 )

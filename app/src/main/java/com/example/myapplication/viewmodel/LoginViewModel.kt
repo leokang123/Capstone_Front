@@ -11,6 +11,8 @@ import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.entity.User
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
+import com.example.myapplication.repository.impl.NotificationRepository
+import com.example.myapplication.utils.FirebaseTokenManager
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +25,8 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
     private val masterDataRepository: MasterDataRepository,
-    private val userDataStore: UserDataStore
+    private val userDataStore: UserDataStore,
+    private val notificationRepository: NotificationRepository
 ) : ViewModel() {
 
     var username by mutableStateOf("")
@@ -79,6 +82,16 @@ class LoginViewModel @Inject constructor(
                 // 초기 데이터 로딩
                 loginUser.hospitalId?.let { initData(it) }
 
+                // fcm토큰 전송
+                loginUser.uuid.let { userId ->
+                    FirebaseTokenManager.getToken()?.let { fcmToken ->
+                        viewModelScope.launch {
+                            notificationRepository.sendFcmToken(userId, fcmToken)
+                            //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
+                            Log.d("FCM", "Sending token to server: $fcmToken")
+                        }
+                    }
+                }
                 // 성공 알림
                 _loginSuccess.emit(true)
 
@@ -89,5 +102,4 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
-
 }

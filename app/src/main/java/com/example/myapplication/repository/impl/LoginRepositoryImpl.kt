@@ -26,7 +26,9 @@ class LoginRepositoryImpl @Inject constructor(
             val user = response.body()
             user
         } else {
-            Log.e("LOGIN_ERROR", "응답 실패: ${response.code()} - ${response.message()}")
+            val errorBody = response.errorBody()?.string()
+
+            Log.e("LOGIN_ERROR", "응답 실패: ${response.code()} - $errorBody")
             null
         }
 
@@ -60,7 +62,8 @@ class LoginRepositoryImpl @Inject constructor(
             Log.d("LOGOUT_DEBUG", response.toString())
             true
         } else {
-            Log.e("LOGOUT_ERROR", "응답 실패: ${response.code()} - ${response.message()}")
+            val errorBody = response.errorBody()?.string()
+            Log.e("LOGOUT_ERROR", "응답 실패: ${response.code()} - $errorBody")
             false
         }
 

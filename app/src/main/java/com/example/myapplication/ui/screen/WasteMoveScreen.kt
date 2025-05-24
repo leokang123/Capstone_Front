@@ -161,7 +161,7 @@ fun WasteMoveScreen(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
-                            val wasteType = wasteTypeList.find { it.id == wasteItem.wasteStatusId }
+                            val wasteType = wasteTypeList.find { it.id == wasteItem.wasteTypeId }
                             val beacon = beaconList.find { it.id == wasteItem.beaconId }
                             val status = wasteStatusList.find { it.id == wasteItem.wasteStatusId }
                             Text(

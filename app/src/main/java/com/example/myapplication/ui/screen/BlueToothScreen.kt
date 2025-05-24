@@ -127,37 +127,8 @@ fun BluetoothScreen(
 
     }
 }
-// 실제 폰
-//@Composable
-//fun DeviceItem(device: BluetoothDevice, onClick: (BluetoothDevice) -> Unit) {
-//    val context = LocalContext.current
-//
-//    // BLUETOOTH_CONNECT 권한 체크
-//    val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-//            device.name ?: "Unknown Device"
-//        } else {
-//            "Permission Required"
-//        }
-//    } else {
-//        device.name ?: "Unknown Device"
-//    }
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clickable { onClick(device) }
-//            .padding(16.dp)
-//    ) {
-//        Column {
-//            Text(text = deviceName, style = MaterialTheme.typography.bodyLarge)
-//            Text(text = device.address, style = MaterialTheme.typography.bodySmall)
-//        }
-//    }
-//}
 
 
-// 에뮬레이터 용
 @Composable
 fun DeviceItem(device: Beacon, onClick: (Beacon) -> Unit) {
     val context = LocalContext.current
@@ -169,12 +140,12 @@ fun DeviceItem(device: Beacon, onClick: (Beacon) -> Unit) {
                 Manifest.permission.BLUETOOTH_CONNECT
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            device.label
+            device.label?: "이름 없음"
         } else {
             "Permission Required"
         }
     } else {
-        device.label
+        device.label?: "이름 없음"
     }
 
     Row(

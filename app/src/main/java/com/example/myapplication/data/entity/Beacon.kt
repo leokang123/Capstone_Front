@@ -6,7 +6,7 @@ data class Beacon(
     val id: Int,
     val deviceAddress: String,
     val location: String,
-    val label: String,
+    val label: String? = null,
     val hospitalId: Int,
     val used: Boolean = false
 )

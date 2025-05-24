@@ -59,7 +59,7 @@ class RegisterViewModel @Inject constructor(
             name = name.value.trim(),
             hospitalId = selectedHospital.value?.id ?: 0,
             roles = selectedRoles.toList(),
-            primaryRoles = selectedPrimaryRole.value
+            primaryRole = selectedPrimaryRole.value
         )
         viewModelScope.launch {
             try {
@@ -77,12 +77,17 @@ class RegisterViewModel @Inject constructor(
         return pw.length >= 8 && pw.any { it.isDigit() } && pw.any { !it.isLetterOrDigit() }
     }
 
+
     fun isPasswordMatch(): Boolean = password.value == confirmPassword.value
 
     fun isEmailValid(): Boolean = email.value.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
 
+    fun isPhoneNumberValid(): Boolean {
+        return Regex("""^\d{3}-\d{4}-\d{4}$""").matches(phoneNumber.value)
+    }
+
     fun isFormValid(): Boolean =
-        username.value.isNotBlank() && password.value.isNotBlank() && selectedHospital.value != null
+        username.value.isNotBlank() && password.value.isNotBlank() && selectedHospital.value != null && phoneNumber.value.isNotEmpty()
 
     private fun mockList(): List<Hospital> = listOf(
         Hospital(id = 1, hospitalName = "서울병원"),

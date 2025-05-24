@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,13 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
+import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
-import com.example.myapplication.ui.component.WasteRegisterCard
+import com.example.myapplication.ui.component.WasteRegisterCardDialog
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
@@ -41,25 +38,7 @@ import com.example.myapplication.viewmodel.WasteListViewModel
  * 팝업창 버튼 누를시 등록 화면뜨고 내용기입후 등록 버튼 누를시 로그가 뜨는것 까지 구현
  * 로그 내용 그대로 정제해서 서버로 보내고 fetchData를 통해 폐기물 등록창을 다시 로드하여 폐기물관리 상태를 볼수있게하면될듯
  */
-@Composable
-fun WasteRegisterCardDialog(
-    wasteListViewModel: WasteListViewModel,
-    beaconViewModel: BlueToothViewModel,
-    onDismiss: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-        ) {
-            WasteRegisterCard(wasteListViewModel, beaconViewModel) { onDismiss() }
-        }
-    }
-}
+
 
 @Composable
 fun WasteRegisterScreen(
@@ -83,8 +62,8 @@ fun WasteRegisterScreen(
     // UI 로딩 시 폐기물 리스트 불러오기
     LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
-
-        wasteListViewModel.fetchWasteList(mode = 1)
+        wasteListViewModel.searchWasteItems(SearchRequest(isValid = true))
+//        wasteListViewModel.fetchWasteList(mode = 1)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -124,7 +103,7 @@ fun WasteRegisterScreen(
                         Text("종류: ${wasteType?.typeName}")
                         Text("폐기물 정보: ${waste?.description}")
                         Text("저장장소: ${storage?.storageName}")
-                        Text("기기: ${beacon?.label ?: "없음"}")
+                        Text("기기: ${beacon?.label ?: "이름 없음"}")
                         Text("상태: ${wasteStatus?.description ?: "없음"}")
 
                     }
@@ -135,6 +114,5 @@ fun WasteRegisterScreen(
     }
     if (showDialog) {
         WasteRegisterCardDialog(wasteListViewModel, beaconViewModel) { showDialog = false }
-        wasteListViewModel.fetchWasteList(mode = 1)
     }
 }

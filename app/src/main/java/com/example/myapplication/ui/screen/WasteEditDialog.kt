@@ -54,7 +54,7 @@ fun WasteEditDialog(
     var selectedWasteTypeId by remember { mutableIntStateOf(selectedItem.wasteType) }
     var selectedDeviceId by remember { mutableIntStateOf(selectedItem.beacon) }
     var selectedWasteStorageId: Int? by remember { mutableStateOf(selectedItem.storage) }
-    var wasteDetails by remember { mutableStateOf(selectedItem.description) }
+    var wasteDetails by remember { mutableStateOf("") }
 
 
     // DropdownMenu 상태 (하단부에서 펼쳐지도록)

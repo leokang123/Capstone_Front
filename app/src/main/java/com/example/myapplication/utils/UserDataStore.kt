@@ -37,7 +37,7 @@ class UserDataStore @Inject constructor(
             phoneNumber = user.phoneNumber,
             hospital = hospital,
             roles = user.roles,
-            primaryRoles = user.primaryRoles,
+            primaryRoles = user.primaryRole,
             token = user.token,
             fcmToken = user.fcmToken
 
