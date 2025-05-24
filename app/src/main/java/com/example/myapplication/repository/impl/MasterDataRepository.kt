@@ -8,6 +8,7 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
 import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.utils.UserDataStore
+import com.google.gson.Gson
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
@@ -45,6 +46,7 @@ class MasterDataRepository @Inject constructor(
             userDataStore.getBeaconList()
         }
     }
+
 
     suspend fun getStorageList(hospitalId: Int): List<WasteStorage> {
         return try {
@@ -100,7 +102,5 @@ class MasterDataRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e("INIT_DATA_ERROR", e.message.toString())
         }
-
     }
-
 }
