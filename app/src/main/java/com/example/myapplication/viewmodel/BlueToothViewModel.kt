@@ -85,19 +85,11 @@ class BlueToothViewModel @Inject constructor(
             Log.d(TAG, "Starting Bluetooth scan...")
             scanRealDevices()
         }
-//        Log.d("BEACON", _mockDevices.value.toString())
-//        matchBeacons()
-//        Log.d("SERVERBEACON", _serverBeacons.value.toString())
+//
     }
 
     private fun matchBeacons() {
-        // 일단 목 디바이스
-//        val scanned = _mockDevices.value.map { it.deviceAddress }
-        // 실제 디바이스
         val scanned = _devices.value.map { it.address }
-        val isTrue = "00:C0:B1:C0:29:E8" in scanned
-//        Log.d("ADDRESS",isTrue.toString())
-//        Log.d("SERVER", beaconList.toString())
         val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
         _serverBeacons.value = serverBeacon ?: emptyList()
 
@@ -113,25 +105,17 @@ class BlueToothViewModel @Inject constructor(
             return
         }
 
-//        Log.d(TAG, "hasScanPermission(): ${hasScanPermission()}")
 
         if (!hasScanPermission()) return
 
         if (scanCallback == null) {
             scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
-//                    Log.d("HERE3", result.toString())
                     result?.device?.let { device ->
                         val currentDevices = _devices.value.toMutableList()
                         if (!currentDevices.contains(device)) {
-                            val scanRecord = result.scanRecord
-                            val serviceUuids = scanRecord?.serviceUuids
                             currentDevices.add(device)
                             _devices.value = currentDevices
-//                            Log.d(
-//                                TAG,
-//                                "Device Found: ${device.name ?: "Unknown"} - ${device.address} - ${serviceUuids}"
-//                            )
                             matchBeacons()
 
                         }

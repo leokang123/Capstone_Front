@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     //    private const val BASE_URL = "http://10.0.2.2:8080/"
-    private const val BASE_URL = "http://medicap.kro.kr:1313/"
+    private const val BASE_URL = "https://medicap.kro.kr/api/"
     private const val TIME_OUT = 5L // 5초
 
     @Provides
