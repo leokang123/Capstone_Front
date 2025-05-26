@@ -140,12 +140,12 @@ fun DeviceItem(device: Beacon, onClick: (Beacon) -> Unit) {
                 Manifest.permission.BLUETOOTH_CONNECT
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            device.label?: "이름 없음"
+            device.label ?: "이름 없음"
         } else {
             "Permission Required"
         }
     } else {
-        device.label?: "이름 없음"
+        device.label ?: "이름 없음"
     }
 
     Row(

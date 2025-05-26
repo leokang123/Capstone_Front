@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.MoveRequest
+import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
@@ -72,6 +74,7 @@ fun WasteMoveScreen(
     val wasteTypeList = wasteListViewModel.wasteTypeList
     val wasteStatusList = wasteListViewModel.wasteStatusList
     val beaconList = wasteListViewModel.beaconList
+    val storageList = wasteListViewModel.wasteStorageList
 
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
     val selectedItems =
@@ -79,13 +82,19 @@ fun WasteMoveScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
+    var currentItemStorageId by remember { mutableStateOf<Int?>(null) }
     var currentItemId by remember { mutableStateOf<String?>(null) }
     var currentUserId by remember { mutableStateOf("") }
     var currentDetails by remember { mutableStateOf("") }
     var currentStatusId by remember { mutableStateOf<Int?>(null) }
+    val currentStatus by remember(currentStatusId, wasteStatusList) {
+        derivedStateOf {
+            wasteStatusList.find { it.id == currentStatusId }
+        }
+    }
     var wasteItemDetails by remember { mutableStateOf("") }
     var authChecked by remember { mutableStateOf(false) }
-
+    var isStorageMatch by remember { mutableStateOf<Boolean?>(null) }
 
     CheckAuth(navController, role = Roles.USER) {
         authChecked = true
@@ -96,6 +105,17 @@ fun WasteMoveScreen(
         if (!authChecked) return@LaunchedEffect
         currentUserId = user?.uuid.toString()
         reloadWasteList(blueToothViewModel, wasteListViewModel)
+    }
+
+    LaunchedEffect(showDialog) {
+        val storage = storageList.find { it.id == currentItemStorageId }
+        val storageBeacon = beaconList.find { it.id == storage?.beacon }?.deviceAddress
+        val statusLevel = currentStatus?.statusLevel
+        Log.d("STORAGE_MATCH", storage.toString())
+
+        if (showDialog && storageBeacon?.isNotBlank() == true && statusLevel == 2) {
+            isStorageMatch = blueToothViewModel.checkStorage(storageBeacon, 2L)
+        }
     }
 
 
@@ -148,6 +168,7 @@ fun WasteMoveScreen(
                             checked = selectedItems.containsKey(wasteItem.id),
                             onCheckedChange = { isChecked ->
                                 if (isChecked) {
+                                    currentItemStorageId = wasteItem.storageId
                                     currentItemId = wasteItem.id
                                     currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
                                     wasteItemDetails = wasteItem.description
@@ -226,10 +247,13 @@ fun WasteMoveScreen(
     // 팝업창 (다이얼로그)
     if (showDialog && currentItemId != null) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = {
+                isStorageMatch = null
+                showDialog = false
+            },
             title = { Text("폐기물 이동 정보 입력") },
             text = {
-                val status = wasteStatusList.find { it.id == currentStatusId }
+                val status = currentStatus
                 Column {
                     Text(
                         text = "현재 상태: ${status?.description}",
@@ -256,27 +280,43 @@ fun WasteMoveScreen(
                         onValueChange = { currentDetails = it },
                         label = { Text("상세 내용") }
                     )
+                    if (status?.statusLevel == 2) {
+                        Text(
+                            text = when (isStorageMatch) {
+                                true -> "창고 일치 여부: 일치함"
+                                false -> "창고 일치 여부: 불일치"
+                                null -> "창고 일치 여부 확인 중..."
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    if (currentItemId != null && currentUserId.isNotEmpty() == true) {
-                        selectedItems[currentItemId!!] = currentDetails
-                        currentStatusId = null
-                        currentDetails = ""
-                        wasteItemDetails = ""
-                        showDialog = false
-                    }
-                }) {
+                Button(
+                    onClick = {
+                        if (currentItemId != null && currentUserId.isNotEmpty() == true) {
+                            selectedItems[currentItemId!!] = currentDetails
+                            currentStatusId = null
+                            currentDetails = ""
+                            wasteItemDetails = ""
+                            isStorageMatch = null
+                            showDialog = false
+                        }
+                    },
+                    enabled = if (currentStatus?.statusLevel == 2) isStorageMatch == true else true,
+                ) {
                     Text("확인")
                 }
             },
             dismissButton = {
                 Button(onClick = {
-                    showDialog = false
                     currentStatusId = null
                     currentDetails = ""
                     wasteItemDetails = ""
+                    isStorageMatch = null
+                    showDialog = false
                 }) {
                     Text("취소")
                 }

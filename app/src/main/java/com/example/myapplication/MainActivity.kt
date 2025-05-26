@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.utils.FirebaseTokenManager
 import com.google.firebase.messaging.FirebaseMessaging
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
 
     // 앱 처음 생성될때 실행
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO) // 라이트 강제
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         enableEdgeToEdge()
