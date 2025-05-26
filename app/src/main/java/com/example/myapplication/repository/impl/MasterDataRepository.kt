@@ -86,21 +86,55 @@ class MasterDataRepository @Inject constructor(
 
 
     suspend fun initAll(hospitalId: Int) = supervisorScope {
-        try {
-            val hospitalDeferred = async { getHospitalList() }
-            val storageDeferred = async { getStorageList(hospitalId) }
-            val beaconDeferred = async { getBeaconList() }
-            val typeDeferred = async { getWasteTypeList() }
-            val statusDeferred = async { getWasteStatusList() }
-
-            hospitalList = hospitalDeferred.await()
-            storageList = storageDeferred.await()
-            beaconList = beaconDeferred.await()
-            wasteTypeList = typeDeferred.await()
-            wasteStatusList = statusDeferred.await()
-
-        } catch (e: Exception) {
-            Log.e("INIT_DATA_ERROR", e.message.toString())
+        val hospitalDeferred = async {
+            try {
+                getHospitalList()
+            } catch (e: Exception) {
+                Log.e("INIT_DATA_ERROR", "병원 목록 실패", e)
+                emptyList()
+            }
         }
+
+        val storageDeferred = async {
+            try {
+                getStorageList(hospitalId)
+            } catch (e: Exception) {
+                Log.e("INIT_DATA_ERROR", "보관소 목록 실패", e)
+                emptyList()
+            }
+        }
+
+        val beaconDeferred = async {
+            try {
+                getBeaconList()
+            } catch (e: Exception) {
+                Log.e("INIT_DATA_ERROR", "비콘 목록 실패", e)
+                emptyList()
+            }
+        }
+
+        val typeDeferred = async {
+            try {
+                getWasteTypeList()
+            } catch (e: Exception) {
+                Log.e("INIT_DATA_ERROR", "폐기물 유형 실패", e)
+                emptyList()
+            }
+        }
+
+        val statusDeferred = async {
+            try {
+                getWasteStatusList()
+            } catch (e: Exception) {
+                Log.e("INIT_DATA_ERROR", "폐기물 상태 실패", e)
+                emptyList()
+            }
+        }
+
+        hospitalList = hospitalDeferred.await()
+        storageList = storageDeferred.await()
+        beaconList = beaconDeferred.await()
+        wasteTypeList = typeDeferred.await()
+        wasteStatusList = statusDeferred.await()
     }
 }

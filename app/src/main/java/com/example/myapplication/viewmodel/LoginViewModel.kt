@@ -15,6 +15,7 @@ import com.example.myapplication.repository.impl.NotificationRepository
 import com.example.myapplication.utils.FirebaseTokenManager
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -57,6 +58,7 @@ class LoginViewModel @Inject constructor(
         return userDataStore.getUser()
     }
 
+
     fun login() {
         viewModelScope.launch {
             try {
@@ -73,27 +75,30 @@ class LoginViewModel @Inject constructor(
                     return@launch
                 }
 
-                // 병원 정보 찾기
                 val hospital = hospitalList.value?.find { it.id == loginUser.hospitalId }
-
-                // 사용자 저장
                 userDataStore.saveUser(loginUser, hospital)
 
-                // 초기 데이터 로딩
-                loginUser.hospitalId?.let { initData(it) }
+                // initData() 먼저 끝까지 기다림
+                loginUser.hospitalId?.let { id ->
+                    try {
+                        initData(id)
+                    } catch (e: Exception) {
+                        Log.e("LOGIN", "초기 데이터 로딩 실패", e)
+                    }
+                }
 
-                // fcm토큰 전송
+                // fcm 토큰 전송도 기다림 (launch 말고 그냥 suspend 호출)
                 loginUser.uuid.let { userId ->
                     FirebaseTokenManager.getToken()?.let { fcmToken ->
                         viewModelScope.launch {
                             notificationRepository.sendFcmToken(userId, fcmToken)
                             //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
                             Log.d("FCM", "Sending token to server: $fcmToken")
+                            _loginSuccess.emit(true)
+
                         }
                     }
                 }
-                // 성공 알림
-                _loginSuccess.emit(true)
 
             } catch (e: Exception) {
                 Log.e("LOGIN", "Login error", e)
@@ -102,4 +107,5 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
 }

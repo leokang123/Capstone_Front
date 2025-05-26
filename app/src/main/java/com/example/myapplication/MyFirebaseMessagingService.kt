@@ -46,6 +46,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setAutoCancel(true)
 
         // 알림 표시
-        notificationManager.notify(0, builder.build())
+        notificationManager.notify(1, builder.build())
     }
 }
