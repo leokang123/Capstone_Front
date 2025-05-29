@@ -32,7 +32,7 @@ import com.example.myapplication.viewmodel.SettingsViewModel
  * 일단 화면이 심심해서 넣어놨는데 젤 나중에 구현해도 될거같음 넣을 항목이없어서 로그아웃기능넣어둠
  */
 @Composable
-fun SettingsDialog(navController: NavController) {
+fun SettingsDialog(navController: NavController, from: String?) {
     Dialog(onDismissRequest = { navController.popBackStack() }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -40,13 +40,17 @@ fun SettingsDialog(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            SettingsScreen(navController)
+            SettingsScreen(navController, from = from)
         }
     }
 }
 
 @Composable
-fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    navController: NavController,
+    from: String?,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
 
@@ -70,16 +74,17 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel = 
                     onCheckedChange = { viewModel.setDarkTheme(it) }
                 )
             }
-
-            TextButton(
-                onClick = { navController.navigate("profile") },
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    "사용자 정보 수정",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            if (from == "home") {
+                TextButton(
+                    onClick = { navController.navigate("profile") },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        "사용자 정보 수정",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
         Button(

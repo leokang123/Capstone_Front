@@ -31,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.ui.screen.AuthCheckScreen
 import com.example.myapplication.ui.screen.HomeScreen
 import com.example.myapplication.ui.screen.LoginScreen
@@ -113,6 +114,9 @@ fun AppNavigation() {
 
                         },
                         actions = { // 우측 상단 버튼 추가
+                            val currentRoute =
+                                navController.currentBackStackEntry?.destination?.route ?: "unknown"
+
                             // 알림 버튼 추가
                             IconButton(onClick = {
                                 navController.navigate("notification")
@@ -123,7 +127,10 @@ fun AppNavigation() {
                                 )
                             }
 
-                            IconButton(onClick = { navController.navigate("settings") }) {
+
+                            IconButton(onClick = {
+                                navController.navigate("settings?from=$currentRoute")
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = "Settings"
@@ -152,7 +159,15 @@ fun AppNavigation() {
                 composable("waste_move") { WasteMoveScreen(navController) }
                 composable("waste_remove") { WasteRemoveScreen(navController) }
                 composable("profile") { ProfileEditScreen(navController) }
-                dialog("settings") { SettingsDialog(navController) }
+                dialog(
+                    route = "settings?from={from}",
+                    arguments = listOf(
+                        navArgument("from") { defaultValue = "unknown" }
+                    )
+                ) { backStackEntry ->
+                    val from = backStackEntry.arguments?.getString("from")
+                    SettingsDialog(navController, from = from)
+                }
                 dialog("notification") { NotificationDialog(navController) }
             }
         }
