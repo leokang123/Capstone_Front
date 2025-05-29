@@ -2,7 +2,9 @@ package com.example.myapplication.ui.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -55,6 +59,9 @@ fun ProfileEditScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var authChecked by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) } // 필터 팝업 상태
+
+    val focusManager = LocalFocusManager.current
+
 
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -124,13 +131,18 @@ fun ProfileEditScreen(
             Text("유효한 휴대폰번호를 입력하세요. (XXX-XXXX-XXXX)", color = MaterialTheme.colorScheme.error)
         }
 
-        Button(
-            onClick = {
-                showDialog = true
-            },
-            enabled = isEmailValid && isPhoneNumberValid
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text("저장")
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth(0.33f)
+                    .align(Alignment.TopEnd), // ✅ 올바른 사용
+                enabled = isEmailValid && isPhoneNumberValid
+            ) {
+                Text("저장")
+            }
         }
     }
     if (showDialog) {
@@ -141,7 +153,7 @@ fun ProfileEditScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password *") },
+                    label = { Text("Password") },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -170,6 +182,7 @@ fun ProfileEditScreen(
                     )
                     viewModel.updateProfile(tmpUser, user?.hospital)
                     showDialog = false
+                    focusManager.clearFocus()
                 }) {
                     Text("확인")
                 }

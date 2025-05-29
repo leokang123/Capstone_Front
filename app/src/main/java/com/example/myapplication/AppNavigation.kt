@@ -115,7 +115,6 @@ fun AppNavigation() {
                         actions = { // 우측 상단 버튼 추가
                             // 알림 버튼 추가
                             IconButton(onClick = {
-                                //                            Toast.makeText(context, "알림 버튼 클릭됨!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("notification")
                             }) {
                                 Icon(

@@ -16,6 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -98,7 +101,7 @@ fun RegisterScreen(
         OutlinedTextField(
             value = username.value,
             onValueChange = { username.value = it },
-            label = { Text("UserName *") },
+            label = { Text("UserName") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
@@ -106,12 +109,12 @@ fun RegisterScreen(
         OutlinedTextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Password *") },
+            label = { Text("Password") },
             visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
                     Icon(
-                        imageVector = if (passwordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -127,14 +130,14 @@ fun RegisterScreen(
         OutlinedTextField(
             value = confirmPassword.value,
             onValueChange = { confirmPassword.value = it },
-            label = { Text("Confirm Password *") },
+            label = { Text("Confirm Password") },
             visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = {
                     confirmPasswordVisible.value = !confirmPasswordVisible.value
                 }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (confirmPasswordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -182,18 +185,26 @@ fun RegisterScreen(
 
         // 병원 Dropdown
 
-        Box(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             OutlinedTextField(
                 value = selectedHospital.value?.hospitalName ?: "",
                 onValueChange = {},
-                label = { Text("Select Hospital *") },
+                label = { Text("Select Hospital") },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showHospitalDropdown.value = true }) {
-                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
+                        if (showHospitalDropdown.value) Icon(
+                            Icons.Filled.KeyboardArrowUp,
+                            contentDescription = "Dropdown"
+                        )
+                        else Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             )
 
             DropdownMenu(

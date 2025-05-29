@@ -105,6 +105,7 @@ fun WasteItemDetailComponent(
             textStyle = MaterialTheme.typography.titleLarge,
             icon = Icons.Outlined.Info,
             iconDescription = "페기물 ID",
+            color = MaterialTheme.colorScheme.primary,
             isTitle = true
         )
         Row(
@@ -120,7 +121,7 @@ fun WasteItemDetailComponent(
                 Icon(
                     imageVector = Icons.Default.Edit, // 수정 아이콘
                     contentDescription = "정정",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.width(20.dp))
@@ -140,7 +141,7 @@ fun WasteItemDetailComponent(
                 Icon(
                     imageVector = Icons.Default.Delete, // 삭제 아이콘
                     contentDescription = "삭제",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -150,7 +151,7 @@ fun WasteItemDetailComponent(
     HorizontalDivider(
         modifier = Modifier.fillMaxWidth(),
         thickness = 1.dp,
-        color = textColor.copy(alpha = 0.5f)
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
     )
     Column(
         modifier = Modifier
@@ -164,7 +165,7 @@ fun WasteItemDetailComponent(
                 .padding(vertical = 4.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, Color.Gray)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
         ) {
 
             // 폐기물 기본 정보
@@ -178,40 +179,41 @@ fun WasteItemDetailComponent(
                     value = selectedItemType?.typeName ?: "",
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.DeleteOutline,
-                    iconDescription = "폐기물 유형"
-                )
+                    iconDescription = "폐기물 유형",
+
+                    )
 
                 InfoRow(
                     label = "등록자",
                     value = collectingLog?.name ?: "",
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Person,
-                    iconDescription = "등록자"
-                )
+                    iconDescription = "등록자",
+                    )
 
                 InfoRow(
                     label = "저장위치",
                     value = selectedItemStorage?.storageName ?: "",
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Cabin,
-                    iconDescription = "저장위치"
-                )
+                    iconDescription = "저장위치",
+                    )
 
                 InfoRow(
                     label = "발생일",
                     value = customDate,
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.CalendarMonth,
-                    iconDescription = "발생일"
-                )
+                    iconDescription = "발생일",
+                    )
 
                 InfoRow(
                     label = "사용기기",
                     value = selectedBeacon?.label ?: "없음",
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Bluetooth,
-                    iconDescription = "사용기기"
-                )
+                    iconDescription = "사용기기",
+                    )
 
             }
         }

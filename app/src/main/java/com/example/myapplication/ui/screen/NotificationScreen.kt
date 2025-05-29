@@ -149,7 +149,7 @@ fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
             .padding(vertical = 4.dp)
             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
             .clickable { onClick(notification) },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

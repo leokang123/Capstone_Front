@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screen
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +39,6 @@ fun SettingsDialog(navController: NavController) {
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
         ) {
             SettingsScreen(navController)
         }
@@ -53,25 +53,34 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel = 
     Column(modifier = Modifier.padding(16.dp)) {
 
         Text("Settings", style = MaterialTheme.typography.headlineMedium)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "다크모드 전환",
-                style = MaterialTheme.typography.bodyLarge
-            )
+        Column(modifier = Modifier.padding(12.dp)) {
 
-            Switch(
-                checked = isDarkTheme,
-                onCheckedChange = { viewModel.setDarkTheme(it) }
-            )
-        }
-        TextButton(onClick = { navController.navigate("profile") }) {
-            Text("사용자 정보 수정", color = MaterialTheme.colorScheme.onSurface)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "다크모드 전환",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { viewModel.setDarkTheme(it) }
+                )
+            }
+
+            TextButton(
+                onClick = { navController.navigate("profile") },
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    "사용자 정보 수정",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
         Button(
             onClick = {

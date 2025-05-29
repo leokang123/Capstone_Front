@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -132,7 +133,12 @@ fun WasteRegisterCard(
                 trailingIcon = {
                     IconButton(onClick = {
                         expanded = true
-                    }) { Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown") }
+                    }) {
+                        if (expanded) Icon(
+                            Icons.Default.ArrowDropUp,
+                            contentDescription = "Dropdown"
+                        ) else Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -157,8 +163,10 @@ fun WasteRegisterCard(
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { expandedStorage = true }) {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
-                    }
+                        if (expandedStorage) Icon(
+                            Icons.Default.ArrowDropUp,
+                            contentDescription = "Dropdown"
+                        ) else Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
