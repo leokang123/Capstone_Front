@@ -99,4 +99,7 @@ dependencies {
     //알림을 위한 Firebase 관련
     implementation(platform(libs.firebase.bom))          // 🔹 BOM 설정
     implementation(libs.firebase.messaging)
+
+    implementation(libs.compose.material.icons.extended)
+
 }

@@ -18,7 +18,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
-    private val userDataStore: UserDataStore,
     private val masterDataRepository: MasterDataRepository,
 ) : ViewModel() {
 
@@ -28,6 +27,5 @@ class AlarmViewModel @Inject constructor(
     suspend fun getAlarmList() {
         val response = masterDataRepository.getAlarmList()
         _alarmList.value = response ?: emptyList()
-        Log.d("ALARM", _alarmList.value.toString())
     }
 }

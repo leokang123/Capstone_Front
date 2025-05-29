@@ -73,9 +73,9 @@ fun WasteRegisterCard(
     val context = LocalContext.current
 
     val user by wasteListViewModel.user.collectAsState()
-    val wasteStorageList = wasteListViewModel.wasteStorageList
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val beaconList = wasteListViewModel.beaconList
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
 
     val heightPadding = 12.dp
     var registrantName by remember { mutableStateOf(user?.name ?: "알수없음") }

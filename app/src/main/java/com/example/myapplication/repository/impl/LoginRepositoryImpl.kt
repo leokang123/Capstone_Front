@@ -13,8 +13,7 @@ import javax.inject.Inject
  */
 class LoginRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-) :
-    LoginRepository {
+) : LoginRepository {
 
     /**
      * 로그인 API 호출 (POST 요청)
@@ -65,6 +64,20 @@ class LoginRepositoryImpl @Inject constructor(
             val errorBody = response.errorBody()?.string()
             Log.e("LOGOUT_ERROR", "응답 실패: ${response.code()} - $errorBody")
             false
+        }
+
+    }
+
+    override suspend fun updateUser(user: User): User? {
+        val response = apiService.updateUser(user)
+        return if (response.isSuccessful) {
+            val body = response.body()
+            Log.d("UPDATE_USER", body.toString())
+            body
+        } else {
+            val errorBody = response.errorBody()?.string()
+            Log.e("UPDATE_ERROR", "응답 실패: ${response.code()} - $errorBody")
+            throw Exception(errorBody)
         }
 
     }

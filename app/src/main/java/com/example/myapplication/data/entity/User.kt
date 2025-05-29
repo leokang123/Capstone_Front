@@ -5,8 +5,8 @@ import com.example.myapplication.data.enums.Roles
 
 data class User(
     val uuid: String = "",
-    val username: String,
-    val password: String,
+    val username: String = "",
+    val password: String = "",
     val email: String = "",
     val name: String = "",
     val phoneNumber: String = "",

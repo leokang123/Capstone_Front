@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -21,6 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -29,6 +34,7 @@ import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.ui.component.WasteRegisterCardDialog
 import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.getStatusColor
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 
@@ -49,10 +55,11 @@ fun WasteRegisterScreen(
     var showDialog by remember { mutableStateOf(false) }  // 팝업 상태 관리
     val wasteList by wasteListViewModel.wasteList.collectAsState()
 
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val wasteStatusList = wasteListViewModel.wasteStatusList
-    val beaconList = wasteListViewModel.beaconList
-    val wasteStorageList = wasteListViewModel.wasteStorageList
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+
 
     var authChecked by remember { mutableStateOf(false) }
     CheckAuth(navController, role = Roles.USER) {
@@ -67,12 +74,12 @@ fun WasteRegisterScreen(
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("폐기물 등록", style = MaterialTheme.typography.headlineMedium)
 
-        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { showDialog = true },  // 버튼 클릭 시 다이얼로그 표시
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth(0.5f)
         ) {
             Text("등록")
         }
@@ -100,12 +107,55 @@ fun WasteRegisterScreen(
                     val beacon = beaconList.find { it.id == waste?.beaconId }
                     val storage = wasteStorageList.find { it.id == waste?.storageId }
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("종류: ${wasteType?.typeName}")
-                        Text("폐기물 정보: ${waste?.description}")
-                        Text("저장장소: ${storage?.storageName}")
-                        Text("기기: ${beacon?.label ?: "이름 없음"}")
-                        Text("상태: ${wasteStatus?.description ?: "없음"}")
+                        Text(
+                            buildAnnotatedString {
+                                append("종류: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(wasteType?.typeName ?: "")
+                                }
+                            }
+                        )
 
+                        Text(
+                            buildAnnotatedString {
+                                append("폐기물 정보: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(waste?.description ?: "")
+                                }
+                            }
+                        )
+
+                        Text(
+                            buildAnnotatedString {
+                                append("저장장소: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(storage?.storageName ?: "")
+                                }
+                            }
+                        )
+
+                        Text(
+                            buildAnnotatedString {
+                                append("기기: ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(beacon?.label ?: "이름 없음")
+                                }
+                            }
+                        )
+
+                        Text(
+                            buildAnnotatedString {
+                                append("상태: ")
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = getStatusColor(wasteStatus),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                ) {
+                                    append(wasteStatus?.description ?: "없음")
+                                }
+                            },
+                        )
                     }
                 }
             }

@@ -37,7 +37,7 @@ class BlueToothViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val masterDataRepository: MasterDataRepository
 ) : ViewModel() {
-    private var beaconList: List<Beacon>? = masterDataRepository.beaconList
+    private var beaconList: List<Beacon>? = masterDataRepository.beaconList.value   
 
     private val bluetoothManager: BluetoothManager by lazy {
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -88,18 +88,27 @@ class BlueToothViewModel @Inject constructor(
 //
     }
 
-    suspend fun checkStorage(beaconAddress: String, scanTime: Long): Boolean {
+
+    suspend fun checkStorage(beaconAddress: String, scanTime: Long = 5L): Boolean {
         startScan(scanTime)
-        delay(scanTime * 1000)
-        val scannedDevices = _serverBeacons.value.map { it.deviceAddress }
-        return beaconAddress in scannedDevices
+        val startTime = System.currentTimeMillis()
+        while (System.currentTimeMillis() - startTime < scanTime * 1000L) {
+            val isStorageBeacon = _serverBeacons.value.find { it.deviceAddress == beaconAddress }
+            if (isStorageBeacon != null) {
+                return true
+            }
+            delay(200L)
+        }
+
+        // 5초 내에 발견 못했을 경우
+        Log.w("RELOAD", "비콘을 찾지 못했습니다.")
+        return false
     }
 
     private fun matchBeacons() {
         val scanned = _devices.value.map { it.address }
         val serverBeacon = beaconList?.filter { it.deviceAddress in scanned }
         _serverBeacons.value = serverBeacon ?: emptyList()
-
         val notUsedServerBeacon = serverBeacon?.filter { it.used == false }
         _notUsedServerBeacons.value = notUsedServerBeacon ?: emptyList()
 
@@ -107,6 +116,7 @@ class BlueToothViewModel @Inject constructor(
 
     @SuppressLint("MissingPermission")
     private fun scanRealDevices(scanTime: Long) {
+        resetBeacon()
         if (scanner == null || bluetoothAdapter?.isEnabled != true) {
             Log.w(TAG, "Bluetooth is disabled or scanner is null.")
             return
@@ -156,6 +166,12 @@ class BlueToothViewModel @Inject constructor(
         } else {
             Log.w(TAG, "Scanner or callback is null, cannot stop scan.")
         }
+    }
+
+    fun resetBeacon() {
+        _devices.value = emptyList()
+        _serverBeacons.value = emptyList()
+        _notUsedServerBeacons.value = emptyList()
     }
 
 //    fun updateBeacon(updateBeacon: Beacon) {

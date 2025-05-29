@@ -96,7 +96,7 @@ fun BluetoothScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
+        Text("근처 비콘 검색", style = MaterialTheme.typography.headlineMedium)
 
         // 블루투스 스캔 버튼
         Button(

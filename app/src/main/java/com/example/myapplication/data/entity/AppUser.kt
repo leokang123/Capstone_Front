@@ -4,6 +4,7 @@ import com.example.myapplication.data.enums.Roles
 
 data class AppUser(
     val uuid: String = "",
+    val username: String = "",
     val email: String = "",
     val name: String = "",
     val phoneNumber: String? = null,

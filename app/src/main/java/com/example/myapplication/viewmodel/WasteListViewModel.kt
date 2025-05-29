@@ -5,10 +5,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.entity.AppUser
+import com.example.myapplication.data.entity.Beacon
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemDetails
+import com.example.myapplication.data.waste.WasteStatus
+import com.example.myapplication.data.waste.WasteStorage
+import com.example.myapplication.data.waste.WasteType
 import com.example.myapplication.repository.WasteRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.UserDataStore
@@ -33,10 +37,14 @@ class WasteListViewModel @Inject constructor(
     private val _user = MutableStateFlow<AppUser?>(null)
     val user: StateFlow<AppUser?> = _user
 
-    val wasteStorageList = masterDataRepository.storageList
-    val wasteStatusList = masterDataRepository.wasteStatusList
-    val wasteTypeList = masterDataRepository.wasteTypeList
-    val beaconList = masterDataRepository.beaconList
+    val wasteStorageList: StateFlow<List<WasteStorage>> = masterDataRepository.storageList
+    val wasteStatusList: StateFlow<List<WasteStatus>> = masterDataRepository.wasteStatusList
+    val wasteTypeList: StateFlow<List<WasteType>> = masterDataRepository.wasteTypeList
+    val beaconList: StateFlow<List<Beacon>> = masterDataRepository.beaconList
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+    var storageBeaconList = emptyList<String?>()
 
     // 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
     private val _wasteItems = MutableStateFlow<List<WasteItem>>(emptyList())
@@ -52,12 +60,20 @@ class WasteListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _user.value = userDataStore.getUser()
+            val beaconList = userDataStore.getBeaconList()
+            val storageBeaconIdList = userDataStore.getWasteStorageList().map { it.beacon }
+            storageBeaconList =
+                beaconList.filter { it.id in storageBeaconIdList }.map { it.deviceAddress }
         }
     }
 
     fun resetWasteList() {
         _wasteItems.value = emptyList()
         _selectedItem.value = null
+    }
+
+    fun isLoading(isTrue: Boolean) {
+        _isLoading.value = isTrue
     }
 
     // 전체 리스트 가져오기
@@ -68,7 +84,7 @@ class WasteListViewModel @Inject constructor(
                     if (beaconList != null) wasteRepository.getWasteItemsByAddress(beaconList)
                     else wasteRepository.getWasteItems()
 
-                val statusMap = wasteStatusList.associateBy { it.statusLevel }
+                val statusMap = wasteStatusList.value.associateBy { it.statusLevel }
                 val filtered = when (mode) {
                     1 -> response?.filterNot { it.wasteStatusId == statusMap[5]?.id } ?: emptyList()
                     2 -> response?.filter { it.wasteStatusId == statusMap[1]?.id || it.wasteStatusId == statusMap[2]?.id }
@@ -78,7 +94,7 @@ class WasteListViewModel @Inject constructor(
                         ?: emptyList() // API 결과 저장
                     else -> emptyList()
                 }
-                _wasteItems.value = filtered
+                _wasteItems.value = filtered.sortedByDescending { it.id }
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)
@@ -90,7 +106,7 @@ class WasteListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = wasteRepository.getStorageWasteItems(wasteStorageId)
-                val targetIds = wasteStatusList
+                val targetIds = wasteStatusList.value
                     .filter { it.statusLevel == 3 || it.statusLevel == 4 }
                     .map { it.id }
                 _wasteItems.value = response?.filter { it.wasteStatusId in targetIds }
@@ -110,7 +126,7 @@ class WasteListViewModel @Inject constructor(
                 // valid가 false나 null이면 배출완료인거랑 삭제된 수집중이 같이 나오는데 수집중인거 없앰
                 _wasteItems.value = result?.let {
                     if (searchRequest.isValid != true) it.filterNot { item -> item.wasteStatusId == 1 } else it
-                } ?: emptyList()
+                }?.sortedByDescending { it.id } ?: emptyList()
 
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 빈 리스트 반환
@@ -132,7 +148,7 @@ class WasteListViewModel @Inject constructor(
     }
 
     suspend fun registerWasteItem(wasteItem: WasteItem): String? {
-        val wasteType = wasteTypeList.find { it.id == wasteItem.wasteTypeId }
+        val wasteType = wasteTypeList.value.find { it.id == wasteItem.wasteTypeId }
         return if (wasteRepository.registerWaste(wasteItem)) {
             "${wasteType?.typeName} 등록 완료"
         } else {
@@ -143,7 +159,7 @@ class WasteListViewModel @Inject constructor(
     suspend fun checkItemStatus(itemId: String): Boolean {
         return try {
             val waste = wasteRepository.getWasteItem(itemId)
-            val status = wasteStatusList.find { it.id == waste?.wasteStatusId }
+            val status = wasteStatusList.value.find { it.id == waste?.wasteStatusId }
             status?.statusLevel == 1
         } catch (e: Exception) {
             Log.e("WasteListViewModel", "상세 정보 요청 실패", e)

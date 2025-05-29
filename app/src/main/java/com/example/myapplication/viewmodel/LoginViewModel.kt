@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,6 +35,11 @@ class LoginViewModel @Inject constructor(
     var password by mutableStateOf("")
     var errorMessage by mutableStateOf("")
     val hospitalList = MutableStateFlow<List<Hospital>?>(emptyList())
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _loginSuccess = MutableSharedFlow<Boolean>()
+    val loginSuccess = _loginSuccess.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -45,13 +51,18 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private val _loginSuccess = MutableSharedFlow<Boolean>()
-    val loginSuccess = _loginSuccess.asSharedFlow()
 
-    fun initData(hospitalId: Int) {
+
+    fun onResumed() {
         viewModelScope.launch {
-            masterDataRepository.initAll(hospitalId)
+            val userHospitalId = userDataStore.getUser()?.hospital?.id
+            userHospitalId?.let { masterDataRepository.initAll(it) }
+            delay(1000)
         }
+    }
+
+    suspend fun initData(hospitalId: Int) {
+        masterDataRepository.initAll(hospitalId)
     }
 
     suspend fun checkAutoLogin(): AppUser? {
@@ -62,6 +73,8 @@ class LoginViewModel @Inject constructor(
     fun login() {
         viewModelScope.launch {
             try {
+                _isLoading.value = true  // 로딩 시작
+
                 val loginUser = loginRepository.loginUser(
                     User(
                         username = username.trim(),
@@ -71,6 +84,7 @@ class LoginViewModel @Inject constructor(
 
                 if (loginUser == null) {
                     errorMessage = "Invalid username or password"
+                    _isLoading.value = false
                     _loginSuccess.emit(false)
                     return@launch
                 }
@@ -97,12 +111,13 @@ class LoginViewModel @Inject constructor(
                             _loginSuccess.emit(true)
 
                         }
-                    }
+                    }?: _loginSuccess.emit(true)
                 }
 
             } catch (e: Exception) {
                 Log.e("LOGIN", "Login error", e)
                 errorMessage = e.message ?: "로그인 중 문제가 발생했습니다."
+                _isLoading.value = false
                 _loginSuccess.emit(false)
             }
         }

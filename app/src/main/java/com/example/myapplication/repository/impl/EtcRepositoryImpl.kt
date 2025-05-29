@@ -48,7 +48,6 @@ class EtcRepositoryImpl @Inject constructor(
         val response = apiService.getAllWasteType() // API 호출
         return if (response.isSuccessful) {
             val body = response.body()
-            Log.d("TEST123", body.toString())
             body
         } else {
             Log.e(
