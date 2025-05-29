@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,9 +68,10 @@ fun SearchFilterDialog(
     val defaultDateTime = LocalDate.now()
     var selectedDateTime by remember { mutableStateOf(searchFilter.startDate ?: defaultDateTime) }
 
-    val wasteStorageList = wasteListViewModel.wasteStorageList
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val wasteStatusList = wasteListViewModel.wasteStatusList
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+    val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
+    val baseColor = MaterialTheme.colorScheme.onSurface
 
     LaunchedEffect(Unit) {
 
@@ -120,7 +122,7 @@ fun SearchFilterDialog(
                             Text(
 
                                 text = wasteType?.typeName ?: "폐기물 유형 선택",
-                                color = if (wasteType?.typeName == null) Color.Gray else Color.Black
+                                color = if (wasteType?.typeName == null) baseColor.copy(alpha = 0.5f) else baseColor
                             )
                         }
                         DropdownMenu(
@@ -160,7 +162,7 @@ fun SearchFilterDialog(
                         ) {
                             Text(
                                 text = selectedStorage?.storageName ?: "저장창고 선택",
-                                color = if (selectedStorage == null) Color.Gray else Color.Black
+                                color = if (selectedStorage == null) baseColor.copy(alpha = 0.5f) else baseColor
                             )
                         }
                         DropdownMenu(
@@ -201,7 +203,7 @@ fun SearchFilterDialog(
                                 wasteStatusList.find { it.id == searchFilter.wasteStatusId }
                             Text(
                                 text = wasteStatus?.description ?: "상태 선택",
-                                color = if (wasteStatus?.description == null) Color.Gray else Color.Black
+                                color = if (wasteStatus?.description == null) baseColor.copy(alpha = 0.5f) else baseColor
                             )
                         }
                         DropdownMenu(
@@ -232,6 +234,7 @@ fun SearchFilterDialog(
                     Text("시간 선택")
                 }
                 if (isDateChecked) {
+                    onFilterChange(searchFilter.copy(startDate = selectedDateTime, endDate = selectedDateTime.plusDays(10)))
                     Spacer(Modifier.height(12.dp))
 
                     Row(
@@ -254,7 +257,7 @@ fun SearchFilterDialog(
                     }
 
                     Spacer(Modifier.height(8.dp))
-                    Text("입력한 시간 기준 10일을 검색합니다", color = MaterialTheme.colorScheme.secondary)
+                    Text("입력한 시간 기준 10일을 검색합니다", color = baseColor)
                 }
 
             }

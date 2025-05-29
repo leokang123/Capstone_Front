@@ -9,6 +9,8 @@ import com.example.myapplication.utils.FirebaseTokenManager
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -19,6 +21,28 @@ class SettingsViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val loginRepository: LoginRepository,
 ) : ViewModel() {
+
+
+    private val _isDarkTheme = MutableStateFlow(false)
+    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
+
+    init {
+        viewModelScope.launch {
+            userDataStore.themeFlow.collect {
+                _isDarkTheme.value = it
+            }
+        }
+    }
+
+    fun toggleTheme() {
+        _isDarkTheme.value = !isDarkTheme.value
+    }
+
+    fun setDarkTheme(enabled: Boolean) {
+        viewModelScope.launch {
+            userDataStore.saveDarkThemeEnabled(enabled)
+        }
+    }
 
     fun logout(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {

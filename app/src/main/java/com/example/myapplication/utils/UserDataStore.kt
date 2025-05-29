@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -16,7 +17,9 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 
@@ -27,18 +30,23 @@ class UserDataStore @Inject constructor(
 ) {
     private val dataStore = context.userDataStore
 
+    private val booleanPreferencesKey = booleanPreferencesKey("hasSentFCM")
+    private val darkThemeKey = booleanPreferencesKey("dark_theme_enabled")
+    val appBarTitle = stringPreferencesKey("app_bar_title")
+
     private val gson = Gson()
 
     suspend fun saveUser(user: User, hospital: Hospital?) {
         val appUser = AppUser(
             uuid = user.uuid,
+            username = user.username,
             email = user.email,
             name = user.name,
             phoneNumber = user.phoneNumber,
             hospital = hospital,
             roles = user.roles,
             primaryRoles = user.primaryRole,
-            token = user.token,
+            token = user.token?: getAccessToken(),
             fcmToken = user.fcmToken
 
         )
@@ -79,6 +87,40 @@ class UserDataStore @Inject constructor(
         dataStore.edit { prefs ->
             prefs[stringPreferencesKey("beaconList")] = json
         }
+    }
+
+    suspend fun saveHasSentFCM() {
+        dataStore.edit { prefs ->
+            prefs[booleanPreferencesKey] = true
+        }
+    }
+
+    suspend fun saveDarkThemeEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[darkThemeKey] = enabled
+        }
+    }
+
+
+    suspend fun saveAppBarTitle(title: String) {
+        dataStore.edit { prefs ->
+            prefs[appBarTitle] = title
+        }
+    }
+
+    val appBarTitleFlow: Flow<String> = dataStore.data
+        .map { prefs -> prefs[appBarTitle] ?: "폐기수첩" }
+
+
+    val themeFlow: Flow<Boolean> = context.userDataStore.data
+        .map { preferences ->
+            preferences[darkThemeKey] ?: false
+        }
+
+
+
+    suspend fun getHasSentFCM(): Boolean? {
+        return dataStore.data.first()[booleanPreferencesKey]
     }
 
     suspend fun getUser(): AppUser? {

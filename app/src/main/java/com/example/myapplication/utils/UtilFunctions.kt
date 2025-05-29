@@ -4,8 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import com.example.myapplication.data.waste.WasteStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -108,3 +112,21 @@ fun requestBLEPermissions(activity: Activity) {
         )
     }
 }
+
+fun getAutoTextColor(backgroundColor: Color): Color {
+    val luminance = ColorUtils.calculateLuminance(backgroundColor.toArgb())
+    return if (luminance > 0.5) Color.Black else Color.White
+}
+
+fun getStatusColor(status: WasteStatus?): Color {
+    return when (status?.statusLevel) {
+        1 -> Color(0xFFFB8C00) // 수집중 - Orange
+        2 -> Color(0xFFFBC02D) // 이송중 - Amber
+        3 -> Color(0xFFC0CA33) // 이송완료 - Lime Green
+        4 -> Color(0xFF8D6E63) // 저장중 - Brown
+        5 -> Color(0xFFE53935) // 배출 완료 - Red
+        else -> Color.Gray
+    }
+}
+
+

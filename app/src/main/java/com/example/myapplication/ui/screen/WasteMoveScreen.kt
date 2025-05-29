@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -46,20 +47,39 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.MoveRequest
-import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.utils.CheckAuth
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-fun reloadWasteList(
+suspend fun reloadWasteList(
     blueToothViewModel: BlueToothViewModel,
     wasteListViewModel: WasteListViewModel,
 ) {
     blueToothViewModel.startScan()
-    val beaconAddressList = blueToothViewModel.serverBeacons.value.map { it.deviceAddress }.toList()
-    Log.d("BEACONLIST", beaconAddressList.toString())
-    wasteListViewModel.fetchWasteList(mode = 2, beaconAddressList)
+
+    // 최대 5초 동안 200ms 간격으로 체크
+    val startTime = System.currentTimeMillis()
+
+    val storageBeaconList = wasteListViewModel.storageBeaconList
+    while (System.currentTimeMillis() - startTime < 5000L) {
+        val serverBeacon = blueToothViewModel.serverBeacons.value.filterNot { it.deviceAddress in storageBeaconList }
+        if (serverBeacon.isNotEmpty()) {
+            // 혹시 모르니까 1초 더 기다림
+            delay(1000L)
+            val beaconAddressList =
+                blueToothViewModel.serverBeacons.value.map { it.deviceAddress }.toList()
+            Log.d("BEACONLIST", beaconAddressList.toString())
+            // 혹시나 더 있을수도 있으니까 1.5초 더 기다림
+            wasteListViewModel.fetchWasteList(mode = 2, beaconAddressList)
+            return
+        }
+        delay(200L)
+    }
+
+    // 5초 내에 발견 못했을 경우
+    Log.w("RELOAD", "비콘을 찾지 못했습니다.")
 }
 
 @Composable
@@ -70,11 +90,11 @@ fun WasteMoveScreen(
 ) {
     val context = LocalContext.current
     val user by wasteListViewModel.user.collectAsState()
-    val serverBeacons by blueToothViewModel.serverBeacons.collectAsState()
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val wasteStatusList = wasteListViewModel.wasteStatusList
-    val beaconList = wasteListViewModel.beaconList
-    val storageList = wasteListViewModel.wasteStorageList
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
+    val storageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
+
 
     val wasteItems by wasteListViewModel.wasteList.collectAsState() // 서버에서 폐기물 리스트 가져오기
     val selectedItems =
@@ -95,16 +115,19 @@ fun WasteMoveScreen(
     var wasteItemDetails by remember { mutableStateOf("") }
     var authChecked by remember { mutableStateOf(false) }
     var isStorageMatch by remember { mutableStateOf<Boolean?>(null) }
+    val isLoading by wasteListViewModel.isLoading.collectAsState()
 
     CheckAuth(navController, role = Roles.USER) {
         authChecked = true
     }
 
     // UI 로딩 시 폐기물 리스트 불러오기
-    LaunchedEffect(authChecked, serverBeacons) {
+    LaunchedEffect(authChecked) {
         if (!authChecked) return@LaunchedEffect
         currentUserId = user?.uuid.toString()
+        wasteListViewModel.isLoading(true)
         reloadWasteList(blueToothViewModel, wasteListViewModel)
+        wasteListViewModel.isLoading(false)
     }
 
     LaunchedEffect(showDialog) {
@@ -114,7 +137,7 @@ fun WasteMoveScreen(
         Log.d("STORAGE_MATCH", storage.toString())
 
         if (showDialog && storageBeacon?.isNotBlank() == true && statusLevel == 2) {
-            isStorageMatch = blueToothViewModel.checkStorage(storageBeacon, 2L)
+            isStorageMatch = blueToothViewModel.checkStorage(storageBeacon)
         }
     }
 
@@ -124,87 +147,93 @@ fun WasteMoveScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("폐기물 이동", style = MaterialTheme.typography.headlineMedium)
 
-        Spacer(modifier = Modifier.height(16.dp))
-// 새로고침 버튼
         Button(
             onClick = {
                 coroutineScope.launch {
+                    wasteListViewModel.isLoading(true)
                     reloadWasteList(blueToothViewModel, wasteListViewModel)
+                    wasteListViewModel.isLoading(false)
                     Toast.makeText(context, "폐기물 목록이 새로 고침되었습니다", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(vertical = 8.dp)
+                .fillMaxWidth(0.5f)
         ) {
-            Text("폐기물 목록 새로고침")
+            Text("새로고침")
         }
+
+        if (isLoading)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+
         // 체크리스트 UI
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f) // 최대 높이 지정
         ) {
-            items(wasteItems) { wasteItem ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            currentItemId = wasteItem.id
-                            showDialog = true // 팝업창 띄우기
-                        },
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Row(
+            if (!isLoading) {
+                items(wasteItems) { wasteItem ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(8.dp)
+                            .clickable {
+                                currentItemId = wasteItem.id
+                                currentItemStorageId = wasteItem.storageId
+                                currentItemId = wasteItem.id
+                                currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
+                                Log.d("TEST_STATUS2",currentStatusId.toString())
+                                wasteItemDetails = wasteItem.description
+                                showDialog = true // 팝업창 띄우기
+                            },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Checkbox(
-                            checked = selectedItems.containsKey(wasteItem.id),
-                            onCheckedChange = { isChecked ->
-                                if (isChecked) {
-                                    currentItemStorageId = wasteItem.storageId
-                                    currentItemId = wasteItem.id
-                                    currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
-                                    wasteItemDetails = wasteItem.description
-                                    showDialog = true // 팝업창 띄우기
-                                } else {
-                                    selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = selectedItems.containsKey(wasteItem.id),
+                                onCheckedChange = { isChecked ->
+                                    if (!isChecked){
+                                        selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
+                                    }
                                 }
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                val wasteType =
+                                    wasteTypeList.find { it.id == wasteItem.wasteTypeId }
+                                val beacon = beaconList.find { it.id == wasteItem.beaconId }
+                                val status =
+                                    wasteStatusList.find { it.id == wasteItem.wasteStatusId }
+                                Text(
+                                    text = wasteType?.typeName ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "비콘이름: ${beacon?.label}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "상세내역: ${wasteItem.description}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "상태: ${status?.description}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            val wasteType = wasteTypeList.find { it.id == wasteItem.wasteTypeId }
-                            val beacon = beaconList.find { it.id == wasteItem.beaconId }
-                            val status = wasteStatusList.find { it.id == wasteItem.wasteStatusId }
-                            Text(
-                                text = wasteType?.typeName ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                text = "비콘이름: ${beacon?.label}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                            Text(
-                                text = "상세내역: ${wasteItem.description}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                            Text(
-                                text = "상태: ${status?.description}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
                         }
                     }
                 }
@@ -230,9 +259,12 @@ fun WasteMoveScreen(
                             responseMessage = "처리 실패"
                             Log.e("WasteMoveScreen", responseMessage, e)
                         } finally {
+                            wasteListViewModel.resetWasteList()
+                            wasteListViewModel.isLoading(true)
+                            reloadWasteList(blueToothViewModel, wasteListViewModel)
+                            wasteListViewModel.isLoading(false)
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            reloadWasteList(blueToothViewModel, wasteListViewModel)
                         }
                     }
 
@@ -254,6 +286,7 @@ fun WasteMoveScreen(
             title = { Text("폐기물 이동 정보 입력") },
             text = {
                 val status = currentStatus
+                Log.d("TEST_STATUS", currentStatusId.toString())
                 Column {
                     Text(
                         text = "현재 상태: ${status?.description}",
@@ -278,7 +311,7 @@ fun WasteMoveScreen(
                     OutlinedTextField(
                         value = currentDetails,
                         onValueChange = { currentDetails = it },
-                        label = { Text("상세 내용") }
+                        label = { Text("처리 내용") }
                     )
                     if (status?.statusLevel == 2) {
                         Text(

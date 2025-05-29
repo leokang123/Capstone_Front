@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.viewmodel.LoginViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun AuthCheckScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
@@ -20,7 +19,7 @@ fun AuthCheckScreen(navController: NavController, viewModel: LoginViewModel = hi
         if (user != null && user.token?.isNotBlank() == true) {
             viewModel.initData(user.hospital?.id ?: 0)
             // 일단 나중에 개편해야함
-            delay(1000)
+//            delay(1000)
             navController.navigate("home") {
                 popUpTo("auth_check") { inclusive = true } // 뒤로가기 안 되도록 제거
             }

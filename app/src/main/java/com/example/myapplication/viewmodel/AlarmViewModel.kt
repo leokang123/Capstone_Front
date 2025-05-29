@@ -1,10 +1,8 @@
 package com.example.myapplication.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.data.entity.AlarmData
 import com.example.myapplication.repository.impl.MasterDataRepository
-import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +16,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
-    private val userDataStore: UserDataStore,
     private val masterDataRepository: MasterDataRepository,
 ) : ViewModel() {
 
@@ -28,6 +25,5 @@ class AlarmViewModel @Inject constructor(
     suspend fun getAlarmList() {
         val response = masterDataRepository.getAlarmList()
         _alarmList.value = response ?: emptyList()
-        Log.d("ALARM", _alarmList.value.toString())
     }
 }

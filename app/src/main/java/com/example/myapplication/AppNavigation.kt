@@ -18,8 +18,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -29,6 +35,7 @@ import com.example.myapplication.ui.screen.AuthCheckScreen
 import com.example.myapplication.ui.screen.HomeScreen
 import com.example.myapplication.ui.screen.LoginScreen
 import com.example.myapplication.ui.screen.NotificationDialog
+import com.example.myapplication.ui.screen.ProfileEditScreen
 import com.example.myapplication.ui.screen.RegisterScreen
 import com.example.myapplication.ui.screen.SettingsDialog
 import com.example.myapplication.ui.screen.WasteListScreen
@@ -37,6 +44,7 @@ import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
 import com.example.myapplication.utils.AuthEventBus
 import com.example.myapplication.utils.DrawerContent
+import com.example.myapplication.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 
 
@@ -60,6 +68,9 @@ fun AppNavigation() {
     // 로그인/회원가입 화면에서는 TopBar 숨김
     val shouldShowTopBar = currentDestination !in listOf("login", "register")
     val shouldShowBackButton = currentDestination !in listOf("home")
+
+    val viewModel: HomeViewModel = hiltViewModel()
+    val title by viewModel.appBarTitle.collectAsState()
     LaunchedEffect(Unit) {
         AuthEventBus.needLoginFlow.collect {
             navController.navigate("login") {
@@ -78,8 +89,11 @@ fun AppNavigation() {
         Scaffold(
             topBar = {
                 if (shouldShowTopBar) {
+                    val baemin = FontFamily(
+                        Font(R.font.baemin, FontWeight.Bold)
+                    )
                     TopAppBar(
-                        title = { Text("애버커스") },
+                        title = { Text(title, fontFamily = baemin) },
                         navigationIcon = {
                             if (shouldShowBackButton) {
                                 IconButton(onClick = { navController.popBackStack() }) {
@@ -138,6 +152,7 @@ fun AppNavigation() {
                 composable("waste_register") { WasteRegisterScreen(navController) }
                 composable("waste_move") { WasteMoveScreen(navController) }
                 composable("waste_remove") { WasteRemoveScreen(navController) }
+                composable("profile") { ProfileEditScreen(navController) }
                 dialog("settings") { SettingsDialog(navController) }
                 dialog("notification") { NotificationDialog(navController) }
             }

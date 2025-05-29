@@ -91,11 +91,14 @@ fun WasteRemoveScreen(
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
-    val wasteStorageList = wasteListViewModel.wasteStorageList
-    val wasteStatusList = wasteListViewModel.wasteStatusList
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val beaconList = wasteListViewModel.beaconList
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+
+
     var isScanning by remember { mutableStateOf(false) }
+    val baseColor = MaterialTheme.colorScheme.onSurface
 
     var authChecked by remember { mutableStateOf(false) }
     CheckAuth(navController, role = Roles.WAREHOUSE_MANAGER) {
@@ -113,9 +116,7 @@ fun WasteRemoveScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("폐기물 배출", style = MaterialTheme.typography.headlineMedium)
 
-        Spacer(modifier = Modifier.height(16.dp))
         // 폐기물 종류 선택 (DropdownMenu)
         Box(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -127,7 +128,7 @@ fun WasteRemoveScreen(
             ) {
                 Text(
                     text = selectedStorage?.storageName ?: "창고 선택",
-                    color = if (selectedStorage == null || expandedStorage) Color.Gray else Color.Black
+                    color = if (selectedStorage == null || expandedStorage) baseColor.copy(alpha = 0.5f) else baseColor
                 )
             }
             DropdownMenu(
@@ -155,7 +156,12 @@ fun WasteRemoveScreen(
                         .fillMaxWidth()
                         .padding(8.dp)
                         .clickable {
+                            val deviceAddress =
+                                beaconList.find { it.id == wasteItem.beaconId }?.deviceAddress
                             currentItemId = wasteItem.id
+                            currentDeviceAddress = deviceAddress
+                            currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
+                            wasteItemDetails = wasteItem.description
                             showDialog = true // 팝업창 띄우기
                         },
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -169,15 +175,7 @@ fun WasteRemoveScreen(
                         Checkbox(
                             checked = selectedItems.containsKey(wasteItem.id),
                             onCheckedChange = { isChecked ->
-                                val deviceAddress =
-                                    wasteListViewModel.beaconList.find { it.id == wasteItem.beaconId }?.deviceAddress
-                                if (isChecked) {
-                                    currentItemId = wasteItem.id
-                                    currentDeviceAddress = deviceAddress
-                                    currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
-                                    wasteItemDetails = wasteItem.description
-                                    showDialog = true // 팝업창 띄우기
-                                } else {
+                                if (!isChecked) {
                                     selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
                                 }
                             }
@@ -192,22 +190,22 @@ fun WasteRemoveScreen(
                             Text(
                                 text = wasteType?.typeName ?: "",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "비콘이름: ${beacon?.label}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "상세내역: ${wasteItem.description}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "상태: ${status?.description}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -238,10 +236,9 @@ fun WasteRemoveScreen(
             onClick = {
                 coroutineScope.launch {
                     isScanning = true
-
                     blueToothViewModel.clearServerBeacons()
                     blueToothViewModel.startScan()
-                    delay(2000)
+                    delay(3000L)
                     isScanning = false
 
                     val scannedAddresses =
@@ -324,7 +321,7 @@ fun WasteRemoveScreen(
                     OutlinedTextField(
                         value = currentDetails,
                         onValueChange = { currentDetails = it },
-                        label = { Text("상세 내용") }
+                        label = { Text("처리 내용") }
                     )
                 }
 

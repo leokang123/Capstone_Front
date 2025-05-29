@@ -8,8 +8,9 @@ import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.data.waste.WasteType
 import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.utils.UserDataStore
-import com.google.gson.Gson
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,13 +20,19 @@ class MasterDataRepository @Inject constructor(
     private val etcRepository: EtcRepository,
     private val userDataStore: UserDataStore
 ) {
+    private val _hospitalList = MutableStateFlow<List<Hospital>>(emptyList())
+    val hospitalList: StateFlow<List<Hospital>> = _hospitalList
 
-    var hospitalList: List<Hospital> = emptyList()
-    var storageList: List<WasteStorage> = emptyList()
-    var beaconList: List<Beacon> = emptyList()
-    var wasteTypeList: List<WasteType> = emptyList()
-    var wasteStatusList: List<WasteStatus> = emptyList()
+    private val _storageList = MutableStateFlow<List<WasteStorage>>(emptyList())
+    val storageList: StateFlow<List<WasteStorage>> = _storageList
 
+    private val _beaconList = MutableStateFlow<List<Beacon>>(emptyList())
+    val beaconList: StateFlow<List<Beacon>> = _beaconList
+
+    private val _wasteStatusList = MutableStateFlow<List<WasteStatus>>(emptyList())
+    val wasteStatusList: StateFlow<List<WasteStatus>> = _wasteStatusList
+    private val _wasteTypeList = MutableStateFlow<List<WasteType>>(emptyList())
+    val wasteTypeList: StateFlow<List<WasteType>> = _wasteTypeList
 
     suspend fun getHospitalList(): List<Hospital> {
         return try {
@@ -79,62 +86,25 @@ class MasterDataRepository @Inject constructor(
     }
 
     suspend fun getAlarmList() = try {
-        etcRepository.getAlarmList()
-    } catch (_: Exception) {
+        val alarmList = etcRepository.getAlarmList()
+        alarmList
+    } catch (e: Exception) {
+        Log.e("ERROR_ALRAM", e.toString())
         emptyList()
     }
 
 
     suspend fun initAll(hospitalId: Int) = supervisorScope {
-        val hospitalDeferred = async {
-            try {
-                getHospitalList()
-            } catch (e: Exception) {
-                Log.e("INIT_DATA_ERROR", "병원 목록 실패", e)
-                emptyList()
-            }
-        }
+        val hospitalDeferred = async { getHospitalList() }
+        val storageDeferred = async { getStorageList(hospitalId) }
+        val beaconDeferred = async { getBeaconList() }
+        val typeDeferred = async { getWasteTypeList() }
+        val statusDeferred = async { getWasteStatusList() }
 
-        val storageDeferred = async {
-            try {
-                getStorageList(hospitalId)
-            } catch (e: Exception) {
-                Log.e("INIT_DATA_ERROR", "보관소 목록 실패", e)
-                emptyList()
-            }
-        }
-
-        val beaconDeferred = async {
-            try {
-                getBeaconList()
-            } catch (e: Exception) {
-                Log.e("INIT_DATA_ERROR", "비콘 목록 실패", e)
-                emptyList()
-            }
-        }
-
-        val typeDeferred = async {
-            try {
-                getWasteTypeList()
-            } catch (e: Exception) {
-                Log.e("INIT_DATA_ERROR", "폐기물 유형 실패", e)
-                emptyList()
-            }
-        }
-
-        val statusDeferred = async {
-            try {
-                getWasteStatusList()
-            } catch (e: Exception) {
-                Log.e("INIT_DATA_ERROR", "폐기물 상태 실패", e)
-                emptyList()
-            }
-        }
-
-        hospitalList = hospitalDeferred.await()
-        storageList = storageDeferred.await()
-        beaconList = beaconDeferred.await()
-        wasteTypeList = typeDeferred.await()
-        wasteStatusList = statusDeferred.await()
+        _hospitalList.value = hospitalDeferred.await()
+        _storageList.value = storageDeferred.await()
+        _beaconList.value = beaconDeferred.await()
+        _wasteTypeList.value = typeDeferred.await()
+        _wasteStatusList.value = statusDeferred.await()
     }
 }

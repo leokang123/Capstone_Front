@@ -49,6 +49,9 @@ interface ApiService {
     @PUT("auth/logOut/{uuid}")
     suspend fun logout(@Path("uuid") uuid: String): Response<Unit>
 
+    @PUT("auth/changeUs")
+    suspend fun updateUser(@Body user: User): Response<User>
+
     @POST("waste/createWaste")
     suspend fun createWaste(@Body wasteItem: WasteItem): Response<WasteItem>
 

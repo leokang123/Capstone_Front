@@ -25,10 +25,27 @@ class AuthViewModel @Inject constructor(
 
     private var hasSentFCM = false
 
+    init {
+        viewModelScope.launch {
+            hasSentFCM = userDataStore.getHasSentFCM() == true
+        }
+    }
+
     fun checkAuth(requiredRole: Roles) {
         viewModelScope.launch {
             val token = userDataStore.getAccessToken()
             val user = userDataStore.getUser()
+            val storage = userDataStore.getWasteStorageList()
+            val beacon = userDataStore.getBeaconList()
+            val wasteType = userDataStore.getWasteTypeList()
+            val hospital = userDataStore.getHospitalList()
+            val wasteStatus = userDataStore.getWasteStatusList()
+
+            Log.d("TEST", storage.toString())
+            Log.d("TEST", beacon.toString())
+            Log.d("TEST", wasteType.toString())
+            Log.d("TEST", wasteStatus.toString())
+            Log.d("TEST", hospital.toString())
 
             when {
                 token.isNullOrBlank() -> _authState.value = AuthState.NotLoggedIn
@@ -37,19 +54,19 @@ class AuthViewModel @Inject constructor(
 
                 else -> {
                     _authState.value = AuthState.Authorized(user)
-                    if (!hasSentFCM) {
-                        // fcm토큰 전송
-                        user?.uuid.let { userId ->
-                            FirebaseTokenManager.getToken()?.let { fcmToken ->
-                                viewModelScope.launch {
-                                    notificationRepository.sendFcmToken(user?.uuid ?: "", fcmToken)
-                                    //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
-                                    Log.d("FCM", "Sending token to server: $fcmToken")
-                                }
-                            }
-                            hasSentFCM = true
+                }
+            }
+            if (!hasSentFCM) {
+                // fcm토큰 전송
+                user?.uuid.let { userId ->
+                    FirebaseTokenManager.getToken()?.let { fcmToken ->
+                        viewModelScope.launch {
+                            notificationRepository.sendFcmToken(user?.uuid ?: "", fcmToken)
+                            //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
+                            Log.d("FCM", "Sending token to server: $fcmToken")
                         }
                     }
+                    userDataStore.saveHasSentFCM()
 
                 }
             }

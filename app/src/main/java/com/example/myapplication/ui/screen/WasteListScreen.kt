@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.screen
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,15 +11,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Cached
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,12 +40,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -48,6 +52,8 @@ import com.example.myapplication.data.waste.SearchRequest
 import com.example.myapplication.ui.component.SearchFilterDialog
 import com.example.myapplication.ui.component.WasteItemDetailComponent
 import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.getAutoTextColor
+import com.example.myapplication.utils.getStatusColor
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,13 +84,18 @@ fun WasteListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val wasteStatusList = wasteListViewModel.wasteStatusList
-    val wasteStorageList = wasteListViewModel.wasteStorageList
-    val beaconList = wasteListViewModel.beaconList
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
+    val bgColor = MaterialTheme.colorScheme.primary
+    val textColor = getAutoTextColor(bgColor)
 
     var authChecked by remember { mutableStateOf(false) }
     var wasteIdText by remember { mutableStateOf<String>("") }
+
+    val iconSize =
+        with(LocalDensity.current) { MaterialTheme.typography.displaySmall.fontSize.toDp() }
 
     CheckAuth(navController, role = Roles.USER) {
         authChecked = true
@@ -121,6 +132,7 @@ fun WasteListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .widthIn(max = 600.dp) // ✅ 너비 제한
             .padding(16.dp)
     ) {
         Row(
@@ -138,7 +150,7 @@ fun WasteListScreen(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
+                        contentDescription = "Search",
                     )
                 },
                 label = { Text("폐기물 ID를 입력하세요") },
@@ -150,9 +162,12 @@ fun WasteListScreen(
             // 필터 버튼
             IconButton(
                 onClick = { showFilterDialog = true },
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "필터")
+                ) {
+                Icon(
+                    imageVector = Icons.Default.Apps,
+                    contentDescription = "필터",
+                    modifier = Modifier.size(iconSize)
+                )
             }
         }
 
@@ -197,67 +212,119 @@ fun WasteListScreen(
                                 focusManager.clearFocus()  // 입력 포커스 해제
                                 showDropdown = false
                             },
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(
+                                alpha = 0.8f
+                            )
+                        ),
                         border = BorderStroke(1.dp, Color.Gray)
                     ) {
-                        Text(
-                            text = buildAnnotatedString {
-                                withStyle(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black
-                                    )
-                                ) {
-                                    append("폐기물 아이디: ")
-                                }
-                                append("${item.id}\n")
-                                withStyle(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black
-                                    )
-                                ) {
-                                    append("🗑 폐기물 유형: ")
-                                }
-                                append("${dropBarWasteType?.typeName}\n")
-
-                                withStyle(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFFD2B48C)
-                                    )
-                                ) {
-                                    append("📦 저장위치: ")
-                                }
-                                append("${dropBarWasteStorage?.storageName}\n")
-
-                                withStyle(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.Gray
-                                    )
-                                ) {
-                                    append("➡️ 현재 상태: ")
-                                }
-                                append("${dropBarWasteStatus?.description}\n")
-
-                                withStyle(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.DarkGray
-                                    )
-                                ) {
-                                    append("📍 비콘: ")
-                                }
-                                Log.d("BEACON", dropBarBeacon.toString())
-                                append("${dropBarBeacon?.label}\n")
-
-                            },
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
-                        )
+                        ) {
+                            // 폐기물 ID
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = "폐기물 ID",
+                                    tint = textColor
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "폐기물 아이디",
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = item.id.toString(), color = textColor)
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // 폐기물 유형
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.DeleteOutline,
+                                    contentDescription = "폐기물 유형",
+                                    tint = textColor
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "폐기물 유형",
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = dropBarWasteType?.typeName ?: "", color = textColor)
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // 저장 위치
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Inventory2,
+                                    contentDescription = "저장 위치",
+                                    tint = textColor
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "저장위치",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = dropBarWasteStorage?.storageName ?: "",
+                                    color = textColor
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // 현재 상태
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Cached,
+                                    contentDescription = "현재 상태",
+                                    tint = textColor
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "현재 상태",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = dropBarWasteStatus?.description ?: "",
+                                    color = getStatusColor(dropBarWasteStatus),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // 비콘
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.LocationOn,
+                                    contentDescription = "비콘",
+                                    tint = textColor
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "비콘",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = dropBarBeacon?.label ?: "", color = textColor)
+                            }
+                        }
+
                     }
                 }
             }

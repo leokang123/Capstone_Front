@@ -16,9 +16,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,9 +48,9 @@ fun WasteEditDialog(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val wasteStorageList = wasteListViewModel.wasteStorageList
-    val wasteTypeList = wasteListViewModel.wasteTypeList
-    val beaconList = wasteListViewModel.beaconList
+    val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+    val beaconList by wasteListViewModel.beaconList.collectAsState()
+    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
 
     // 상태 관리 (선택된 값)
     var selectedWasteTypeId by remember { mutableIntStateOf(selectedItem.wasteType) }
@@ -61,6 +63,7 @@ fun WasteEditDialog(
     var expandedType by remember { mutableStateOf(false) }
     var expandedStorage by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) } // 블루투스 검색 다이얼로그
+    val baseColor = MaterialTheme.colorScheme.onSurface
 
 //    var wasteDetailsList = remember {
 //        mutableStateListOf(*selectedItem.logs.toTypedArray())
@@ -84,7 +87,7 @@ fun WasteEditDialog(
                         val wasteType = wasteTypeList.find { selectedWasteTypeId == it.id }
                         Text(
                             text = wasteType?.typeName.toString(),
-                            color = if (expandedType) Color.Gray else Color.Black
+                            color = if (expandedType) baseColor.copy(alpha = 0.5f) else baseColor
                         )
                     }
                     DropdownMenu(
@@ -116,7 +119,7 @@ fun WasteEditDialog(
                         val wasteStorage = wasteStorageList.find { selectedWasteStorageId == it.id }
                         Text(
                             text = wasteStorage?.storageName.toString(),
-                            color = if (expandedStorage) Color.Gray else Color.Black
+                            color = if (expandedStorage) baseColor.copy(alpha = 0.5f) else baseColor
                         )
                     }
                     DropdownMenu(
@@ -156,7 +159,7 @@ fun WasteEditDialog(
 
                 // 블루투스 검색 다이얼로그
                 if (showDialog) {
-                    BluetoothDialog(beaconViewModel, onDismiss = {
+                    BluetoothDialog(beaconViewModel, isRegister = true, onDismiss = {
                         showDialog = false
                         selectedDeviceId = beaconViewModel.selectedBeaconId.value ?: 0
                     })
