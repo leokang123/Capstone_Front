@@ -8,8 +8,6 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
-# 기존 버전들 유지 + Room 추가
-gradlePlugin = "8.2.0"
 coroutines = "1.7.3"
 # Room 관련 버전 추가
 room = "2.6.1"
@@ -53,10 +51,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 # 기존 AndroidX 및 Compose 관련 라이브러리 유지
 coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
-# Room 관련 라이브러리 추가
-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navCompose" }
 

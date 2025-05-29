@@ -65,9 +65,9 @@ dependencies {
     implementation(libs.coroutines)
 
     // Room (데이터베이스)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    kapt(libs.room.compiler) // Room의 Annotation Processor
+//    implementation(libs.room.runtime)
+//    implementation(libs.room.ktx)
+//    kapt(libs.room.compiler) // Room의 Annotation Processor
 
     implementation(libs.androidx.navigation.compose)
 
