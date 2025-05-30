@@ -99,7 +99,7 @@ fun WasteRegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     val wasteType = wasteTypeList.find { it.id == waste?.wasteTypeId }

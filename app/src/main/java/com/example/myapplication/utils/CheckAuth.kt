@@ -18,13 +18,14 @@ fun CheckAuth(
     navController: NavController,
     role: Roles = Roles.USER,
     viewModel: AuthViewModel = hiltViewModel(),
+    checkFcm: Boolean = true,
     onAuthSuccess: () -> Unit
 ) {
     val context = LocalContext.current
     val authState by viewModel.authState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.checkAuth(role)
+        viewModel.checkAuth(role, checkFcm)
     }
 
     when (authState) {

@@ -21,7 +21,6 @@ class LoginRepositoryImpl @Inject constructor(
     override suspend fun loginUser(user: User): User? {
         val response = apiService.signIn(user)
         return if (response.isSuccessful) {
-            Log.d("LOGIN_DEBUG", response.toString())
             val user = response.body()
             user
         } else {
@@ -58,7 +57,6 @@ class LoginRepositoryImpl @Inject constructor(
     override suspend fun logoutUser(uuid: String): Boolean {
         val response = apiService.logout(uuid)
         return if (response.isSuccessful) {
-            Log.d("LOGOUT_DEBUG", response.toString())
             true
         } else {
             val errorBody = response.errorBody()?.string()

@@ -71,7 +71,6 @@ fun HomeScreen(
 
     // 토큰 검증
     CheckAuth(navController, role = Roles.USER) {
-
         authChecked = true
     }
 

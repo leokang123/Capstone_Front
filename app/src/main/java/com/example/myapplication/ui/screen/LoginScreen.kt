@@ -69,6 +69,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        viewModel.getHospitalList()
         viewModel.loginSuccess.collect { success ->
             if (success) {
                 Toast.makeText(context, "Login Succeed", Toast.LENGTH_SHORT).show()

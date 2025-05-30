@@ -25,27 +25,14 @@ class AuthViewModel @Inject constructor(
 
     private var hasSentFCM = false
 
-    init {
+    fun checkAuth(requiredRole: Roles, checkFcm: Boolean) {
         viewModelScope.launch {
-            hasSentFCM = userDataStore.getHasSentFCM() == true
-        }
-    }
+            if (checkFcm) {
+                hasSentFCM = userDataStore.getHasSentFCM() == true
+            }
 
-    fun checkAuth(requiredRole: Roles) {
-        viewModelScope.launch {
             val token = userDataStore.getAccessToken()
             val user = userDataStore.getUser()
-            val storage = userDataStore.getWasteStorageList()
-            val beacon = userDataStore.getBeaconList()
-            val wasteType = userDataStore.getWasteTypeList()
-            val hospital = userDataStore.getHospitalList()
-            val wasteStatus = userDataStore.getWasteStatusList()
-
-            Log.d("TEST", storage.toString())
-            Log.d("TEST", beacon.toString())
-            Log.d("TEST", wasteType.toString())
-            Log.d("TEST", wasteStatus.toString())
-            Log.d("TEST", hospital.toString())
 
             when {
                 token.isNullOrBlank() -> _authState.value = AuthState.NotLoggedIn
@@ -56,6 +43,7 @@ class AuthViewModel @Inject constructor(
                     _authState.value = AuthState.Authorized(user)
                 }
             }
+
             if (!hasSentFCM) {
                 // fcm토큰 전송
                 user?.uuid.let { userId ->

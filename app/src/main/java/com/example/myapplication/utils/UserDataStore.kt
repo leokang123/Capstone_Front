@@ -117,7 +117,14 @@ class UserDataStore @Inject constructor(
             preferences[darkThemeKey] ?: false
         }
 
+    suspend fun saveHasNotification(value: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[booleanPreferencesKey("has_notification")] = value
+        }
+    }
 
+    val hasNotification: Flow<Boolean> = dataStore.data
+        .map { prefs -> prefs[booleanPreferencesKey("has_notification")] == true }
 
     suspend fun getHasSentFCM(): Boolean? {
         return dataStore.data.first()[booleanPreferencesKey]

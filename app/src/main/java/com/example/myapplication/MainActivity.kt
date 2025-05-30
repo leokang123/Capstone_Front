@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -14,17 +15,26 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.utils.FirebaseTokenManager
+import com.example.myapplication.utils.UserDataStore
 import com.example.myapplication.viewmodel.LoginViewModel
 import com.example.myapplication.viewmodel.SettingsViewModel
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var userDataStore: UserDataStore
+
     // 앱 처음 생성될때 실행
     private val viewModel: LoginViewModel by viewModels()
-    private var hasFetchedToken = false
+    private var isFirstResume = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -43,11 +53,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!hasFetchedToken) fetchFcmToken()
+        fetchFcmToken()
+        if (isFirstResume) {
+            isFirstResume = false
+            return
+        }
         viewModel.onResumed()
+
+        // 알림 아이콘 변경을 위함
+        val notificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        val isActive = notificationManager.activeNotifications.isNotEmpty()
+
+        Log.d("NOTIFICATION", "onResume - active: $isActive")
+
+        // userDataStore에 저장
+        CoroutineScope(Dispatchers.IO).launch {
+            userDataStore.saveHasNotification(isActive)
+        }
     }
-
-
 
     private fun fetchFcmToken() {
         FirebaseMessaging.getInstance().token
@@ -59,7 +84,6 @@ class MainActivity : ComponentActivity() {
                 val token = task.result
                 Log.d("FCM", "FCM Token: $token")
                 FirebaseTokenManager.setToken(token)
-                hasFetchedToken = true
 
             }
     }

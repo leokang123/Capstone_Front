@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.entity.User
 import com.example.myapplication.data.enums.Roles
-import com.example.myapplication.repository.EtcRepository
 import com.example.myapplication.repository.LoginRepository
+import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
-    private val etcRepository: EtcRepository
+    private val userDataStore: UserDataStore
 ) : ViewModel() {
 
     val username = mutableStateOf("")
@@ -41,8 +41,8 @@ class RegisterViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                val hosList = etcRepository.getHospitalList()
-                hospitalList.value = hosList?.ifEmpty { mockList() } ?: mockList()
+                val hosList = userDataStore.getHospitalList()
+                hospitalList.value = hosList.ifEmpty { mockList() }
             } catch (_: Exception) {
                 hospitalList.value = mockList()
                 _toastMessage.emit("병원 목록을 불러오는데 실패했습니다.")

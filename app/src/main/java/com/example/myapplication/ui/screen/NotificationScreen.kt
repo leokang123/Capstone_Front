@@ -1,6 +1,9 @@
 package com.example.myapplication.ui.screen
 
 
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,7 +60,7 @@ fun NotificationDialog(
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp) // ✅ 높이 고정
+                .height(500.dp)
                 .padding(16.dp)
         ) {
             NotificationScreen(navController, alarmViewModel)
@@ -69,9 +73,17 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
 
     val notifications: List<AlarmData> by viewModel.alarmList.collectAsState()
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getAlarmList()
+        viewModel.setNotificationState(false)
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val activeNotifications = notificationManager.activeNotifications
+
+        if (activeNotifications.isNotEmpty()) {
+            notificationManager.cancelAll()
+        }
     }
 
     var selectedNotification by remember { mutableStateOf<AlarmData?>(null) }

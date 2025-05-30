@@ -1,14 +1,12 @@
 package com.example.myapplication
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,7 +15,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
@@ -27,11 +24,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,6 +47,7 @@ import com.example.myapplication.ui.screen.WasteRegisterScreen
 import com.example.myapplication.ui.screen.WasteRemoveScreen
 import com.example.myapplication.utils.AuthEventBus
 import com.example.myapplication.utils.DrawerContent
+import com.example.myapplication.viewmodel.AlarmViewModel
 import com.example.myapplication.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 
@@ -64,10 +60,11 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation() {
+fun AppNavigation(alarmViewModel: AlarmViewModel = hiltViewModel()) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer 상태 관리
     val scope = rememberCoroutineScope() // Drawer 열고 닫기 위한 CoroutineScope
+    val hasNotification by alarmViewModel.hasNotification.collectAsState()
 
     // 현재 네비게이션 상태 확인
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
@@ -129,9 +126,15 @@ fun AppNavigation() {
                                 navController.navigate("notification")
                             }) {
                                 Icon(
-                                    imageVector = Icons.Filled.Notifications,
-                                    contentDescription = "Notifications"
+                                    imageVector = if (hasNotification)
+                                        Icons.Filled.NotificationsActive
+                                    else
+                                        Icons.Filled.Notifications,
+                                    contentDescription = "알림",
+                                    tint = if (hasNotification) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface
                                 )
+
                             }
 
 

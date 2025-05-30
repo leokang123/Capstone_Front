@@ -41,24 +41,18 @@ class LoginViewModel @Inject constructor(
     private val _loginSuccess = MutableSharedFlow<Boolean>()
     val loginSuccess = _loginSuccess.asSharedFlow()
 
-    init {
-        viewModelScope.launch {
-            try {
-                hospitalList.value = masterDataRepository.getHospitalList()
-            } catch (e: Exception) {
-                Log.e("INIT_HOSPITAL", e.message.toString())
-            }
-        }
-    }
-
-
 
     fun onResumed() {
         viewModelScope.launch {
             val userHospitalId = userDataStore.getUser()?.hospital?.id
+            Log.d("USER", userDataStore.getUser().toString())
             userHospitalId?.let { masterDataRepository.initAll(it) }
             delay(1000)
         }
+    }
+
+    suspend fun getHospitalList() {
+        hospitalList.value = masterDataRepository.getHospitalList()
     }
 
     suspend fun initData(hospitalId: Int) {
@@ -100,19 +94,8 @@ class LoginViewModel @Inject constructor(
                         Log.e("LOGIN", "초기 데이터 로딩 실패", e)
                     }
                 }
+                _loginSuccess.emit(true)
 
-                // fcm 토큰 전송도 기다림 (launch 말고 그냥 suspend 호출)
-                loginUser.uuid.let { userId ->
-                    FirebaseTokenManager.getToken()?.let { fcmToken ->
-                        viewModelScope.launch {
-                            notificationRepository.sendFcmToken(userId, fcmToken)
-                            //서버로 fcm 토큰을 잘 보내고 있는지 확인하기 위한 코드, 나중에 지우기
-                            Log.d("FCM", "Sending token to server: $fcmToken")
-                            _loginSuccess.emit(true)
-
-                        }
-                    }?: _loginSuccess.emit(true)
-                }
 
             } catch (e: Exception) {
                 Log.e("LOGIN", "Login error", e)

@@ -5,8 +5,12 @@ import android.app.NotificationManager
 import android.content.Context
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.myapplication.utils.UserDataStore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -19,6 +23,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.d("FCM", "알림 수신: $title - $body")
 
         showNotification(title, body)
+
+        // 알림 아이콘 변경을 위함
+        val appContext = applicationContext
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val dataStore = UserDataStore(appContext)
+            dataStore.saveHasNotification(true)
+        }
+
     }
 
     private fun showNotification(title: String?, body: String?) {

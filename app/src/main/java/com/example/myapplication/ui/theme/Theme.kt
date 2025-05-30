@@ -40,7 +40,6 @@ fun MyApplicationTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    Log.d("ASD", colorScheme.toString())
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
