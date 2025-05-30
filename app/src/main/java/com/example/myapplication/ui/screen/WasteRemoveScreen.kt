@@ -1,10 +1,5 @@
 package com.example.myapplication.ui.screen
 
-/**
- * 폐기물 처리 창
- * 3/11(강정훈)
- * 아직 미구현 (디폴트창(DetailScreen) 넣어놓은게 고작)
- */
 
 import android.util.Log
 import android.widget.Toast

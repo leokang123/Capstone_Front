@@ -92,7 +92,6 @@ fun WasteRegisterScreen(
 
             items(wasteList.size) { index ->
                 val waste: WasteItem? = wasteList.getOrNull(index)
-                Log.d("wasteItem", waste.toString())
 
                 Card(
                     modifier = Modifier

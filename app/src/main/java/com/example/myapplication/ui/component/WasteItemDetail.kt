@@ -80,7 +80,6 @@ fun WasteItemDetailComponent(
     val beaconList by viewModel.beaconList.collectAsState()
     val textColor = MaterialTheme.colorScheme.onSurface
 
-    Log.d("DETAILS", selectedItem.toString())
     val collectingStatusId = wasteStatusList.find { it.statusLevel == 1 }?.id
     val selectedItemStorage = wasteStorageList.find { it.id == selectedItem.storage }
     val selectedItemType = wasteTypeList.find { it.id == selectedItem.wasteType }
@@ -91,7 +90,6 @@ fun WasteItemDetailComponent(
     val iconSize =
         with(LocalDensity.current) { MaterialTheme.typography.titleLarge.fontSize.toDp() }
 
-    Log.d("DATE", customDate)
 
     Row(
         modifier = Modifier
@@ -189,7 +187,7 @@ fun WasteItemDetailComponent(
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Person,
                     iconDescription = "등록자",
-                    )
+                )
 
                 InfoRow(
                     label = "저장위치",
@@ -197,7 +195,7 @@ fun WasteItemDetailComponent(
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Cabin,
                     iconDescription = "저장위치",
-                    )
+                )
 
                 InfoRow(
                     label = "발생일",
@@ -205,7 +203,7 @@ fun WasteItemDetailComponent(
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.CalendarMonth,
                     iconDescription = "발생일",
-                    )
+                )
 
                 InfoRow(
                     label = "사용기기",
@@ -213,7 +211,7 @@ fun WasteItemDetailComponent(
                     textStyle = MaterialTheme.typography.titleMedium,
                     icon = Icons.Outlined.Bluetooth,
                     iconDescription = "사용기기",
-                    )
+                )
 
             }
         }
@@ -221,7 +219,7 @@ fun WasteItemDetailComponent(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.Outlined.BookmarkBorder	,
+                imageVector = Icons.Outlined.BookmarkBorder,
                 contentDescription = "상세 내역",
                 tint = textColor
             )
@@ -372,7 +370,7 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel) {
 
             InfoRow(
                 label = "내용",
-                value = detail.description?: "",
+                value = detail.description ?: "",
                 color = textColor,
                 iconDescription = "내용",
                 textStyle = MaterialTheme.typography.bodyMedium,

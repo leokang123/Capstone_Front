@@ -1,10 +1,6 @@
 package com.example.myapplication.ui.screen
 
-/**
- * 폐기물 처리 창
- * 3/11(강정훈)
- * 아직 미구현 (디폴트창(DetailScreen) 넣어놓은게 고작)
- */
+
 
 import android.util.Log
 import android.widget.Toast
@@ -191,7 +187,6 @@ fun WasteMoveScreen(
                                 currentItemStorageId = wasteItem.storageId
                                 currentItemId = wasteItem.id
                                 currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
-                                Log.d("TEST_STATUS2", currentStatusId.toString())
                                 wasteItemDetails = wasteItem.description
                                 showDialog = true // 팝업창 띄우기
                             },
@@ -304,7 +299,6 @@ fun WasteMoveScreen(
             title = { Text("폐기물 이동 정보 입력") },
             text = {
                 val status = currentStatus
-                Log.d("TEST_STATUS", currentStatusId.toString())
                 Column {
                     Text(
                         text = "현재 상태: ${status?.description}",
