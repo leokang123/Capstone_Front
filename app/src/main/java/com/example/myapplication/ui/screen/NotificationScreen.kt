@@ -3,7 +3,6 @@ package com.example.myapplication.ui.screen
 
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

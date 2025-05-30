@@ -2,8 +2,6 @@ package com.example.myapplication
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -97,7 +95,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
         Log.d("FCM", "NotificationChannel 생성 완료")
     }

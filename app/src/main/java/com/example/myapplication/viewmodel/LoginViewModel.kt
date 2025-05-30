@@ -11,8 +11,6 @@ import com.example.myapplication.data.entity.Hospital
 import com.example.myapplication.data.entity.User
 import com.example.myapplication.repository.LoginRepository
 import com.example.myapplication.repository.impl.MasterDataRepository
-import com.example.myapplication.repository.impl.NotificationRepository
-import com.example.myapplication.utils.FirebaseTokenManager
 import com.example.myapplication.utils.UserDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -28,7 +26,6 @@ class LoginViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
     private val masterDataRepository: MasterDataRepository,
     private val userDataStore: UserDataStore,
-    private val notificationRepository: NotificationRepository
 ) : ViewModel() {
 
     var username by mutableStateOf("")

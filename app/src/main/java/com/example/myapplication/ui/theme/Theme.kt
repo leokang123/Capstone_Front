@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.theme
 
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

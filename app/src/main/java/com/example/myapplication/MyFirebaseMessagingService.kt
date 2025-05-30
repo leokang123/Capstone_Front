@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.myapplication.utils.UserDataStore
@@ -13,6 +12,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
+
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+
+        Log.d("FCM", "새 토큰 수신: $token")
+    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -46,7 +51,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             description = "서버에서 오는 일반 알림"
         }
         val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
 
