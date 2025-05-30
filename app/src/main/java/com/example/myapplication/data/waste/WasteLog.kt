@@ -4,7 +4,7 @@ package com.example.myapplication.data.waste
 
 data class WasteLog(
     val id: Int,
-    val description: String,
+    val description: String? = "",
     val statusId: Int,
     val wasteId: String,
     val userName: String,

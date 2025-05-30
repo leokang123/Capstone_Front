@@ -49,13 +49,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.enums.Roles
 import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.WasteStorage
 import com.example.myapplication.utils.CheckAuth
+import com.example.myapplication.utils.getStatusColor
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.delay
@@ -164,6 +170,7 @@ fun WasteRemoveScreen(
                             wasteItemDetails = wasteItem.description
                             showDialog = true // 팝업창 띄우기
                         },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Row(
@@ -202,11 +209,23 @@ fun WasteRemoveScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+
                             Text(
-                                text = "상태: ${status?.description}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface
+                                buildAnnotatedString {
+                                    append("상태: ")
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = getStatusColor(status),
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 2.sp
+                                        ),
+                                    ) {
+                                        append(status?.description)
+                                    }
+                                },
+                                style = MaterialTheme.typography.bodySmall
                             )
+
                         }
                     }
                 }

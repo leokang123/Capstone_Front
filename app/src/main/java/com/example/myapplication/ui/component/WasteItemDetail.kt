@@ -372,7 +372,7 @@ fun WasteDetailCard(detail: WasteLog, viewModel: WasteListViewModel) {
 
             InfoRow(
                 label = "내용",
-                value = detail.description,
+                value = detail.description?: "",
                 color = textColor,
                 iconDescription = "내용",
                 textStyle = MaterialTheme.typography.bodyMedium,
