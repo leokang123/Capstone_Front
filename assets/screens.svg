@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="1200">
     <style>.label {
         font-family: sans-serif;
@@ -6,28 +6,28 @@
         text-anchor: middle;
         fill: #333;
         }</style>
-    <image href="./assets/LoginScreen.png" x="110" y="0" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/LoginScreen.png?sanitize=true" x="110" y="0" width="180" height="120" />
     <text class="label" x="200" y="134">Login</text>
-    <image href="./assets/RegisterScreen.png" x="310" y="0" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/RegisterScreen.png?sanitize=true" x="310" y="0" width="180" height="120" />
     <text class="label" x="400" y="134">Register</text>
-    <image href="./assets/NotificationScreen.png" x="10" y="200" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/NotificationScreen.png?sanitize=true" x="10" y="200" width="180" height="120" />
     <text class="label" x="100" y="334">Notification</text>
-    <image href="./assets/SettingsScreen.png" x="210" y="200" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/SettingsScreen.png?sanitize=true" x="210" y="200" width="180" height="120" />
     <text class="label" x="300" y="334">Settings</text>
-    <image href="./assets/ProfileEditScreen.png" x="410" y="200" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/ProfileEditScreen.png?sanitize=true" x="410" y="200" width="180" height="120" />
     <text class="label" x="500" y="334">Profile Edit</text>
-    <image href="./assets/HomeScreen.png" x="110" y="400" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/HomeScreen.png?sanitize=true" x="110" y="400" width="180" height="120" />
     <text class="label" x="200" y="534">Home</text>
-    <image href="./assets/DarkModeScreen.png" x="310" y="400" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/DarkModeScreen.png?sanitize=true" x="310" y="400" width="180" height="120" />
     <text class="label" x="400" y="534">Dark Mode</text>
-    <image href="./assets/WasteRegisterScreen.png" x="210" y="600" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/WasteRegisterScreen.png?sanitize=true" x="210" y="600" width="180" height="120" />
     <text class="label" x="300" y="734">Waste Register</text>
-    <image href="./assets/WasteListScreen.png" x="110" y="800" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/WasteListScreen.png?sanitize=true" x="110" y="800" width="180" height="120" />
     <text class="label" x="200" y="934">Waste List</text>
-    <image href="./assets/WasteDetailScreen.png" x="310" y="800" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/WasteDetailScreen.png?sanitize=true" x="310" y="800" width="180" height="120" />
     <text class="label" x="400" y="934">Waste Detail</text>
-    <image href="./assets/WasteMoveScreen.png" x="110" y="1000" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/WasteMoveScreen.png?sanitize=true" x="110" y="1000" width="180" height="120" />
     <text class="label" x="200" y="1134">Waste Move</text>
-    <image href="./assets/WasteRemoveScreen.png" x="310" y="1000" width="180" height="120"/>
+    <image href="https://raw.githubusercontent.com/leokang123/Capstone_Front/main/assets/WasteRemoveScreen.png?sanitize=true" x="310" y="1000" width="180" height="120" />
     <text class="label" x="400" y="1134">Waste Remove</text>
 </svg>
