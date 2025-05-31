@@ -97,7 +97,7 @@ fun WasteRemoveScreen(
     val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
     val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
 
-
+    val isLoading by wasteListViewModel.isLoading.collectAsState()
     var isScanning by remember { mutableStateOf(false) }
     val baseColor = MaterialTheme.colorScheme.onSurface
 
@@ -145,6 +145,11 @@ fun WasteRemoveScreen(
             }
         }
 
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         // 체크리스트 UI
         LazyColumn(
             modifier = Modifier

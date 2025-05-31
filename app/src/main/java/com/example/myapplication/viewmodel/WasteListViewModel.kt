@@ -81,6 +81,7 @@ class WasteListViewModel @Inject constructor(
     fun fetchWasteList(mode: Int = 1, beaconList: List<String>? = null) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val response =
                     if (beaconList != null) wasteRepository.getWasteItemsByAddress(beaconList)
                     else wasteRepository.getWasteItems()
@@ -99,6 +100,8 @@ class WasteListViewModel @Inject constructor(
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -106,6 +109,7 @@ class WasteListViewModel @Inject constructor(
     fun fetchStorageWasteList(wasteStorageId: Int) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val response = wasteRepository.getStorageWasteItems(wasteStorageId)
                 val targetIds = wasteStatusList.value
                     .filter { it.statusLevel == 3 || it.statusLevel == 4 }
@@ -115,6 +119,8 @@ class WasteListViewModel @Inject constructor(
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 초기화
                 Log.e("WasteListViewModel", "API 요청 실패", e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
