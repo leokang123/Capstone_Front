@@ -129,7 +129,7 @@ fun HomeScreen(
                 Text(
                     buildAnnotatedString {
                         append(user?.hospital?.hospitalName ?: "")
-                        append(" ")
+                        append("  ")
 
                         withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                             append("${user?.primaryRoles}")

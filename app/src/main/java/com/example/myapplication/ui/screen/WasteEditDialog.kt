@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.data.waste.WasteItem
 import com.example.myapplication.data.waste.WasteItemDetails
-import com.example.myapplication.utils.getAutoTextColor
 import com.example.myapplication.viewmodel.BlueToothViewModel
 import com.example.myapplication.viewmodel.WasteListViewModel
 import kotlinx.coroutines.launch
@@ -181,7 +180,7 @@ fun WasteEditDialog(
                             beaconId = selectedDeviceId,
                             wasteTypeId = selectedWasteTypeId,
                             wasteStatusId = selectedItem.wasteStatus,
-                            description = wasteDetails,
+                            description = "[정정된 정보] $wasteDetails",
                         )
                         wasteListViewModel.updateItem(updatedItem)
                         Toast.makeText(context, "정정 성공", Toast.LENGTH_SHORT).show()

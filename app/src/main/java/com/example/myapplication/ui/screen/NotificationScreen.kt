@@ -5,18 +5,21 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,9 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -73,9 +78,17 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
     val notifications: List<AlarmData> by viewModel.alarmList.collectAsState()
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
     val context = LocalContext.current
+    var isRead by remember { mutableIntStateOf(0) }
+
+    var selectedNotification by remember { mutableStateOf<AlarmData?>(null) }
+    val parsedTime = selectedNotification?.receivedAt?.let { LocalDateTime.parse(it) }
+    val isLoading by viewModel.isLoading.collectAsState()
+
     LaunchedEffect(Unit) {
-        viewModel.getAlarmList()
+        val alarms = viewModel.getAlarmList()
+        isRead = viewModel.getNotificationCount()
         viewModel.setNotificationState(false)
+        viewModel.setNotificationCount(alarms?.size ?: 0)
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val activeNotifications = notificationManager.activeNotifications
@@ -85,20 +98,24 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
         }
     }
 
-    var selectedNotification by remember { mutableStateOf<AlarmData?>(null) }
-    val parsedTime = selectedNotification?.receivedAt?.let { LocalDateTime.parse(it) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notification", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
-
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         LazyColumn(
             modifier = Modifier
                 .weight(1f) // 남은 영역 전부 차지
                 .fillMaxWidth()
         ) {
-            items(notifications) { notification ->
-                NotificationItem(notification) { selectedNotification = it }
+            itemsIndexed(notifications) { index, notification ->
+                val newCount = notifications.size - isRead
+                val isNew = index < newCount
+                NotificationItem(notification, isNew = isNew) { selectedNotification = it }
             }
         }
 
@@ -140,7 +157,7 @@ fun NotificationScreen(navController: NavController, viewModel: AlarmViewModel) 
  * 긴 공지는 50자로 제한하고, 클릭하면 전체 내용을 볼 수 있도록 설정
  */
 @Composable
-fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
+fun NotificationItem(notification: AlarmData, isNew: Boolean = true, onClick: (AlarmData) -> Unit) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
     val maxLength = 15
@@ -158,7 +175,11 @@ fun NotificationItem(notification: AlarmData, onClick: (AlarmData) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+            .border(
+                if (!isNew) 1.dp else 1.6.dp,
+                if (!isNew) Color.Gray else MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp)
+            )
             .clickable { onClick(notification) },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

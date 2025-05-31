@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,17 +31,27 @@ class AlarmViewModel @Inject constructor(
     private val _hasNotification = MutableStateFlow(false)
     val hasNotification: StateFlow<Boolean> = _hasNotification.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
     init {
         viewModelScope.launch {
             userDataStore.hasNotification.collect {
                 _hasNotification.value = it
             }
         }
+
     }
 
-    suspend fun getAlarmList() {
+    suspend fun getNotificationCount(): Int {
+        return userDataStore.lastReadNotificationCountFlow.first()
+    }
+
+    suspend fun getAlarmList(): List<AlarmData>? {
+        _isLoading.value = true
         val response = masterDataRepository.getAlarmList()
+        _isLoading.value = false
         _alarmList.value = response ?: emptyList()
+        return response
     }
 
 
@@ -48,6 +59,12 @@ class AlarmViewModel @Inject constructor(
         _hasNotification.value = active
         viewModelScope.launch {
             userDataStore.saveHasNotification(active)
+        }
+    }
+
+    fun setNotificationCount(count: Int) {
+        viewModelScope.launch {
+            userDataStore.setLastReadNotificationCount(count)
         }
     }
 

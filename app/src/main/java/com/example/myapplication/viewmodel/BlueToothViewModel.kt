@@ -15,15 +15,19 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.entity.Beacon
 import com.example.myapplication.data.entity.RealBeacon
 import com.example.myapplication.repository.impl.MasterDataRepository
 import com.example.myapplication.utils.isEmulator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -60,6 +64,9 @@ class BlueToothViewModel @Inject constructor(
     private val _selectedBeaconId = MutableStateFlow<Int?>(null)
     val selectedBeaconId: StateFlow<Int?> = _selectedBeaconId
 
+    private val _isScanning = MutableStateFlow(false)
+    val isScanning: StateFlow<Boolean> = _isScanning
+
     fun selectBeacon(id: Int) {
         _selectedBeaconId.value = id
     }
@@ -78,12 +85,16 @@ class BlueToothViewModel @Inject constructor(
 
     /** 🚀 블루투스 검색 시작 */
     fun startScan(scanTime: Long = 10L) {
-        if (isEmulator()) {
-            Log.d(TAG, "Running on Emulator - Using Mock Data")
-            mockBluetoothDevices()
-        } else {
-            Log.d(TAG, "Starting Bluetooth scan...")
-            scanRealDevices(scanTime)
+        viewModelScope.launch {
+            _isScanning.value = true
+            if (isEmulator()) {
+                Log.d(TAG, "Running on Emulator - Using Mock Data")
+                mockBluetoothDevices()
+            } else {
+                Log.d(TAG, "Starting Bluetooth scan...")
+                scanRealDevices(scanTime)
+            }
+            _isScanning.value = false
         }
 //
     }
@@ -115,15 +126,14 @@ class BlueToothViewModel @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    private fun scanRealDevices(scanTime: Long) {
+    private suspend fun scanRealDevices(scanTimeSec: Long) = withContext(Dispatchers.Main) {
         resetBeacon()
         if (scanner == null || bluetoothAdapter?.isEnabled != true) {
             Log.w(TAG, "Bluetooth is disabled or scanner is null.")
-            return
+            return@withContext
         }
 
-
-        if (!hasScanPermission()) return
+        if (!hasScanPermission()) return@withContext
 
         if (scanCallback == null) {
             scanCallback = object : ScanCallback() {
@@ -134,7 +144,6 @@ class BlueToothViewModel @Inject constructor(
                             currentDevices.add(device)
                             _devices.value = currentDevices
                             matchBeacons()
-
                         }
                     }
                 }
@@ -144,16 +153,18 @@ class BlueToothViewModel @Inject constructor(
                 }
             }
         }
+
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
 
         scanner?.startScan(null, settings, scanCallback)
 
-        android.os.Handler(context.mainLooper).postDelayed({
-            stopScan()
-            Log.d("BEACON_SCAN", "스캔 자동 종료됨")
-        }, scanTime * 1000) // 10초 = 10,000ms
+        // 일정 시간 동안 대기 (scanTimeSec 초)
+        delay(scanTimeSec * 1000)
+
+        stopScan()
+        Log.d("BEACON_SCAN", "스캔 자동 종료됨")
     }
 
     /** 🚀 블루투스 검색 중지 */
@@ -181,7 +192,8 @@ class BlueToothViewModel @Inject constructor(
 //    }
 
 
-    private fun mockBluetoothDevices() {
+    private suspend fun mockBluetoothDevices() {
+        delay(3000L)
         val beacon1 = RealBeacon(
             name = "123",
             deviceAddress = "asdfawef",

@@ -52,12 +52,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         fetchFcmToken()
-        if (isFirstResume) {
-            isFirstResume = false
-            return
-        }
-        viewModel.onResumed()
-
         // 알림 아이콘 변경을 위함
         val notificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -70,6 +64,14 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             userDataStore.saveHasNotification(isActive)
         }
+
+        if (isFirstResume) {
+            isFirstResume = false
+            return
+        }
+        viewModel.onResumed()
+
+
     }
 
     private fun fetchFcmToken() {

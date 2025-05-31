@@ -3,8 +3,8 @@ package com.example.myapplication.ui.screen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -90,6 +92,7 @@ fun BluetoothScreen(
     val devices by if (isRegister) viewModel.notUsedServerBeacon.collectAsState() else viewModel.serverBeacons.collectAsState()
     var selectedDevice by remember { mutableStateOf<Beacon?>(null) }
 
+    val isLoading by viewModel.isScanning.collectAsState()
 
     Column(
         modifier = Modifier
@@ -107,23 +110,24 @@ fun BluetoothScreen(
         ) {
             Text("Scan Devices")
         }
-
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         // 블루투스 장치 목록 표시
         LazyColumn {
             items(devices) { device ->
                 DeviceItem(device) { selected ->
                     viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
-                    Log.d("DISMISSS", "왜 안되지1")
-//                    viewModel.updateBeacon(selected.copy(used = true))
                     onDismiss()
-                    Log.d("DISMISSS", "왜 안되지2")
                 }
             }
         }
         Spacer(Modifier.height(8.dp))
 
-        Text("10초간 검색합니다", color = MaterialTheme.colorScheme.secondary)
+        Text("10초간 검색합니다", color = MaterialTheme.colorScheme.onSurface)
 
     }
 }

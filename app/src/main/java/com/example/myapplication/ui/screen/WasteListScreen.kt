@@ -2,6 +2,7 @@ package com.example.myapplication.ui.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -84,6 +86,8 @@ fun WasteListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
+    val isLoading by wasteListViewModel.isLoading.collectAsState()
+
     val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
     val beaconList by wasteListViewModel.beaconList.collectAsState()
     val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
@@ -132,7 +136,7 @@ fun WasteListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .widthIn(max = 600.dp) // ✅ 너비 제한
+            .widthIn(max = 600.dp)
             .padding(16.dp)
     ) {
         Row(
@@ -189,6 +193,11 @@ fun WasteListScreen(
                     showFilterDialog = false
                 }
             )
+        }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
         // 검색어가 입력될 때 자동완성 하단 바 표시
         if (!isSelected && filteredItems.isNotEmpty()) {

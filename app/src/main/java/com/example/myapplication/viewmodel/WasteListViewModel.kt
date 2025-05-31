@@ -44,6 +44,7 @@ class WasteListViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
     var storageBeaconList = emptyList<String?>()
 
     // 폐기물 리스트 (전체 리스트 + 검색 결과 포함)
@@ -122,6 +123,7 @@ class WasteListViewModel @Inject constructor(
     fun searchWasteItems(searchRequest: SearchRequest) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val result = wasteRepository.searchWasteItems(searchRequest)
                 // valid가 false나 null이면 배출완료인거랑 삭제된 수집중이 같이 나오는데 수집중인거 없앰
                 _wasteItems.value = result?.let {
@@ -131,6 +133,8 @@ class WasteListViewModel @Inject constructor(
             } catch (e: Exception) {
                 _wasteItems.value = emptyList() // 오류 발생 시 빈 리스트 반환
                 Log.e("WasteListViewModel", "검색 API 요청 실패", e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -138,11 +142,14 @@ class WasteListViewModel @Inject constructor(
     fun getWasteItemDetails(itemId: String) {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val result = wasteRepository.getDetailWasteItem(itemId)
                 _selectedItem.value = result // 선택된 아이템 업데이트
             } catch (e: Exception) {
                 Log.e("WasteListViewModel", "상세 정보 요청 실패", e)
                 _selectedItem.value = null // 오류 발생 시 초기화
+            } finally {
+                _isLoading.value = false
             }
         }
     }

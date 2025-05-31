@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.data.entity.AppUser
@@ -33,8 +34,21 @@ class UserDataStore @Inject constructor(
     private val booleanPreferencesKey = booleanPreferencesKey("hasSentFCM")
     private val darkThemeKey = booleanPreferencesKey("dark_theme_enabled")
     val appBarTitle = stringPreferencesKey("app_bar_title")
+    private val notificationCountKey = intPreferencesKey("notification_count")
 
     private val gson = Gson()
+
+    // 알림 갯수 저장
+    suspend fun setLastReadNotificationCount(count: Int) {
+        dataStore.edit { prefs ->
+            prefs[notificationCountKey] = count
+        }
+    }
+
+    // 알림 갯수 불러오기 (Flow)
+    val lastReadNotificationCountFlow: Flow<Int> = dataStore.data
+        .map { prefs -> prefs[notificationCountKey] ?: 0 }
+
 
     suspend fun saveUser(user: User, hospital: Hospital?) {
         val appUser = AppUser(
