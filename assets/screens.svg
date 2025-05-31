@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1200">
+    <style>
+        .label {
+        font-family: sans-serif;
+        font-size: 14px;
+        text-anchor: middle;
+        fill: #333;
+        }
+    </style>
+    <image href="https://github.com/user-attachments/assets/f1b924d8-fbf6-4c74-a371-fd7ab10fe854" x="110" y="0" width="180" height="120"/>
+    <text class="label" x="200" y="134">Login</text>
+    <image href="https://github.com/user-attachments/assets/b9849255-6cfa-4c74-a371-fd7ab10fe854" x="310" y="0" width="180" height="120"/>
+    <text class="label" x="400" y="134">Register</text>
+
+    <image href="https://github.com/user-attachments/assets/77279ae7-bd7f-48ba-807e-b0544075bcc8" x="10" y="200" width="180" height="120"/>
+    <text class="label" x="100" y="334">Notification</text>
+    <image href="https://github.com/user-attachments/assets/11bac255-a081-414f-a279-bd2b0cd9edd4" x="210" y="200" width="180" height="120"/>
+    <text class="label" x="300" y="334">Settings</text>
+    <image href="https://github.com/user-attachments/assets/065168d8-585d-44f4-b256-77ca15b384ec" x="410" y="200" width="180" height="120"/>
+    <text class="label" x="500" y="334">Profile Edit</text>
+
+    <image href="https://github.com/user-attachments/assets/1e4b61d3-39a2-4c16-918b-e2a21a7024f1" x="110" y="400" width="180" height="120"/>
+    <text class="label" x="200" y="534">Home</text>
+    <image href="https://github.com/user-attachments/assets/5f319da0-7a9b-468d-82b0-7635877d2cd4" x="310" y="400" width="180" height="120"/>
+    <text class="label" x="400" y="534">Dark Mode</text>
+
+    <image href="https://github.com/user-attachments/assets/d37e3015-4141-4cc8-80b2-061288a28b4f" x="210" y="600" width="180" height="120"/>
+    <text class="label" x="300" y="734">Waste Register</text>
+
+    <image href="https://github.com/user-attachments/assets/57f422b6-513b-4868-9a3d-fbc8283a3c77" x="110" y="800" width="180" height="120"/>
+    <text class="label" x="200" y="934">Waste List</text>
+    <image href="https://github.com/user-attachments/assets/129cf53b-bfd5-4aef-b0ee-80887b436b3f" x="310" y="800" width="180" height="120"/>
+    <text class="label" x="400" y="934">Waste Detail</text>
+
+    <image href="https://github.com/user-attachments/assets/02e0d253-3b46-4c47-84f0-04fd0fd11ff1" x="110" y="1000" width="180" height="120"/>
+    <text class="label" x="200" y="1134">Waste Move</text>
+    <image href="https://github.com/user-attachments/assets/43c02c82-f7cb-4e36-8423-b9ac3076c9ff" x="310" y="1000" width="180" height="120"/>
+    <text class="label" x="400" y="1134">Waste Remove</text>
+</svg>
