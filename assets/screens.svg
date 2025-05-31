@@ -6,28 +6,28 @@
         text-anchor: middle;
         fill: #333;
         }</style>
-    <image href="assets/screenCaptures/LoginScreen.png" x="110" y="0" width="180" height="120"/>
+    <image href="screenCaptures/LoginScreen.png" x="110" y="0" width="180" height="120"/>
     <text class="label" x="200" y="134">Login</text>
-    <image href="assets/screenCaptures/RegisterScreen.png" x="310" y="0" width="180" height="120"/>
+    <image href="screenCaptures/RegisterScreen.png" x="310" y="0" width="180" height="120"/>
     <text class="label" x="400" y="134">Register</text>
-    <image href="assets/screenCaptures/NotificationScreen.png" x="10" y="200" width="180" height="120"/>
+    <image href="screenCaptures/NotificationScreen.png" x="10" y="200" width="180" height="120"/>
     <text class="label" x="100" y="334">Notification</text>
-    <image href="assets/screenCaptures/SettingsScreen.png" x="210" y="200" width="180" height="120"/>
+    <image href="screenCaptures/SettingsScreen.png" x="210" y="200" width="180" height="120"/>
     <text class="label" x="300" y="334">Settings</text>
-    <image href="assets/screenCaptures/ProfileEditScreen.png" x="410" y="200" width="180" height="120"/>
+    <image href="screenCaptures/ProfileEditScreen.png" x="410" y="200" width="180" height="120"/>
     <text class="label" x="500" y="334">Profile Edit</text>
-    <image href="assets/screenCaptures/HomeScreen.png" x="110" y="400" width="180" height="120"/>
+    <image href="screenCaptures/HomeScreen.png" x="110" y="400" width="180" height="120"/>
     <text class="label" x="200" y="534">Home</text>
-    <image href="assets/screenCaptures/DarkModeScreen.png" x="310" y="400" width="180" height="120"/>
+    <image href="screenCaptures/DarkModeScreen.png" x="310" y="400" width="180" height="120"/>
     <text class="label" x="400" y="534">Dark Mode</text>
-    <image href="assets/screenCaptures/WasteRegisterScreen.png" x="210" y="600" width="180" height="120"/>
+    <image href="screenCaptures/WasteRegisterScreen.png" x="210" y="600" width="180" height="120"/>
     <text class="label" x="300" y="734">Waste Register</text>
-    <image href="assets/screenCaptures/WasteListScreen.png" x="110" y="800" width="180" height="120"/>
+    <image href="screenCaptures/WasteListScreen.png" x="110" y="800" width="180" height="120"/>
     <text class="label" x="200" y="934">Waste List</text>
-    <image href="assets/screenCaptures/WasteDetailScreen.png" x="310" y="800" width="180" height="120"/>
+    <image href="screenCaptures/WasteDetailScreen.png" x="310" y="800" width="180" height="120"/>
     <text class="label" x="400" y="934">Waste Detail</text>
-    <image href="assets/screenCaptures/WasteMoveScreen.png" x="110" y="1000" width="180" height="120"/>
+    <image href="screenCaptures/WasteMoveScreen.png" x="110" y="1000" width="180" height="120"/>
     <text class="label" x="200" y="1134">Waste Move</text>
-    <image href="assets/screenCaptures/WasteRemoveScreen.png" x="310" y="1000" width="180" height="120"/>
+    <image href="screenCaptures/WasteRemoveScreen.png" x="310" y="1000" width="180" height="120"/>
     <text class="label" x="400" y="1134">Waste Remove</text>
 </svg>
