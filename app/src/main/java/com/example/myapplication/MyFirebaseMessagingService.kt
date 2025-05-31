@@ -1,0 +1,69 @@
+package com.example.myapplication
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.myapplication.utils.UserDataStore
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+
+        Log.d("FCM", "새 토큰 수신: $token")
+    }
+
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+
+        val title = remoteMessage.notification?.title ?: "제목 없음"
+        val body = remoteMessage.notification?.body ?: "내용 없음"
+
+        Log.d("FCM", "알림 수신: $title - $body")
+
+        showNotification(title, body)
+
+        // 알림 아이콘 변경을 위함
+        val appContext = applicationContext
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val dataStore = UserDataStore(appContext)
+            dataStore.saveHasNotification(true)
+        }
+
+    }
+
+    private fun showNotification(title: String?, body: String?) {
+        val channelId = "admin_channel"
+
+        // 알림 채널 생성
+        val channel = NotificationChannel(
+            channelId,
+            "기본 알림 채널",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "서버에서 오는 일반 알림"
+        }
+        val notificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+
+
+        // 알림 생성
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        // 알림 표시
+        notificationManager.notify(1, builder.build())
+    }
+}

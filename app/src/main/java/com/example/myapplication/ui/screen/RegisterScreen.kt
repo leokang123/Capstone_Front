@@ -7,13 +7,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,18 +62,24 @@ fun RegisterScreen(
     val phoneNumber = registerViewModel.phoneNumber
     val name = registerViewModel.name
     val selectedHospital = registerViewModel.selectedHospital
-    val selectedRoleName = registerViewModel.selectedRoleName
-    val selectedRoleId = registerViewModel.selectedRoleId
 
     val passwordVisible = remember { mutableStateOf(false) }
     val confirmPasswordVisible = remember { mutableStateOf(false) }
     val showHospitalDropdown = remember { mutableStateOf(false) }
-    val showRoleDropdown = remember { mutableStateOf(false) }
 
     val isPasswordValid = registerViewModel.isPasswordValid()
     val isPasswordMatch = registerViewModel.isPasswordMatch()
     val isEmailValid = registerViewModel.isEmailValid()
+    val isPhoneValid = registerViewModel.isPhoneNumberValid()
     val isFormValid = registerViewModel.isFormValid()
+
+// 병원 검색용 상태
+    var searchHospitalQuery by remember { mutableStateOf("") }
+
+// 병원 리스트 필터링
+    val filteredHospitalList = hospitalList.filter {
+        it.hospitalName.contains(searchHospitalQuery, ignoreCase = true)
+    }
 
     LaunchedEffect(Unit) {
         registerViewModel.toastMessage.collect {
@@ -79,6 +91,9 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState()) // 스크롤 가능하게
+            .padding(16.dp)
+            .imePadding() // 키보드에 안 가리도록
     ) {
         Text("Sign Up", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
@@ -86,7 +101,7 @@ fun RegisterScreen(
         OutlinedTextField(
             value = username.value,
             onValueChange = { username.value = it },
-            label = { Text("UserName *") },
+            label = { Text("UserName") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         )
@@ -94,12 +109,12 @@ fun RegisterScreen(
         OutlinedTextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Password *") },
+            label = { Text("Password") },
             visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
                     Icon(
-                        imageVector = if (passwordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -115,12 +130,14 @@ fun RegisterScreen(
         OutlinedTextField(
             value = confirmPassword.value,
             onValueChange = { confirmPassword.value = it },
-            label = { Text("Confirm Password *") },
+            label = { Text("Confirm Password") },
             visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }) {
+                IconButton(onClick = {
+                    confirmPasswordVisible.value = !confirmPasswordVisible.value
+                }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (confirmPasswordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
@@ -160,66 +177,72 @@ fun RegisterScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.fillMaxWidth()
         )
-
-        // 역할 Dropdown
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = selectedRoleName.value,
-                onValueChange = {},
-                label = { Text("Select Role *") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showRoleDropdown.value = true }) {
-                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            DropdownMenu(
-                expanded = showRoleDropdown.value,
-                onDismissRequest = { showRoleDropdown.value = false }
-            ) {
-                registerViewModel.roles.forEach { role ->
-                    DropdownMenuItem(
-                        text = { Text(role.roleName) },
-                        onClick = {
-                            selectedRoleName.value = role.roleName
-                            selectedRoleId.longValue = role.id
-                            showRoleDropdown.value = false
-                        }
-                    )
-                }
-            }
+        if (phoneNumber.value.isNotEmpty() && !isPhoneValid) {
+            Text("유효한 휴대폰번호를 입력하세요. (XXX-XXXX-XXXX)", color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // 병원 Dropdown
-        Box(modifier = Modifier.fillMaxWidth()) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             OutlinedTextField(
                 value = selectedHospital.value?.hospitalName ?: "",
                 onValueChange = {},
-                label = { Text("Select Hospital *") },
+                label = { Text("Select Hospital") },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showHospitalDropdown.value = true }) {
-                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Dropdown")
+                        if (showHospitalDropdown.value) Icon(
+                            Icons.Filled.KeyboardArrowUp,
+                            contentDescription = "Dropdown"
+                        )
+                        else Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Dropdown")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             )
+
             DropdownMenu(
                 expanded = showHospitalDropdown.value,
-                onDismissRequest = { showHospitalDropdown.value = false }
+                onDismissRequest = {
+                    showHospitalDropdown.value = false
+                    searchHospitalQuery = ""
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                hospitalList.forEach { hospital ->
+                // 검색창 추가
+                OutlinedTextField(
+                    value = searchHospitalQuery,
+                    onValueChange = { searchHospitalQuery = it },
+                    label = { Text("병원 검색") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+
+                // 필터링된 병원 목록
+                if (filteredHospitalList.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text(hospital.hospitalName) },
-                        onClick = {
-                            selectedHospital.value = hospital
-                            showHospitalDropdown.value = false
-                        }
+                        text = { Text("검색 결과 없음") },
+                        onClick = {},
+                        enabled = false
                     )
+                } else {
+                    filteredHospitalList.forEach { hospital ->
+                        DropdownMenuItem(
+                            text = { Text(hospital.hospitalName) },
+                            onClick = {
+                                selectedHospital.value = hospital
+                                showHospitalDropdown.value = false
+                                searchHospitalQuery = ""
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -233,7 +256,13 @@ fun RegisterScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = isFormValid && isPasswordValid && isPasswordMatch && name.value.isNotBlank() && selectedHospital.value != null && selectedRoleName.value.isNotBlank()
+            enabled = isFormValid
+                    && isPasswordValid
+                    && isPasswordMatch
+                    && isPhoneValid
+                    && isEmailValid
+                    && name.value.isNotBlank()
+                    && selectedHospital.value != null
         ) {
             Text("Sign Up")
         }

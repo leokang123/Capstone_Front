@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.kotlin.kapt)
 
+    //알림을 위한 Firebase 관련
+    alias(libs.plugins.google.services)
 }
 hilt {
     enableAggregatingTask = false
@@ -63,9 +65,9 @@ dependencies {
     implementation(libs.coroutines)
 
     // Room (데이터베이스)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    kapt(libs.room.compiler) // Room의 Annotation Processor
+//    implementation(libs.room.runtime)
+//    implementation(libs.room.ktx)
+//    kapt(libs.room.compiler) // Room의 Annotation Processor
 
     implementation(libs.androidx.navigation.compose)
 
@@ -75,6 +77,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.com.google.gson)
     implementation(libs.androidx.datastore.preference)
+    implementation(libs.appcompat)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -92,5 +95,11 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.lifecycle.viewmodel.ktx)
+
+    //알림을 위한 Firebase 관련
+    implementation(platform(libs.firebase.bom))          // 🔹 BOM 설정
+    implementation(libs.firebase.messaging)
+
+    implementation(libs.compose.material.icons.extended)
 
 }

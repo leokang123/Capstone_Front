@@ -1,12 +1,14 @@
 package com.example.myapplication.data.waste
 
+import java.time.LocalDate
+
 data class SearchRequest(
-    val wasteType: String? = null,
-    val registrantName: String? = null,
-    val wasteStorageId: Long? = null,
-    val selectedDate: String? = null,
-    val selectedTime: String? = null,
-    val combineDate: String? = null,
-    val selectedDevice: String? = null,
-    val wasteStatus: String? = null
+    val wasteId: String? = null,
+    val beaconId: Int? = null,
+    val wasteTypeId: Int? = null,
+    val wasteStatusId: Int? = null,
+    val wasteStorageId: Int? = null,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val isValid: Boolean? = false,
 )

@@ -1,34 +1,30 @@
 package com.example.myapplication.repository
 
-import android.content.Context
-import android.util.Log
-import com.example.myapplication.data.auth.RegisterResponse
-import com.example.myapplication.data.waste.MoveRequests
+import com.example.myapplication.data.waste.MoveRequest
 import com.example.myapplication.data.waste.SearchRequest
-import com.example.myapplication.data.waste.WasteItemDetailResponse
-import com.example.myapplication.data.waste.WasteItemRequest
-import com.example.myapplication.data.waste.WasteItemResponse
-import com.example.myapplication.data.waste.WasteStorage
-import com.example.myapplication.network.ApiClient
-import com.example.myapplication.network.ApiService
+import com.example.myapplication.data.waste.WasteItem
+import com.example.myapplication.data.waste.WasteItemDetails
 
 interface WasteRepository {
-    suspend fun registerWaste(wasteRegisterRequest: WasteItemRequest): String?
-    suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItemResponse>?
+    suspend fun registerWaste(wasteItem: WasteItem): Boolean
+    suspend fun searchWasteItems(searchRequest: SearchRequest): List<WasteItem>?
 
-    suspend fun getWasteItems(): List<WasteItemResponse>?
+    suspend fun getWasteItems(): List<WasteItem>?
+    suspend fun getWasteItemsByAddress(beaconAddressList: List<String>): List<WasteItem>?
+    suspend fun getWasteItem(itemId: String): WasteItem?
 
-    suspend fun getStorageWasteItems(storageId: Long): List<WasteItemResponse>?
-    suspend fun getWasteItemsByName(wasteType: String): List<WasteItemResponse>?
-    suspend fun getWasteStorage(): List<WasteStorage>?
+    suspend fun getStorageWasteItems(storageId: Int): List<WasteItem>?
+    suspend fun getWasteItemsByName(wasteId: String): List<WasteItem>?
 
+    suspend fun moveWasteItem(moveRequest: MoveRequest)
 
-    suspend fun moveWasteItems(moveRequests: MoveRequests)
+    suspend fun moveWasteItems(moveRequestList: List<MoveRequest>)
 
-    suspend fun getDetailWasteItem(itemId: Long): WasteItemDetailResponse
+    suspend fun getDetailWasteItem(itemId: String): WasteItemDetails?
+
     suspend fun checkItemStatus(itemId: Long): Boolean
 
-    suspend fun updateItem(wasteItem: WasteItemDetailResponse)
+    suspend fun updateItem(wasteItem: WasteItem): WasteItem?
 
-    suspend fun deleteItem(itemId: Long): Boolean
+    suspend fun deleteItem(itemId: String): Boolean
 }

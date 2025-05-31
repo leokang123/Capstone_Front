@@ -3,12 +3,15 @@ package com.example.myapplication.ui.screen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,10 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.data.mock.MockBluetoothDevice
+import com.example.myapplication.data.entity.Beacon
 import com.example.myapplication.viewmodel.BlueToothViewModel
-import com.example.myapplication.viewmodel.SharedViewModel
 
 /**
  * 블루투스 모달창
@@ -46,10 +48,15 @@ import com.example.myapplication.viewmodel.SharedViewModel
 // 아래 BlueToothScreen 컴포저블을 모달창으로 만드는 컴포저블
 @Composable
 fun BluetoothDialog(
-    targetViewModel: SharedViewModel,
     viewModel: BlueToothViewModel = hiltViewModel(),
+    isRegister: Boolean = false,
     onDismiss: () -> Unit
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.updateBeaconList()
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -60,31 +67,28 @@ fun BluetoothDialog(
                 .padding(16.dp)
 
         ) {
-            BluetoothScreen(targetViewModel, viewModel, onDismiss)
+            BluetoothScreen(viewModel, isRegister, onDismiss)
         }
     }
 }
 
 /**
  * BlueToothScreen 컴포저블 (전체 화면으로 사용가능)
- * targetViewModel: 블루투스 기기 선택을 한 결과값을 저장하는 viewModel
+ * viewModel: 블루투스 기기 선택을 한 결과값을 저장하는 viewModel
  * viewModel: 블루투스 창에서 바뀐정보 저장하는 viewModel (안쓰일수도 있음, 추후에 필요없으면 없애기)
  * onDismiss: 종료 함수
  */
 
 @Composable
 fun BluetoothScreen(
-    targetViewModel: SharedViewModel,
-    viewModel: BlueToothViewModel = viewModel(),
-    onDismiss: () -> Unit
+    viewModel: BlueToothViewModel,
+    isRegister: Boolean,
+    onDismiss: () -> Unit,
 ) {
-    // 실제 폰
-    // val devices by viewModel.devices.collectAsState()
-    // var selectedDevice by remember { mutableStateOf<BluetoothDevice?>(null) }
 
     // 에뮬레이터 한정
-    val devices by viewModel.mockDevices.collectAsState()
-    var selectedDevice by remember { mutableStateOf<MockBluetoothDevice?>(null) }
+    val devices by if (isRegister) viewModel.notUsedServerBeacon.collectAsState() else viewModel.serverBeacons.collectAsState()
+    var selectedDevice by remember { mutableStateOf<Beacon?>(null) }
 
 
     Column(
@@ -92,12 +96,11 @@ fun BluetoothScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Nearby Bluetooth Devices", style = MaterialTheme.typography.headlineMedium)
+        Text("근처 비콘 검색", style = MaterialTheme.typography.headlineMedium)
 
         // 블루투스 스캔 버튼
         Button(
             onClick = {
-
                 viewModel.startScan()
             },
             modifier = Modifier.padding(vertical = 8.dp)
@@ -109,53 +112,25 @@ fun BluetoothScreen(
         LazyColumn {
             items(devices) { device ->
                 DeviceItem(device) { selected ->
-                    targetViewModel.selectDevice(selected.name + " " + selected.address)
+                    viewModel.selectBeacon(selected.id)
                     selectedDevice = selected
+                    Log.d("DISMISSS", "왜 안되지1")
+//                    viewModel.updateBeacon(selected.copy(used = true))
                     onDismiss()
+                    Log.d("DISMISSS", "왜 안되지2")
                 }
             }
         }
-        Button(
-            onClick = { viewModel.stopScan() },
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            Text("Stop Scanning")
-        }
+        Spacer(Modifier.height(8.dp))
+
+        Text("10초간 검색합니다", color = MaterialTheme.colorScheme.secondary)
+
     }
 }
-// 실제 폰
-//@Composable
-//fun DeviceItem(device: BluetoothDevice, onClick: (BluetoothDevice) -> Unit) {
-//    val context = LocalContext.current
-//
-//    // BLUETOOTH_CONNECT 권한 체크
-//    val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-//            device.name ?: "Unknown Device"
-//        } else {
-//            "Permission Required"
-//        }
-//    } else {
-//        device.name ?: "Unknown Device"
-//    }
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clickable { onClick(device) }
-//            .padding(16.dp)
-//    ) {
-//        Column {
-//            Text(text = deviceName, style = MaterialTheme.typography.bodyLarge)
-//            Text(text = device.address, style = MaterialTheme.typography.bodySmall)
-//        }
-//    }
-//}
 
 
-// 에뮬레이터 용
 @Composable
-fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Unit) {
+fun DeviceItem(device: Beacon, onClick: (Beacon) -> Unit) {
     val context = LocalContext.current
 
     // BLUETOOTH_CONNECT 권한 체크
@@ -165,12 +140,12 @@ fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Un
                 Manifest.permission.BLUETOOTH_CONNECT
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            device.name
+            device.label ?: "이름 없음"
         } else {
             "Permission Required"
         }
     } else {
-        device.name
+        device.label ?: "이름 없음"
     }
 
     Row(
@@ -181,7 +156,7 @@ fun DeviceItem(device: MockBluetoothDevice, onClick: (MockBluetoothDevice) -> Un
     ) {
         Column {
             Text(text = deviceName, style = MaterialTheme.typography.bodyLarge)
-            Text(text = device.address, style = MaterialTheme.typography.bodySmall)
+            Text(text = device.deviceAddress, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
