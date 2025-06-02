@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -87,15 +88,29 @@ fun WasteRemoveScreen(
     var currentDeviceAddress by remember { mutableStateOf<String?>("") }
 
     var currentStatusId by remember { mutableStateOf<Int?>(null) }
+    var currentItemStorageId by remember { mutableStateOf<Int?>(null) }
     var wasteItemDetails by remember { mutableStateOf("") }
+
 
     var selectedStorage by remember { mutableStateOf<WasteStorage?>(null) }
     // DropdownMenu 상태
     var expandedStorage by remember { mutableStateOf(false) }
     val beaconList by wasteListViewModel.beaconList.collectAsState()
-    val wasteStorageList by wasteListViewModel.wasteStorageList.collectAsState()
+    val storageList by wasteListViewModel.wasteStorageList.collectAsState()
     val wasteStatusList by wasteListViewModel.wasteStatusList.collectAsState()
     val wasteTypeList by wasteListViewModel.wasteTypeList.collectAsState()
+
+    val currentStatus by remember(currentStatusId, wasteStatusList) {
+        derivedStateOf {
+            wasteStatusList.find { it.id == currentStatusId }
+        }
+    }
+    val currentStorage by remember(currentItemStorageId, storageList) {
+        derivedStateOf {
+            storageList.find { it.id == currentItemStorageId }
+        }
+    }
+
 
     val isLoading by wasteListViewModel.isLoading.collectAsState()
     var isScanning by remember { mutableStateOf(false) }
@@ -135,7 +150,7 @@ fun WasteRemoveScreen(
             DropdownMenu(
                 expanded = expandedStorage,
                 onDismissRequest = { expandedStorage = false }) {
-                wasteStorageList.forEach { storage ->
+                storageList.forEach { storage ->
                     DropdownMenuItem(text = { Text(storage.storageName.toString()) }, onClick = {
                         selectedStorage = storage
                         wasteListViewModel.fetchStorageWasteList(selectedStorage!!.id!!)
@@ -156,94 +171,110 @@ fun WasteRemoveScreen(
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f) // 최대 높이 지정
         ) {
-            items(wasteItems) { wasteItem ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            val deviceAddress =
-                                beaconList.find { it.id == wasteItem.beaconId }?.deviceAddress
-                            currentItemId = wasteItem.id
-                            currentDeviceAddress = deviceAddress
-                            currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
-                            wasteItemDetails = wasteItem.description
-                            showDialog = true // 팝업창 띄우기
-                        },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Row(
+            if (wasteItems.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxHeight()
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("검색된 폐기물이 없습니다.")
+                    }
+                }
+            } else {
+                items(wasteItems) { wasteItem ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(8.dp)
+                            .clickable {
+                                val deviceAddress =
+                                    beaconList.find { it.id == wasteItem.beaconId }?.deviceAddress
+                                currentItemId = wasteItem.id
+                                currentDeviceAddress = deviceAddress
+                                currentItemStorageId = wasteItem.storageId
+                                currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
+                                wasteItemDetails = wasteItem.description
+                                showDialog = true // 팝업창 띄우기
+                            },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Checkbox(
-                            checked = selectedItems.containsKey(wasteItem.id),
-                            onCheckedChange = { isChecked ->
-                                if (!isChecked) {
-                                    selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
-                                }
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            val wasteType = wasteTypeList.find { it.id == wasteItem.wasteTypeId }
-                            val beacon = beaconList.find { it.id == wasteItem.beaconId }
-                            val status = wasteStatusList.find { it.id == wasteItem.wasteStatusId }
-                            Text(
-                                text = wasteType?.typeName ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "비콘이름: ${beacon?.label}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "상세내역: ${wasteItem.description}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Text(
-                                buildAnnotatedString {
-                                    append("상태: ")
-                                    withStyle(
-                                        style = SpanStyle(
-                                            color = getStatusColor(status),
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 2.sp
-                                        ),
-                                    ) {
-                                        append(status?.description)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = selectedItems.containsKey(wasteItem.id),
+                                onCheckedChange = { isChecked ->
+                                    if (!isChecked) {
+                                        selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
                                     }
-                                },
-                                style = MaterialTheme.typography.bodySmall
+                                }
                             )
 
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                val wasteType =
+                                    wasteTypeList.find { it.id == wasteItem.wasteTypeId }
+                                val beacon = beaconList.find { it.id == wasteItem.beaconId }
+                                val status =
+                                    wasteStatusList.find { it.id == wasteItem.wasteStatusId }
+                                Text(
+                                    text = wasteType?.typeName ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "비콘이름: ${beacon?.label}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "상세내역: ${wasteItem.description}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    buildAnnotatedString {
+                                        append("상태: ")
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = getStatusColor(status),
+                                                fontWeight = FontWeight.Bold,
+                                                letterSpacing = 2.sp
+                                            ),
+                                        ) {
+                                            append(status?.description)
+                                        }
+                                    },
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+
+                            }
                         }
                     }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                if (isScanning) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("비콘 검색 중...", style = MaterialTheme.typography.bodyMedium)
-                    }
                 }
+            }
+        }
+        if (isScanning) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("비콘 검색 중...", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
@@ -296,7 +327,7 @@ fun WasteRemoveScreen(
                         } finally {
                             selectedItems.clear() // 요청 성공 시 체크리스트 초기화
                             Toast.makeText(context, responseMessage, Toast.LENGTH_SHORT).show()
-                            wasteListViewModel.fetchWasteList(mode = 3)
+                            wasteListViewModel.fetchStorageWasteList(selectedStorage!!.id!!)
                         }
                     }
                 }
@@ -315,17 +346,30 @@ fun WasteRemoveScreen(
             onDismissRequest = { showDialog = false },
             title = { Text("폐기물 배출 정보 입력") },
             text = {
-                val status = wasteStatusList.find { it.id == currentStatusId }
+                val status = currentStatus
                 Column {
                     Text(
-                        text = "현재 상태: ${status?.description}",
+                        buildAnnotatedString {
+                            append("현재 상태:")
+                            append("  ")
+
+                            withStyle(style = SpanStyle(color = getStatusColor(status))) {
+                                append("${status?.description}")
+                            }
+                        },
+                        color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
+
+                        )
+                    Text(
+                        text = "지정창고: ${currentStorage?.storageName}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "상세내역: $wasteItemDetails",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 

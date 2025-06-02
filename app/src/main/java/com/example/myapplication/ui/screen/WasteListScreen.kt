@@ -219,6 +219,7 @@ fun WasteListScreen(
                                 }
                                 keyboardController?.hide()  // 키보드 내리기
                                 focusManager.clearFocus()  // 입력 포커스 해제
+                                isSelected = true
                                 showDropdown = false
                             },
                         colors = CardDefaults.cardColors(

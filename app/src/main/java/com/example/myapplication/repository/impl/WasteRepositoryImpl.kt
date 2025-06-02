@@ -181,7 +181,9 @@ class WasteRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.getWasteByAddress(beaconAddressList)
             if (response.isSuccessful) {
-                response.body()
+                val body = response.body()
+                Log.d("BEACONBYWASTE", body.toString())
+                body
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e(

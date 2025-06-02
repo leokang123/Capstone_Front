@@ -1,7 +1,6 @@
 package com.example.myapplication.ui.screen
 
 
-
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -38,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -111,9 +111,15 @@ fun WasteMoveScreen(
     var currentUserId by remember { mutableStateOf("") }
     var currentDetails by remember { mutableStateOf("") }
     var currentStatusId by remember { mutableStateOf<Int?>(null) }
+
     val currentStatus by remember(currentStatusId, wasteStatusList) {
         derivedStateOf {
             wasteStatusList.find { it.id == currentStatusId }
+        }
+    }
+    val currentStorage by remember(currentItemStorageId, storageList) {
+        derivedStateOf {
+            storageList.find { it.id == currentItemStorageId }
         }
     }
     var wasteItemDetails by remember { mutableStateOf("") }
@@ -180,75 +186,95 @@ fun WasteMoveScreen(
                 .fillMaxHeight(0.8f) // 최대 높이 지정
         ) {
             if (!isLoading) {
-                items(wasteItems) { wasteItem ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                currentItemId = wasteItem.id
-                                currentItemStorageId = wasteItem.storageId
-                                currentItemId = wasteItem.id
-                                currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
-                                wasteItemDetails = wasteItem.description
-                                showDialog = true // 팝업창 띄우기
-                            },
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Row(
+                if (wasteItems.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxHeight()
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("검색된 폐기물이 없습니다.")
+                        }
+                    }
+                } else {
+
+                    items(wasteItems) { wasteItem ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(8.dp)
+                                .clickable {
+                                    currentItemId = wasteItem.id
+                                    currentItemStorageId = wasteItem.storageId
+                                    currentItemId = wasteItem.id
+                                    currentStatusId = wasteItem.wasteStatusId // 현재 상태 저장
+                                    wasteItemDetails = wasteItem.description
+                                    showDialog = true // 팝업창 띄우기
+                                },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
-                            Checkbox(
-                                checked = selectedItems.containsKey(wasteItem.id),
-                                onCheckedChange = { isChecked ->
-                                    if (!isChecked) {
-                                        selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
-                                    }
-                                }
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                val wasteType =
-                                    wasteTypeList.find { it.id == wasteItem.wasteTypeId }
-                                val beacon = beaconList.find { it.id == wasteItem.beaconId }
-                                val status =
-                                    wasteStatusList.find { it.id == wasteItem.wasteStatusId }
-                                Text(
-                                    text = wasteType?.typeName ?: "",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "비콘이름: ${beacon?.label}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "상세내역: ${wasteItem.description}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    buildAnnotatedString {
-                                        append("상태: ")
-                                        withStyle(
-                                            style = SpanStyle(
-                                                color = getStatusColor(status),
-                                                fontWeight = FontWeight.Bold,
-                                                letterSpacing = 2.sp
-                                            ),
-                                        ) {
-                                            append(status?.description)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = selectedItems.containsKey(wasteItem.id),
+                                    onCheckedChange = { isChecked ->
+                                        if (!isChecked) {
+                                            selectedItems.remove(wasteItem.id) // 체크 해제 시 삭제
                                         }
-                                    },
-                                    style = MaterialTheme.typography.bodySmall
+                                    }
                                 )
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    val wasteType =
+                                        wasteTypeList.find { it.id == wasteItem.wasteTypeId }
+                                    val beacon = beaconList.find { it.id == wasteItem.beaconId }
+                                    val status =
+                                        wasteStatusList.find { it.id == wasteItem.wasteStatusId }
+                                    val storage = storageList.find { it.id == wasteItem.storageId }
+                                    Text(
+                                        text = wasteType?.typeName ?: "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "지정 창고: ${storage?.storageName}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "비콘이름: ${beacon?.label}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "상세내역: ${wasteItem.description}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        buildAnnotatedString {
+                                            append("상태: ")
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = getStatusColor(status),
+                                                    fontWeight = FontWeight.Bold,
+                                                    letterSpacing = 2.sp
+                                                ),
+                                            ) {
+                                                append(status?.description)
+                                            }
+                                        },
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
                         }
                     }
@@ -304,14 +330,27 @@ fun WasteMoveScreen(
                 val status = currentStatus
                 Column {
                     Text(
-                        text = "현재 상태: ${status?.description}",
+                        buildAnnotatedString {
+                            append("현재 상태:")
+                            append("  ")
+
+                            withStyle(style = SpanStyle(color = getStatusColor(status))) {
+                                append("${status?.description}")
+                            }
+                        },
+                        color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
+
+                        )
+                    Text(
+                        text = "지정창고: ${currentStorage?.storageName}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "상세내역: $wasteItemDetails",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -328,6 +367,7 @@ fun WasteMoveScreen(
                         onValueChange = { currentDetails = it },
                         label = { Text("처리 내용") }
                     )
+
                     if (status?.statusLevel == 2) {
                         Text(
                             text = when (isStorageMatch) {
@@ -336,7 +376,11 @@ fun WasteMoveScreen(
                                 null -> "창고 일치 여부 확인 중..."
                             },
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
+                            color = when (isStorageMatch) {
+                                true -> Color(0xFF4CAF50) // 초록색
+                                false -> Color(0xFFF44336) // 빨간색
+                                null -> MaterialTheme.colorScheme.onSurface // 기본색
+                            }
                         )
                     }
                 }
