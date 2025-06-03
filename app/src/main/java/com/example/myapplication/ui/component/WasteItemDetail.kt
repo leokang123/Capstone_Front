@@ -249,8 +249,8 @@ fun WasteItemDetailComponent(
 
 // 정정 다이얼로그 (예제 코드, 원하는 Composable로 변경 가능)
     if (showModDialog) {
-        WasteEditDialog(viewModel, selectedItem = selectedItem) {
-            viewModel.getWasteItemDetails(selectedItem.id)
+        WasteEditDialog(viewModel, selectedItem = selectedItem) { isEdit ->
+            if (isEdit) viewModel.getWasteItemDetails(selectedItem.id)
             showModDialog = false
         }
     }

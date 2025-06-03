@@ -44,7 +44,7 @@ fun WasteEditDialog(
     wasteListViewModel: WasteListViewModel,
     beaconViewModel: BlueToothViewModel = hiltViewModel(),
     selectedItem: WasteItemDetails,
-    onDismiss: () -> Unit
+    onDismiss: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -71,7 +71,7 @@ fun WasteEditDialog(
 
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { onDismiss(false) },
         title = { Text("정정 요청") },
         text = {
             Column {
@@ -161,7 +161,7 @@ fun WasteEditDialog(
                 if (showDialog) {
                     BluetoothDialog(beaconViewModel, isRegister = true, onDismiss = {
                         showDialog = false
-                        selectedDeviceId = beaconViewModel.selectedBeaconId.value ?: 0
+                        selectedDeviceId = beaconViewModel.selectedBeaconId.value ?: selectedItem.beacon
                     })
                 }
 
@@ -170,33 +170,45 @@ fun WasteEditDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                scope.launch {
-                    try {
-                        val updatedItem = WasteItem(
-                            id = selectedItem.id,
-                            hospitalId = selectedItem.hospital,
-                            storageId = selectedWasteStorageId,
-                            beaconId = selectedDeviceId,
-                            wasteTypeId = selectedWasteTypeId,
-                            wasteStatusId = selectedItem.wasteStatus,
-                            description = "[정정된 정보] $wasteDetails",
-                        )
-                        wasteListViewModel.updateItem(updatedItem)
-                        Toast.makeText(context, "정정 성공", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Log.e("WasteEditDialog", e.message.toString())
-                        Toast.makeText(context, "${e.message}", Toast.LENGTH_SHORT).show()
-                    } finally {
-                        onDismiss()
+            Button(
+                enabled = selectedItem.wasteType != selectedWasteTypeId || selectedItem.storage != selectedWasteStorageId || selectedItem.beacon != selectedDeviceId || wasteDetails.isNotEmpty(),
+                onClick = {
+                    scope.launch {
+                        try {
+                            val fixedFields = mutableListOf<String>()
+
+                            if (selectedItem.wasteType != selectedWasteTypeId) fixedFields.add("폐기물 유형")
+                            if (selectedItem.storage != selectedWasteStorageId) fixedFields.add("저장고")
+                            if (selectedItem.beacon != selectedDeviceId) fixedFields.add("비콘")
+                            if (wasteDetails.isNotEmpty()) fixedFields.add("내용")
+
+                            val fixedText =
+                                "[정정된 정보] (${fixedFields.joinToString(", ")}) $wasteDetails"
+
+                            val updatedItem = WasteItem(
+                                id = selectedItem.id,
+                                hospitalId = selectedItem.hospital,
+                                storageId = selectedWasteStorageId,
+                                beaconId = selectedDeviceId,
+                                wasteTypeId = selectedWasteTypeId,
+                                wasteStatusId = selectedItem.wasteStatus,
+                                description = fixedText
+                            )
+                            wasteListViewModel.updateItem(updatedItem)
+                            Toast.makeText(context, "정정 성공", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Log.e("WasteEditDialog", e.message.toString())
+                            Toast.makeText(context, "${e.message}", Toast.LENGTH_SHORT).show()
+                        } finally {
+                            onDismiss(true)
+                        }
                     }
-                }
-            }) {
+                }) {
                 Text("확인")
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = { onDismiss(false) }) {
                 Text("취소")
             }
         }
